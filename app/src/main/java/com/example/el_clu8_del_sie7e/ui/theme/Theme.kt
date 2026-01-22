@@ -1,58 +1,104 @@
 package com.example.el_clu8_del_sie7e.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 
+/**
+ * =====================================================================================
+ * THEME.KT - CONFIGURACION DEL TEMA DE LA APLICACION
+ * =====================================================================================
+ *
+ * Este archivo configura el tema global de Material Design 3 para nuestra app.
+ *
+ * QUE ES UN TEMA EN COMPOSE?
+ * --------------------------
+ * Un tema es un conjunto de configuraciones (colores, tipografia, formas) que se
+ * aplican a TODA la app de forma consistente. Es como definir las "reglas de estilo"
+ * que todos los componentes seguiran automaticamente.
+ *
+ * COMO FUNCIONA?
+ * --------------
+ * 1. Definimos un ColorScheme con nuestros colores personalizados
+ * 2. Creamos una funcion @Composable que envuelve MaterialTheme
+ * 3. Esa funcion se usa en MainActivity para envolver toda la app
+ *
+ * BENEFICIOS:
+ * -----------
+ * - Consistencia visual en toda la app
+ * - Facil de mantener (cambias un color aqui y cambia en toda la app)
+ * - Los componentes de Material usan estos colores automaticamente
+ *
+ * =====================================================================================
+ */
+
+/**
+ * Esquema de colores oscuro para la app.
+ *
+ * Material Design 3 define roles de color especificos:
+ * - primary: Color principal (nuestro rojo)
+ * - secondary: Color secundario/acento (nuestro dorado)
+ * - background: Color de fondo de las pantallas
+ * - surface: Color de superficies elevadas (cards, dialogs, etc.)
+ * - onPrimary: Color del texto/iconos sobre el color primary
+ * - onSecondary: Color del texto/iconos sobre el color secondary
+ * - onBackground: Color del texto sobre el background
+ * - onSurface: Color del texto sobre surfaces
+ *
+ * El prefijo "on" significa "encima de". Por ejemplo, onPrimary es el color
+ * que se usa para texto que esta encima de un fondo de color primary.
+ */
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    // Colores principales
+    primary = PrimaryRed,           // Rojo oscuro para elementos principales
+    secondary = AccentGold,         // Dorado para acentos y elementos destacados
+
+    // Colores de fondo
+    background = DarkBackground,    // Fondo oscuro de las pantallas
+    surface = DarkBackground,       // Superficies (cards, sheets, etc.)
+
+    // Colores de texto e iconos
+    onPrimary = TextPrimary,        // Texto blanco sobre fondo rojo
+    onSecondary = TextPrimary,      // Texto blanco sobre fondo dorado
+    onBackground = TextPrimary,     // Texto blanco sobre fondo oscuro
+    onSurface = TextPrimary,        // Texto blanco sobre superficies
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
-)
-
+/**
+ * Funcion principal del tema de la aplicacion.
+ *
+ * COMO USARLA:
+ * ------------
+ * Esta funcion se llama en MainActivity y envuelve TODA la app:
+ *
+ * ```kotlin
+ * setContent {
+ *     EL_CLU8_DEL_SIE7ETheme {
+ *         // Todo el contenido de la app va aqui
+ *         NavGraph()
+ *     }
+ * }
+ * ```
+ *
+ * ACCEDER A LOS COLORES DESDE CUALQUIER COMPOSABLE:
+ * -------------------------------------------------
+ * Una vez dentro del tema, puedes acceder a los colores asi:
+ *
+ * ```kotlin
+ * val colorPrimario = MaterialTheme.colorScheme.primary
+ * val colorDorado = MaterialTheme.colorScheme.secondary
+ * val colorFondo = MaterialTheme.colorScheme.background
+ * ```
+ *
+ * @param content El contenido de la app que usara este tema
+ */
 @Composable
 fun EL_CLU8_DEL_SIE7ETheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
     MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
+        colorScheme = DarkColorScheme,  // Aplicamos nuestros colores
+        typography = Typography,         // Aplicamos nuestra tipografia (de Type.kt)
+        content = content                // El contenido de la app
     )
 }
