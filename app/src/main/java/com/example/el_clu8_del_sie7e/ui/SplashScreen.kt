@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,11 +32,12 @@ fun SplashScreen() {
             .fillMaxSize()
             // El fondo es un gradiente vertical que va de un rojo oscuro a un rojo más oscuro.
             .background(
-                brush = Brush.verticalGradient(
+                brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFF6D0000),
-                        Color(0xFF4B0000)
-                    )
+                        Color(0xFF851618),
+                        Color(0xFF2B0C0D)
+                    ),
+                    radius = 900f
                 )
             ),
         contentAlignment = Alignment.Center
