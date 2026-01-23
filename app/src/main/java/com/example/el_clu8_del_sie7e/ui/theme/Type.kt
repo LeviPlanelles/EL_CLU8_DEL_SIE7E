@@ -4,8 +4,48 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.unit.sp
+import com.example.el_clu8_del_sie7e.R
 
+/**
+ * =====================================================================================
+ * FAMILIAS DE FUENTES DE LA APLICACION
+ * =====================================================================================
+ *
+ * Gideon: Fuente especial para el logo de la app
+ * Poppins: Fuente principal para todo el contenido de la app
+ */
+
+/**
+ * Fuente Gideon - Solo para el logo "EL CLU8 DEL SIE7E"
+ * Esta fuente mantiene la identidad de marca del casino
+ */
+val Gideon = FontFamily(
+    Font(R.font.gideon_roman)
+)
+
+/**
+ * Fuente Poppins - Fuente principal de la aplicacion
+ * 
+ * Incluye 7 variantes de peso para maxima flexibilidad:
+ * - Light (300): Textos muy sutiles
+ * - Regular (400): Texto de cuerpo normal
+ * - Medium (500): Enfasis moderado
+ * - SemiBold (600): Subtitulos
+ * - Bold (700): Titulos importantes
+ * - ExtraBold (800): Elementos destacados
+ * - Black (900): Maxima enfasis
+ */
+val Poppins = FontFamily(
+    Font(R.font.poppins_light, FontWeight.Light),
+    Font(R.font.poppins_regular, FontWeight.Normal),
+    Font(R.font.poppins_medium, FontWeight.Medium),
+    Font(R.font.poppins_semibold, FontWeight.SemiBold),
+    Font(R.font.poppins_bold, FontWeight.Bold),
+    Font(R.font.poppins_extrabold, FontWeight.ExtraBold),
+    Font(R.font.poppins_black, FontWeight.Black)
+)
 /**
  * =====================================================================================
  * TYPE.KT - CONFIGURACION DE TIPOGRAFIA DE LA APLICACION
@@ -45,62 +85,207 @@ import androidx.compose.ui.unit.sp
  */
 
 /**
- * Configuracion de tipografia de la app.
+ * Configuracion de tipografia de la app usando Poppins.
  *
- * Solo definimos los estilos que usamos. Material 3 tiene valores por defecto
- * para los que no especificamos.
+ * IMPORTANTE: Todos los estilos usan la fuente Poppins excepto cuando
+ * explicitamente se override con Gideon (solo en el logo).
+ *
+ * Material Design 3 define roles de tipografia que seguimos aqui:
+ * - Display: Texto muy grande (pantallas de bienvenida)
+ * - Headline: Encabezados principales
+ * - Title: Titulos de secciones y pantallas
+ * - Body: Texto de contenido principal
+ * - Label: Etiquetas y texto pequeno
  */
 val Typography = Typography(
 
     // ==================================================================================
-    // TEXTO DE CUERPO (Body) - Para contenido general
+    // DISPLAY - Textos muy grandes (pantallas especiales)
     // ==================================================================================
 
     /**
-     * Estilo para texto de cuerpo grande.
-     * Uso: Texto principal de contenido, parrafos, descripciones largas.
+     * Display Large - Texto mas grande de la app
+     * Uso: Pantallas de bienvenida, splash screens, mensajes importantes
      */
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,    // Fuente del sistema
-        fontWeight = FontWeight.Normal,     // Peso normal (no negrita)
-        fontSize = 16.sp,                   // Tamano 16sp (tamano estandar de lectura)
-        lineHeight = 24.sp,                 // Altura de linea (1.5x el tamano)
-        letterSpacing = 0.5.sp              // Pequeno espaciado entre letras
+    displayLarge = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Black,      // Peso Black (900) para maximo impacto
+        fontSize = 57.sp,
+        lineHeight = 64.sp,
+        letterSpacing = (-0.25).sp
+    ),
+
+    displayMedium = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.ExtraBold,
+        fontSize = 45.sp,
+        lineHeight = 52.sp,
+        letterSpacing = 0.sp
+    ),
+
+    displaySmall = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Bold,
+        fontSize = 36.sp,
+        lineHeight = 44.sp,
+        letterSpacing = 0.sp
     ),
 
     // ==================================================================================
-    // TITULOS (Title) - Para encabezados y secciones
+    // HEADLINE - Encabezados principales
     // ==================================================================================
 
     /**
-     * Estilo para titulos grandes.
-     * Uso: Nombre de la app, titulos principales de pantalla.
-     *
-     * Ejemplo: "EL CLU8 DEL SIE7E" en el logo
+     * Headline Large - Encabezados muy grandes
+     * Uso: Titulos principales de paginas, secciones importantes
+     */
+    headlineLarge = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Bold,
+        fontSize = 32.sp,
+        lineHeight = 40.sp,
+        letterSpacing = 0.sp
+    ),
+
+    headlineMedium = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 28.sp,
+        lineHeight = 36.sp,
+        letterSpacing = 0.sp
+    ),
+
+    headlineSmall = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 24.sp,
+        lineHeight = 32.sp,
+        letterSpacing = 0.sp
+    ),
+
+    // ==================================================================================
+    // TITLE - Titulos de secciones
+    // ==================================================================================
+
+    /**
+     * Title Large - Titulos grandes de pantallas
+     * Uso: Titulos de pantallas, nombres de juegos, secciones principales
+     * Ejemplo: "Blackjack", "Mi Perfil", "Depositar"
      */
     titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Bold,       // NEGRITA para destacar
-        fontSize = 28.sp,                   // Tamano grande
-        lineHeight = 36.sp,
-        letterSpacing = 0.sp                // Sin espaciado extra
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Bold,       // Bold (700)
+        fontSize = 22.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.sp
+    ),
+
+    /**
+     * Title Medium - Titulos medianos
+     * Uso: Subtitulos, nombres de secciones secundarias
+     */
+    titleMedium = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.SemiBold,   // SemiBold (600)
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.15.sp
+    ),
+
+    /**
+     * Title Small - Titulos pequenos
+     * Uso: Titulos de cards, encabezados de listas
+     */
+    titleSmall = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Medium,     // Medium (500)
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.1.sp
     ),
 
     // ==================================================================================
-    // ETIQUETAS (Label) - Para texto pequeno
+    // BODY - Texto de contenido
     // ==================================================================================
 
     /**
-     * Estilo para etiquetas pequenas.
-     * Uso: Texto secundario, etiquetas de campos, avisos pequenos.
-     *
+     * Body Large - Texto de cuerpo grande
+     * Uso: Texto principal de contenido, parrafos, descripciones
+     * Ejemplo: Descripciones de juegos, terminos y condiciones, mensajes
+     */
+    bodyLarge = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Normal,     // Regular (400)
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
+
+    /**
+     * Body Medium - Texto de cuerpo mediano
+     * Uso: Texto secundario, contenido de menor jerarquia
+     */
+    bodyMedium = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.25.sp
+    ),
+
+    /**
+     * Body Small - Texto de cuerpo pequeno
+     * Uso: Texto de apoyo, notas al pie
+     */
+    bodySmall = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.4.sp
+    ),
+
+    // ==================================================================================
+    // LABEL - Etiquetas y botones
+    // ==================================================================================
+
+    /**
+     * Label Large - Etiquetas grandes
+     * Uso: Texto de botones, etiquetas destacadas
+     * Ejemplo: "INICIAR SESION", "JUGAR AHORA"
+     */
+    labelLarge = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.SemiBold,   // SemiBold para destacar
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.1.sp
+    ),
+
+    /**
+     * Label Medium - Etiquetas medianas
+     * Uso: Etiquetas de campos de texto, tabs, chips
+     * Ejemplo: "Usuario", "Contraseña"
+     */
+    labelMedium = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp
+    ),
+
+    /**
+     * Label Small - Etiquetas pequenas
+     * Uso: Texto muy pequeno, avisos, etiquetas secundarias
      * Ejemplo: "EXCLUSIVIDAD . LUJO . JUEGO" debajo del logo
      */
     labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,     // Peso medio
-        fontSize = 11.sp,                   // Tamano pequeno
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Medium,
+        fontSize = 11.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp
     )
 )
+
