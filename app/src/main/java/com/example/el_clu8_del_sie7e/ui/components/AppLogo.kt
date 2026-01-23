@@ -12,10 +12,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.ui.theme.TextSecondary
+import com.example.el_clu8_del_sie7e.ui.theme.Gideon
+import com.example.el_clu8_del_sie7e.R
+
+
 
 /**
  * =====================================================================================
@@ -83,7 +89,7 @@ fun AppLogo(modifier: Modifier = Modifier) {
          * ```
          */
         Icon(
-            imageVector = Icons.Default.Star,               // Placeholder (estrella)
+            painter = painterResource(id = R.drawable.icon_crown),               // Placeholder (estrella)
             contentDescription = "Logo Corona",             // Para accesibilidad
             tint = MaterialTheme.colorScheme.secondary,     // Color dorado del tema
             modifier = Modifier.size(80.dp)                 // Tamano del icono
@@ -94,9 +100,24 @@ fun AppLogo(modifier: Modifier = Modifier) {
         // ------------------------------------------------------------------
         // NOMBRE DE LA APP
         // ------------------------------------------------------------------
+        /**
+         * El logo usa la fuente Gideon para mantener identidad de marca
+         * NOTA: Especificamos fontFamily y fontSize directamente porque
+         * es el unico lugar que NO debe usar Poppins
+         */
         Text(
-            text = "EL CLU8 DEL SIE7E",
-            style = MaterialTheme.typography.titleLarge,    // Estilo de titulo grande
+            text = "EL CLU8",
+            fontFamily = Gideon,                            // Fuente especial para el logo
+            fontSize = 38.sp,                               // Tamano personalizado
+            color = MaterialTheme.colorScheme.secondary     // Color dorado
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = "DEL SIE7E",
+            fontFamily = Gideon,                            // Fuente especial para el logo
+            fontSize = 38.sp,                               // Tamano personalizado
             color = MaterialTheme.colorScheme.secondary     // Color dorado
         )
 
@@ -105,9 +126,13 @@ fun AppLogo(modifier: Modifier = Modifier) {
         // ------------------------------------------------------------------
         // ESLOGAN
         // ------------------------------------------------------------------
+        /**
+         * El eslogan usa Poppins (via MaterialTheme.typography)
+         * para mantener consistencia con el resto de la app
+         */
         Text(
             text = "EXCLUSIVIDAD . LUJO . JUEGO",
-            style = MaterialTheme.typography.labelSmall,    // Estilo de etiqueta pequena
+            style = MaterialTheme.typography.labelSmall,    // Usa Poppins automaticamente
             color = TextSecondary                           // Color gris
         )
     }

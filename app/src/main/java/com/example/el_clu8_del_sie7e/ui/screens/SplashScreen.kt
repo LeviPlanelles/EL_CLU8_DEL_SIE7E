@@ -19,10 +19,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.ui.navigation.Routes
@@ -167,11 +165,14 @@ fun SplashScreen(navController: NavController) {
             // ------------------------------------------------------------------
             // NOMBRE DE LA APP
             // ------------------------------------------------------------------
+            /**
+             * Usa headlineLarge de MaterialTheme para consistencia tipografica
+             * Esto aplicara automaticamente la fuente Poppins configurada en Type.kt
+             */
             Text(
                 text = "EL CLU8 DEL SIE7E",
-                color = AccentGold,                // Color dorado
-                fontSize = 32.sp,                  // Tamano grande
-                fontWeight = FontWeight.Bold       // Texto en negrita
+                color = AccentGold,                         // Color dorado
+                style = MaterialTheme.typography.headlineLarge  // Estilo consistente con el tema
             )
 
             // Espacio entre el texto y el loader
