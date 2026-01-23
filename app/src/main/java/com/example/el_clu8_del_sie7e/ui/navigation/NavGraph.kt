@@ -119,10 +119,14 @@ fun NavGraph() {
         // PROXIMAS PANTALLAS (agregar aqui cuando se implementen)
         // ==================================================================================
 
-        // TODO: Agregar RegisterScreen
-        // composable(route = Routes.REGISTER_SCREEN) {
-        //     RegisterScreen(navController = navController)
-        // }
+        /**
+         * Pantalla de Registro
+         * - Formulario para crear una nueva cuenta
+         * - Puede volver al Login si ya tiene cuenta
+         */
+        composable(route = Routes.REGISTER_SCREEN) {
+            com.example.el_clu8_del_sie7e.ui.screens.RegisterScreen(navController = navController)
+        }
 
         // TODO: Agregar LobbyScreen
         // composable(route = Routes.LOBBY_SCREEN) {
