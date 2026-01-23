@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -29,6 +31,8 @@ import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.ui.theme.GradientCenter
 import com.example.el_clu8_del_sie7e.ui.theme.GradientEdge
 import kotlinx.coroutines.delay
+import com.example.el_clu8_del_sie7e.ui.components.LogoChargingScreen
+
 
 /**
  * =====================================================================================
@@ -118,7 +122,7 @@ fun SplashScreen(navController: NavController) {
      */
     Box(
         modifier = Modifier
-            .fillMaxSize()  // Ocupa toda la pantalla
+            .fillMaxSize()// Ocupa toda la pantalla
             .background(
                 brush = Brush.radialGradient(
                     colors = listOf(
@@ -130,68 +134,11 @@ fun SplashScreen(navController: NavController) {
             ),
         contentAlignment = Alignment.Center  // Centra todo el contenido
     ) {
-        // Columna que organiza: Icono -> Texto -> Loader
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // ------------------------------------------------------------------
-            // ICONO/LOGO
-            // ------------------------------------------------------------------
-            /**
-             * TODO: Reemplazar Icons.Default.Star con el icono de corona real
-             *
-             * Para usar un icono personalizado:
-             * 1. Agregar el archivo SVG/PNG en res/drawable
-             * 2. Usar painterResource(id = R.drawable.mi_icono)
-             *
-             * Ejemplo:
-             * Icon(
-             *     painter = painterResource(id = R.drawable.ic_crown),
-             *     contentDescription = "Corona",
-             *     tint = AccentGold
-             * )
-             */
-            Icon(
-                imageVector = Icons.Default.Star,  // Placeholder - cambiar por corona
-                contentDescription = "Corona",     // Descripcion para accesibilidad
-                tint = AccentGold,                 // Color dorado del tema
-                modifier = Modifier.size(64.dp)    // Tamano del icono
-            )
-
-            // Espacio entre el icono y el texto
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // ------------------------------------------------------------------
-            // NOMBRE DE LA APP
-            // ------------------------------------------------------------------
-            /**
-             * Usa headlineLarge de MaterialTheme para consistencia tipografica
-             * Esto aplicara automaticamente la fuente Poppins configurada en Type.kt
-             */
-            Text(
-                text = "EL CLU8 DEL SIE7E",
-                color = AccentGold,                         // Color dorado
-                style = MaterialTheme.typography.headlineLarge  // Estilo consistente con el tema
-            )
-
-            // Espacio entre el texto y el loader
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // ------------------------------------------------------------------
-            // INDICADOR DE CARGA
-            // ------------------------------------------------------------------
-            /**
-             * CircularProgressIndicator muestra una animacion de carga
-             * Le da al usuario feedback de que la app esta "haciendo algo"
-             */
-            CircularProgressIndicator(
-                color = AccentGold,                // Color dorado
-                modifier = Modifier.size(48.dp)   // Tamano del indicador
-            )
-        }
+        LogoChargingScreen(
+            modifier = Modifier.offset(y = (-40).dp)
+        )
     }
-}
+    }
 
 // ======================================================================================
 // PREVIEW - VISTA PREVIA EN ANDROID STUDIO

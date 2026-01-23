@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,7 +25,7 @@ import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.ui.theme.TextSecondary
 import com.example.el_clu8_del_sie7e.ui.theme.Gideon
 import com.example.el_clu8_del_sie7e.R
-
+import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 
 
 /**
@@ -66,7 +67,7 @@ import com.example.el_clu8_del_sie7e.R
  * ```
  */
 @Composable
-fun AppLogo(modifier: Modifier = Modifier) {
+fun LogoChargingScreen(modifier: Modifier = Modifier) {
     /**
      * Column organiza los elementos verticalmente:
      * - Icono (arriba)
@@ -96,10 +97,10 @@ fun AppLogo(modifier: Modifier = Modifier) {
             painter = painterResource(id = R.drawable.icon_crown),               // Placeholder (estrella)
             contentDescription = "Logo Corona",             // Para accesibilidad
             tint = Color.Unspecified,     // Color dorado del tema
-            modifier = Modifier.size(80.dp)                 // Tamano del icono
+            modifier = Modifier.size(100.dp)                 // Tamano del icono
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(100.dp))
 
         // ------------------------------------------------------------------
         // NOMBRE DE LA APP
@@ -113,7 +114,7 @@ fun AppLogo(modifier: Modifier = Modifier) {
             text = "EL CLU8",
             style = TextStyle(
                 fontFamily = Gideon,
-                fontSize = 38.sp,
+                fontSize = 48.sp,
                 brush = Brush.linearGradient(
                     colors = listOf(
                         Color(0xFFFFCC00), // dorado claro (arriba)
@@ -131,7 +132,7 @@ fun AppLogo(modifier: Modifier = Modifier) {
             text = "DEL SIE7E",
             style = TextStyle(
                 fontFamily = Gideon,
-                fontSize = 38.sp,
+                fontSize = 48.sp,
                 brush = Brush.linearGradient(
                     colors = listOf(
                         Color(0xFFFFCC00), // dorado claro (arriba)
@@ -143,20 +144,13 @@ fun AppLogo(modifier: Modifier = Modifier) {
             )
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(60.dp))
 
-        // ------------------------------------------------------------------
-        // ESLOGAN
-        // ------------------------------------------------------------------
-        /**
-         * El eslogan usa Poppins (via MaterialTheme.typography)
-         * para mantener consistencia con el resto de la app
-         */
-        Text(
-            text = "EXCLUSIVIDAD • LUJO • JUEGO",
-            style = MaterialTheme.typography.labelSmall,    // Usa Poppins automaticamente
-            color = TextSecondary                           // Color gris
+        CircularProgressIndicator(
+            color = AccentGold,                // Color dorado
+            modifier = Modifier.size(48.dp)   // Tamano del indicador
         )
+
     }
 }
 
@@ -165,8 +159,8 @@ fun AppLogo(modifier: Modifier = Modifier) {
 // ======================================================================================
 @Preview(showBackground = true, backgroundColor = 0xFF1E1E1E)
 @Composable
-fun AppLogoPreview() {
+fun ChargingScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
-        AppLogo()
+        LogoChargingScreen()
     }
 }
