@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.el_clu8_del_sie7e.ui.screens.LobbyScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LoginScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SplashScreen
 
@@ -128,9 +129,17 @@ fun NavGraph() {
             com.example.el_clu8_del_sie7e.ui.screens.RegisterScreen(navController = navController)
         }
 
-        // TODO: Agregar LobbyScreen
-        // composable(route = Routes.LOBBY_SCREEN) {
-        //     LobbyScreen(navController = navController)
-        // }
+        // ==================================================================================
+        // PANTALLAS PRINCIPALES
+        // ==================================================================================
+
+        /**
+         * Pantalla de Lobby (Principal)
+         * - Pantalla principal despues del login
+         * - Muestra juegos destacados, bonos y navegacion
+         */
+        composable(route = Routes.LOBBY_SCREEN) {
+            LobbyScreen(navController = navController)
+        }
     }
 }
