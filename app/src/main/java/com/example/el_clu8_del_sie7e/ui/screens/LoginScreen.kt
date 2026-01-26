@@ -42,6 +42,7 @@ import com.example.el_clu8_del_sie7e.ui.components.AppLogo
 import com.example.el_clu8_del_sie7e.ui.components.PrimaryButton
 import com.example.el_clu8_del_sie7e.ui.components.SecondaryButton
 import com.example.el_clu8_del_sie7e.ui.components.StyledTextField
+import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.ui.theme.GradientCenter
@@ -274,7 +275,7 @@ fun LoginScreen(navController: NavController) {
                     // 1. Validar que username y password no esten vacios
                     // 2. Llamar al ViewModel para autenticar
                     // 3. Si es exitoso, navegar al Lobby
-                    // navController.navigate(Routes.LOBBY_SCREEN)
+                    navController.navigate(Routes.LOBBY_SCREEN)
                 },
                 icon = Icons.Filled.Login  // Icono de login
             )
@@ -297,8 +298,7 @@ fun LoginScreen(navController: NavController) {
             SecondaryButton(
                 text = "REGISTRARSE",
                 onClick = {
-                    // TODO: Navegar a pantalla de registro
-                    // navController.navigate(Routes.REGISTER_SCREEN)
+                    navController.navigate(Routes.REGISTER_SCREEN)
                 }
             )
 

@@ -198,7 +198,7 @@ fun RegisterScreen(
 
             // 5. Botón CREAR CUENTA
             Button(
-                onClick = { if (viewModel.onRegisterClick()) navController.navigate(Routes.LOGIN_SCREEN) },
+                onClick = { navController.navigate(Routes.LOBBY_SCREEN) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp)
