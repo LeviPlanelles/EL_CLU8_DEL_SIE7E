@@ -164,7 +164,7 @@ fun BonusBanner(
             // Titulo
             Text(
                 text = title,
-                color = AccentGold,
+                color = Color(0xFFD4AF36), // Dorado claro
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
