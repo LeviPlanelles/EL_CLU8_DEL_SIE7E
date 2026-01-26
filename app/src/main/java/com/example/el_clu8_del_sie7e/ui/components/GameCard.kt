@@ -75,7 +75,7 @@ fun GameCard(
                 painter = painterResource(id = backgroundImage),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.FillBounds // Muestra toda la imagen sin recortar los bordes
             )
         } else {
             // Solo si no hay imagen, usar color de fondo
