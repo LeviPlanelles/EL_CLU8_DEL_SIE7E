@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.el_clu8_del_sie7e.ui.screens.DepositScreen
 import com.example.el_clu8_del_sie7e.ui.screens.GameSearchScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LobbyScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LoginScreen
@@ -155,6 +156,20 @@ fun NavGraph() {
          */
         composable(route = Routes.GAME_SEARCH_SCREEN) {
             GameSearchScreen(navController = navController)
+        }
+
+        // ==================================================================================
+        // PANTALLAS DE FINANZAS
+        // ==================================================================================
+
+        /**
+         * Pantalla de Depósito
+         * - Permite depositar fondos en la cuenta
+         * - Selección de método de pago (Tarjeta, Transferencia, E-Wallet)
+         * - Montos rápidos y formulario de tarjeta
+         */
+        composable(route = Routes.DEPOSIT_SCREEN) {
+            DepositScreen(navController = navController)
         }
     }
 }
