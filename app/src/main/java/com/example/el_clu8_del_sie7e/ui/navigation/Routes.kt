@@ -83,6 +83,9 @@ object Routes {
     /** Juego de Ruleta */
     const val ROULETTE_GAME_SCREEN = "roulette_game_screen"
 
+    /** Buscador de Juegos */
+    const val GAME_SEARCH_SCREEN = "game_search_screen"
+
     // ==================================================================================
     // PANTALLAS DE FINANZAS
     // ==================================================================================

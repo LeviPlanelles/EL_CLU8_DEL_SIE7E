@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.el_clu8_del_sie7e.ui.screens.GameSearchScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LobbyScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LoginScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SplashScreen
@@ -140,6 +141,20 @@ fun NavGraph() {
          */
         composable(route = Routes.LOBBY_SCREEN) {
             LobbyScreen(navController = navController)
+        }
+
+        // ==================================================================================
+        // PANTALLAS DE JUEGOS
+        // ==================================================================================
+
+        /**
+         * Pantalla de Búsqueda de Juegos
+         * - Permite buscar y filtrar juegos
+         * - Muestra juegos populares con calificación
+         * - Filtros por categoría (Todos, Slots, Cartas, Otros)
+         */
+        composable(route = Routes.GAME_SEARCH_SCREEN) {
+            GameSearchScreen(navController = navController)
         }
     }
 }

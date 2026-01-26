@@ -140,8 +140,8 @@ fun LobbyScreen(
                 selectedItem = selectedFooterItem,
                 onItemSelected = { item ->
                     selectedFooterItem = item
-                    // TODO: Implementar navegacion cuando se agreguen las otras pantallas
-                }
+                },
+                navController = navController
             )
         },
         // Color de fondo del Scaffold
