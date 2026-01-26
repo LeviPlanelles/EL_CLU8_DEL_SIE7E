@@ -1,5 +1,6 @@
 package com.example.el_clu8_del_sie7e.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,13 +17,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -74,115 +76,104 @@ fun BonusBanner(
     backgroundImage: Int? = null
 ) {
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = AccentGold.copy(alpha = 0.6f),
-                shape = RoundedCornerShape(16.dp)
-            )
-            .clip(RoundedCornerShape(16.dp))
+        modifier = modifier.height(180.dp) // Altura reducida a 180dp para mejor proporción
     ) {
-        // Imagen de fondo (si existe)
+        // CAPA 1: Imagen de fondo TAL CUAL (sin overlay, sin borde - la imagen ya lo tiene)
         if (backgroundImage != null) {
             Image(
                 painter = painterResource(id = backgroundImage),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.FillWidth // Cambiado a FillWidth para mejor proporción
+            )
+        } else {
+            // Solo si no hay imagen, usar color de fondo
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        color = Color(0xFF2A1810),
+                        shape = RoundedCornerShape(16.dp)
+                    )
             )
         }
 
-        // Overlay oscuro semitransparente
+        // CAPA 2: Contenido superpuesto (badge, estrella, texto, botón)
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = if (backgroundImage != null) {
-                            listOf(
-                                Color(0xAA1E1410),
-                                Color(0xDD1E1410)
-                            )
-                        } else {
-                            listOf(
-                                Color(0xFF3D2819),
-                                Color(0xFF2A1810)
-                            )
-                        }
+                .padding(12.dp) // Reducido de 16dp a 12dp
+                .padding(bottom = 8.dp) // Padding extra en el fondo para margen del botón
+        ) {
+            // Badge "EXCLUSIVO" - Esquina superior izquierda
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .background(
+                        color = Color(0xFFB8860B),
+                        shape = RoundedCornerShape(4.dp)
                     )
+                    .padding(horizontal = 6.dp, vertical = 3.dp) // Reducido el padding
+            ) {
+                Text(
+                    text = badgeText,
+                    color = Color.Black,
+                    fontSize = 9.sp, // Reducido de 10sp a 9sp
+                    fontWeight = FontWeight.Bold
                 )
-        )
+            }
 
-        // Contenido del banner
-        Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        // Badge "EXCLUSIVO" - Esquina superior izquierda
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .background(
-                    color = Color(0xFFB8860B),
-                    shape = RoundedCornerShape(4.dp)
+            // Icono estrella dorada - Esquina superior derecha
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(28.dp) // Reducido de 32dp a 28dp
+                    .background(
+                        color = AccentGold,
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = "Estrella",
+                    tint = Color.Black,
+                    modifier = Modifier.size(16.dp) // Reducido de 18dp a 16dp
                 )
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-        ) {
-            Text(
-                text = badgeText,
-                color = Color.Black,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+            }
 
-        // Icono estrella dorada - Esquina superior derecha
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .size(32.dp)
-                .background(
+            // Contenido principal
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomStart),
+                verticalArrangement = Arrangement.spacedBy(6.dp) // Reducido de 8dp a 6dp
+            ) {
+                // Titulo
+                Text(
+                    text = title,
                     color = AccentGold,
-                    shape = CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Star,
-                contentDescription = "Estrella",
-                tint = Color.Black,
-                modifier = Modifier.size(18.dp)
-            )
-        }
+                    fontSize = 18.sp, // Reducido de 20sp a 18sp
+                    fontWeight = FontWeight.Bold
+                )
 
-        // Contenido principal
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomStart)
-                .padding(bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // Titulo
-            Text(
-                text = title,
-                color = AccentGold,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
+                // Subtitulo
+                Text(
+                    text = subtitle,
+                    color = Color.White,
+                    fontSize = 12.sp // Reducido de 13sp a 12sp
+                )
 
-            // Subtitulo
-            Text(
-                text = subtitle,
-                color = Color.White,
-                fontSize = 13.sp
-            )
+                Spacer(modifier = Modifier.height(2.dp)) // Reducido de 4dp a 2dp
 
-            // Boton de accion ROJO con flecha
-            RedButton(
-                text = buttonText,
-                onClick = onButtonClick,
-                showArrow = true
-            )
-        }
+                // Boton de accion ROJO con flecha
+                RedButton(
+                    text = buttonText,
+                    onClick = onButtonClick,
+                    showArrow = true,
+                    modifier = Modifier.height(38.dp) // Altura del botón ajustada
+                )
+            }
         }
     }
 }

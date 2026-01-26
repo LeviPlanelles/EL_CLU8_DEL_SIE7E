@@ -196,7 +196,8 @@ fun LobbyScreen(
                         backgroundImage = R.drawable.game_casino,
                         onButtonClick = {
                             // TODO: Navegar a pantalla de deposito
-                        }
+                        },
+                        modifier = Modifier.fillMaxWidth() // Respeta el padding del contenedor padre
                     )
                 }
 

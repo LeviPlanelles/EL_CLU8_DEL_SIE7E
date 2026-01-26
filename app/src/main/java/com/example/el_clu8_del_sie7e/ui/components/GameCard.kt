@@ -2,13 +2,11 @@ package com.example.el_clu8_del_sie7e.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,8 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -71,16 +67,9 @@ fun GameCard(
     backgroundImage: Int? = null
 ) {
     Box(
-        modifier = modifier
-            .height(180.dp)
-            .border(
-                width = 1.dp,
-                color = AccentGold.copy(alpha = 0.4f),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .clip(RoundedCornerShape(12.dp))
+        modifier = modifier.height(180.dp)
     ) {
-        // Imagen de fondo (si existe)
+        // CAPA 1: Imagen de fondo TAL CUAL (sin overlay, sin borde - la imagen ya lo tiene)
         if (backgroundImage != null) {
             Image(
                 painter = painterResource(id = backgroundImage),
@@ -88,36 +77,24 @@ fun GameCard(
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
+        } else {
+            // Solo si no hay imagen, usar color de fondo
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        color = Color(0xFF1E1410),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+            )
         }
 
-        // Overlay oscuro semitransparente para mejor legibilidad
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = if (backgroundImage != null) {
-                            // Con imagen: overlay más oscuro
-                            listOf(
-                                Color(0xAA1E1410),
-                                Color(0xDD1E1410)
-                            )
-                        } else {
-                            // Sin imagen: fondo con gradiente
-                            listOf(
-                                Color(0xFF3A2817),
-                                Color(0xFF1E1410)
-                            )
-                        }
-                    )
-                )
-        )
-
-        // Contenido de la tarjeta
+        // CAPA 2: Contenido superpuesto (iconos, texto, botones)
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(12.dp)
+                .padding(bottom = 8.dp), // Padding extra en el fondo para subir el botón
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             // Seccion superior: Icono del juego
