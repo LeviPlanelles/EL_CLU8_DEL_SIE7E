@@ -9,6 +9,7 @@ import com.example.el_clu8_del_sie7e.ui.screens.GameSearchScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LobbyScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LoginScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SplashScreen
+import com.example.el_clu8_del_sie7e.ui.screens.WalletScreen
 
 /**
  * =====================================================================================
@@ -170,6 +171,16 @@ fun NavGraph() {
          */
         composable(route = Routes.DEPOSIT_SCREEN) {
             DepositScreen(navController = navController)
+        }
+
+        /**
+         * Pantalla de Cartera (Wallet)
+         * - Pantalla principal de gestión financiera
+         * - Opciones: Depositar, Retirar, Historial
+         * - Banner de seguridad premium
+         */
+        composable(route = Routes.WALLET_SCREEN) {
+            WalletScreen(navController = navController)
         }
     }
 }

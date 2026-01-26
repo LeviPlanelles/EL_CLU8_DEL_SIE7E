@@ -132,7 +132,10 @@ fun LobbyScreen(
     Scaffold(
         // Header superior con logo y balance
         topBar = {
-            AppHeader(balance = "\$5,000.00")
+            AppHeader(
+                balance = "\$5,000.00",
+                navController = navController
+            )
         },
         // Footer inferior con navegacion
         bottomBar = {

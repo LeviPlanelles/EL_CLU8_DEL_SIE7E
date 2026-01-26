@@ -99,6 +99,9 @@ object Routes {
     /** Historial de transacciones */
     const val TRANSACTION_HISTORY_SCREEN = "transaction_history_screen"
 
+    /** Cartera (Wallet) - Pantalla principal de gestión financiera */
+    const val WALLET_SCREEN = "wallet_screen"
+
     // ==================================================================================
     // PANTALLAS DE USUARIO
     // ==================================================================================

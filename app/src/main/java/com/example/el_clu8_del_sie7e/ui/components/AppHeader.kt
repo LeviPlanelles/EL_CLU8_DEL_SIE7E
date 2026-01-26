@@ -2,6 +2,7 @@ package com.example.el_clu8_del_sie7e.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,8 +30,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.ui.theme.Gideon
 import com.example.el_clu8_del_sie7e.R
+import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 
@@ -38,7 +42,8 @@ import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 @Composable
 fun AppHeader(
     balance: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController? = null
 ) {
     Column(modifier = modifier.background(Color.Black)) {
 
@@ -116,7 +121,11 @@ fun AppHeader(
                 modifier = Modifier
                     .border(width = 0.5.dp,
                         color = AccentGold,
-                        shape = MaterialTheme.shapes.medium),
+                        shape = MaterialTheme.shapes.medium)
+                    .clickable {
+                        // Navegar a la pantalla de cartera (WalletScreen)
+                        navController?.navigate(Routes.WALLET_SCREEN)
+                    },
                 shape = RoundedCornerShape(8.dp),
                 color = Color(0xFF3A3A3A),
                 tonalElevation = 4.dp
@@ -158,7 +167,8 @@ fun AppHeader(
 fun AppHeaderPreview() {
     EL_CLU8_DEL_SIE7ETheme {
         AppHeader(
-            balance = "$5.000.00"
+            balance = "$5.000.00",
+            navController = rememberNavController()
         )
     }
 }

@@ -120,7 +120,10 @@ fun DepositScreen(
             // ===================================================================
             // HEADER CON SALDO
             // ===================================================================
-            AppHeader(balance = "$5,000.00")
+            AppHeader(
+                balance = "$5,000.00",
+                navController = navController
+            )
 
             // ===================================================================
             // CONTENIDO PRINCIPAL (scrollable)
