@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.Color
 // COLORES PRINCIPALES
 val PrimaryRed = Color(0xFF6D0000)
 val PrimaryVariantRed = Color(0xFF4B0000)
-val AccentGold = Color(0xFF777150)
+val AccentGold = Color(0xFFD4AF36) // Dorado claro/brillante
 
 // COLORES DE FONDO
 val DarkBackground = Color(0xFF1E1E1E)

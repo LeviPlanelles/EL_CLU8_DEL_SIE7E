@@ -76,7 +76,6 @@ fun BonusBanner(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(160.dp)
             .border(
                 width = 1.dp,
                 color = AccentGold.copy(alpha = 0.6f),
@@ -158,13 +157,14 @@ fun BonusBanner(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .align(Alignment.BottomStart)
+                .padding(bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Titulo
             Text(
                 text = title,
-                color = Color(0xFFD4AF36), // Dorado claro
+                color = AccentGold,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -175,8 +175,6 @@ fun BonusBanner(
                 color = Color.White,
                 fontSize = 13.sp
             )
-
-            Spacer(modifier = Modifier.height(4.dp))
 
             // Boton de accion ROJO con flecha
             RedButton(
