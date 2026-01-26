@@ -1,11 +1,13 @@
 package com.example.el_clu8_del_sie7e.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,10 +25,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 
@@ -53,6 +58,7 @@ import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
  * @param badgeText Texto del badge (ej: "EXCLUSIVO")
  * @param buttonText Texto del boton de accion (ej: "RECLAMAR AHORA")
  * @param onButtonClick Accion al presionar el boton
+ * @param backgroundImage ID del recurso drawable de la imagen de fondo (opcional)
  * @param modifier Modificador opcional
  *
  * =====================================================================================
@@ -64,28 +70,53 @@ fun BonusBanner(
     badgeText: String = "EXCLUSIVO",
     buttonText: String,
     onButtonClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    backgroundImage: Int? = null
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .height(160.dp)
             .border(
                 width = 1.dp,
                 color = AccentGold.copy(alpha = 0.6f),
                 shape = RoundedCornerShape(16.dp)
             )
             .clip(RoundedCornerShape(16.dp))
-            .background(
-                // Fondo con gradiente sutil para simular imagen
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF3D2819),
-                        Color(0xFF2A1810)
+    ) {
+        // Imagen de fondo (si existe)
+        if (backgroundImage != null) {
+            Image(
+                painter = painterResource(id = backgroundImage),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        // Overlay oscuro semitransparente
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = if (backgroundImage != null) {
+                            listOf(
+                                Color(0xAA1E1410),
+                                Color(0xDD1E1410)
+                            )
+                        } else {
+                            listOf(
+                                Color(0xFF3D2819),
+                                Color(0xFF2A1810)
+                            )
+                        }
                     )
                 )
-            )
-            .padding(16.dp)
-    ) {
+        )
+
+        // Contenido del banner
+        Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         // Badge "EXCLUSIVO" - Esquina superior izquierda
         Box(
             modifier = Modifier
@@ -153,6 +184,7 @@ fun BonusBanner(
                 onClick = onButtonClick,
                 showArrow = true
             )
+        }
         }
     }
 }

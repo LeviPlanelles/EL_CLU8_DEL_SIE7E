@@ -1,5 +1,6 @@
 package com.example.el_clu8_del_sie7e.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,6 +56,7 @@ import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
  * @param gameName Nombre del juego (ej: "Slot", "Roulette", "BlackJack")
  * @param gameCount Cantidad de variantes (ej: "Más de 200 juegos")
  * @param onPlayClick Accion al presionar "JUGAR AHORA"
+ * @param backgroundImage ID del recurso drawable de la imagen de fondo (opcional)
  * @param modifier Modificador opcional
  *
  * =====================================================================================
@@ -64,7 +67,8 @@ fun GameCard(
     gameName: String,
     gameCount: String,
     onPlayClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    backgroundImage: Int? = null
 ) {
     Box(
         modifier = modifier
@@ -75,16 +79,41 @@ fun GameCard(
                 shape = RoundedCornerShape(12.dp)
             )
             .clip(RoundedCornerShape(12.dp))
-            .background(
-                // Fondo con gradiente para simular imagen del juego
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF3A2817),
-                        Color(0xFF1E1410)
+    ) {
+        // Imagen de fondo (si existe)
+        if (backgroundImage != null) {
+            Image(
+                painter = painterResource(id = backgroundImage),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        // Overlay oscuro semitransparente para mejor legibilidad
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = if (backgroundImage != null) {
+                            // Con imagen: overlay más oscuro
+                            listOf(
+                                Color(0xAA1E1410),
+                                Color(0xDD1E1410)
+                            )
+                        } else {
+                            // Sin imagen: fondo con gradiente
+                            listOf(
+                                Color(0xFF3A2817),
+                                Color(0xFF1E1410)
+                            )
+                        }
                     )
                 )
-            )
-    ) {
+        )
+
+        // Contenido de la tarjeta
         Column(
             modifier = Modifier
                 .fillMaxSize()

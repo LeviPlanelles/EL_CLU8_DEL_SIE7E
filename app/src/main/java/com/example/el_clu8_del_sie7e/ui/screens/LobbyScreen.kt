@@ -80,7 +80,8 @@ data class Game(
     val id: String,
     val name: String,
     val icon: Int,
-    val count: String
+    val count: String,
+    val backgroundImage: Int
 )
 
 @Composable
@@ -100,26 +101,30 @@ fun LobbyScreen(
             Game(
                 id = "slots",
                 name = "Slot",
-                icon = R.drawable.ic_cards, // Placeholder - cambiar cuando tengas el icono correcto
-                count = "Más de 200 juegos"
+                icon = R.drawable.ic_cards,
+                count = "Más de 200 juegos",
+                backgroundImage = R.drawable.game_slots
             ),
             Game(
                 id = "roulette",
                 name = "Roulette",
-                icon = R.drawable.ic_cards, // Placeholder
-                count = "Más de 200 juegos"
+                icon = R.drawable.ic_cards,
+                count = "Más de 200 juegos",
+                backgroundImage = R.drawable.game_roulette
             ),
             Game(
                 id = "blackjack",
                 name = "BlackJack",
                 icon = R.drawable.ic_cards,
-                count = "Más de 200 juegos"
+                count = "Más de 200 juegos",
+                backgroundImage = R.drawable.game_blackjack
             ),
             Game(
                 id = "poker",
                 name = "Poker",
                 icon = R.drawable.ic_cards,
-                count = "Más de 200 juegos"
+                count = "Más de 200 juegos",
+                backgroundImage = R.drawable.game_poker
             )
         )
     }
@@ -188,6 +193,7 @@ fun LobbyScreen(
                         subtitle = "100% hasta \$500 en tu primer depósito.",
                         badgeText = "EXCLUSIVO",
                         buttonText = "RECLAMAR AHORA",
+                        backgroundImage = R.drawable.game_casino,
                         onButtonClick = {
                             // TODO: Navegar a pantalla de deposito
                         }
@@ -244,6 +250,7 @@ fun LobbyScreen(
                                 gameIcon = featuredGames[0].icon,
                                 gameName = featuredGames[0].name,
                                 gameCount = featuredGames[0].count,
+                                backgroundImage = featuredGames[0].backgroundImage,
                                 onPlayClick = {
                                     // TODO: Navegar a juego de slots
                                 },
@@ -254,6 +261,7 @@ fun LobbyScreen(
                                 gameIcon = featuredGames[1].icon,
                                 gameName = featuredGames[1].name,
                                 gameCount = featuredGames[1].count,
+                                backgroundImage = featuredGames[1].backgroundImage,
                                 onPlayClick = {
                                     // TODO: Navegar a juego de roulette
                                 },
@@ -270,6 +278,7 @@ fun LobbyScreen(
                                 gameIcon = featuredGames[2].icon,
                                 gameName = featuredGames[2].name,
                                 gameCount = featuredGames[2].count,
+                                backgroundImage = featuredGames[2].backgroundImage,
                                 onPlayClick = {
                                     // TODO: Navegar a juego de blackjack
                                 },
@@ -280,6 +289,7 @@ fun LobbyScreen(
                                 gameIcon = featuredGames[3].icon,
                                 gameName = featuredGames[3].name,
                                 gameCount = featuredGames[3].count,
+                                backgroundImage = featuredGames[3].backgroundImage,
                                 onPlayClick = {
                                     // TODO: Navegar a juego de poker
                                 },
