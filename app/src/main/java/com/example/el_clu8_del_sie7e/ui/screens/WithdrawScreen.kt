@@ -47,6 +47,7 @@ import com.example.el_clu8_del_sie7e.ui.components.AppHeader
 import com.example.el_clu8_del_sie7e.ui.components.RedButton
 import com.example.el_clu8_del_sie7e.ui.components.WithdrawalMethodCard
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
+import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.ui.theme.GradientCenter
 import com.example.el_clu8_del_sie7e.ui.theme.GradientEdge
@@ -106,15 +107,7 @@ fun WithdrawScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        GradientCenter,  // Rojo claro en el centro
-                        GradientEdge     // Rojo oscuro en los bordes
-                    ),
-                    radius = 900f
-                )
-            )
+            .background(DarkBackground)
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
