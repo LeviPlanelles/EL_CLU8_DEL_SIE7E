@@ -8,6 +8,7 @@ import com.example.el_clu8_del_sie7e.ui.screens.DepositScreen
 import com.example.el_clu8_del_sie7e.ui.screens.GameSearchScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LobbyScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LoginScreen
+import com.example.el_clu8_del_sie7e.ui.screens.ProfileScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SplashScreen
 import com.example.el_clu8_del_sie7e.ui.screens.WalletScreen
 
@@ -181,6 +182,21 @@ fun NavGraph() {
          */
         composable(route = Routes.WALLET_SCREEN) {
             WalletScreen(navController = navController)
+        }
+
+        // ==================================================================================
+        // PANTALLAS DE USUARIO
+        // ==================================================================================
+
+        /**
+         * Pantalla de Perfil
+         * - Muestra información del usuario (foto, nombre, nivel)
+         * - Estadísticas: Saldo Actual y Puntos VIP
+         * - Opciones: Datos Personales, Seguridad, Límites de Juego
+         * - Botón de cerrar sesión
+         */
+        composable(route = Routes.PROFILE_SCREEN) {
+            ProfileScreen(navController = navController)
         }
     }
 }

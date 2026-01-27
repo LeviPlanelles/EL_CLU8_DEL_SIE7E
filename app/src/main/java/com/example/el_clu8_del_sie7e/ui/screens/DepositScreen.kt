@@ -96,7 +96,8 @@ fun DepositScreen(
     // UI DE LA PANTALLA
     // ===================================================================
     Box(
-        modifier = Modifier.fillMaxSize().background(DarkBackground)
+        modifier = Modifier.fillMaxSize()
+            .background(DarkBackground)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             AppHeader(balance = "$5,000.00", navController = navController)

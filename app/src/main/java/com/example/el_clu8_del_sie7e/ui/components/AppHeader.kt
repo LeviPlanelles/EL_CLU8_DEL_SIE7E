@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -45,8 +46,9 @@ fun AppHeader(
     modifier: Modifier = Modifier,
     navController: NavController? = null
 ) {
-    Column(modifier = modifier.background(Color.Black)) {
-
+    Column(modifier = modifier.background(Color.Transparent)
+        .height(75.dp)) {
+        Spacer(modifier = Modifier.weight(1f))
         Row(
             modifier = Modifier
                 .fillMaxWidth()

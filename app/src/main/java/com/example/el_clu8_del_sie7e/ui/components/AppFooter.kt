@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,11 +56,18 @@ fun AppFooter(
     onItemSelected: (String) -> Unit,
     navController: NavController? = null
 ) {
+    // -------------------------
+    // LINEA DIVISORIA
+    // -------------------------
+    HorizontalDivider(
+        color = AccentGold.copy(alpha = 0.4f),
+        thickness = 2.dp
+    )
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(79.dp)
-            .background(Color(0xFF2B2B2B)),
+            .background(Color.Transparent),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.Bottom
     ) {
@@ -108,7 +116,10 @@ fun AppFooter(
             selected = selectedItem == "Perfil",
             onClick = {
                 onItemSelected("Perfil")
-                // TODO: Navegar a pantalla de Perfil cuando esté implementada
+                // Navegar a la pantalla de Perfil
+                navController?.navigate(Routes.PROFILE_SCREEN) {
+                    launchSingleTop = true
+                }
             }
         )
     }
