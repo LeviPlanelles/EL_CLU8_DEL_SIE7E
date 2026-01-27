@@ -48,6 +48,7 @@ import com.example.el_clu8_del_sie7e.ui.components.ProfileHeader
 import com.example.el_clu8_del_sie7e.ui.components.ProfileMenuItem
 import com.example.el_clu8_del_sie7e.ui.components.ProfileStatsCard
 import com.example.el_clu8_del_sie7e.ui.components.RedButton
+import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
@@ -122,11 +123,13 @@ fun ProfileScreen(
                 Text(text = "MI PERFIL", color = AccentGold, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Icono de ayuda (placeholder - el usuario puede cambiar esto)
-                IconButton(onClick = { /* TODO: Abrir ayuda */ }) {
+                // Icono de ayuda - Navega a SupportScreen
+                IconButton(onClick = { 
+                    navController.navigate(Routes.SUPPORT_SCREEN)
+                }) {
                     Icon(
-                        painter = painterResource(id = R.drawable.question), // Placeholder
-                        contentDescription = "Ayuda",
+                        painter = painterResource(id = R.drawable.question),
+                        contentDescription = "Ayuda y Soporte",
                         tint = Color.Gray,
                         modifier = Modifier.padding(4.dp)
                             .size(24.dp)

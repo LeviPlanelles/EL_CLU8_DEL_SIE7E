@@ -10,6 +10,7 @@ import com.example.el_clu8_del_sie7e.ui.screens.LobbyScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LoginScreen
 import com.example.el_clu8_del_sie7e.ui.screens.ProfileScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SplashScreen
+import com.example.el_clu8_del_sie7e.ui.screens.SupportScreen
 import com.example.el_clu8_del_sie7e.ui.screens.WalletScreen
 
 /**
@@ -197,6 +198,21 @@ fun NavGraph() {
          */
         composable(route = Routes.PROFILE_SCREEN) {
             ProfileScreen(navController = navController)
+        }
+
+        // ==================================================================================
+        // PANTALLAS DE CONFIGURACION Y AYUDA
+        // ==================================================================================
+
+        /**
+         * Pantalla de Soporte y Ayuda
+         * - Canales de atención: Chat en Vivo y Tickets
+         * - FAQs (Preguntas Frecuentes) expandibles
+         * - Información de contacto telefónico
+         * - Accesible desde el icono de ayuda en ProfileScreen
+         */
+        composable(route = Routes.SUPPORT_SCREEN) {
+            SupportScreen(navController = navController)
         }
     }
 }
