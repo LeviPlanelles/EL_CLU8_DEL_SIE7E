@@ -11,6 +11,7 @@ import com.example.el_clu8_del_sie7e.ui.screens.LoginScreen
 import com.example.el_clu8_del_sie7e.ui.screens.ProfileScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SplashScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SupportScreen
+import com.example.el_clu8_del_sie7e.ui.screens.TransactionHistoryScreen
 import com.example.el_clu8_del_sie7e.ui.screens.WalletScreen
 import com.example.el_clu8_del_sie7e.ui.screens.WithdrawScreen
 
@@ -195,6 +196,17 @@ fun NavGraph() {
          */
         composable(route = Routes.WALLET_SCREEN) {
             WalletScreen(navController = navController)
+        }
+
+        /**
+         * Pantalla de Historial de Transacciones
+         * - Muestra todas las transacciones del usuario
+         * - Filtros: Todos, Depósitos, Retirados, Ganados
+         * - Transacciones agrupadas por fecha (HOY, AYER, etc.)
+         * - Indicadores de estado: EXITOSO, COMPLETADO, PENDIENTE, CANCELADA
+         */
+        composable(route = Routes.TRANSACTION_HISTORY_SCREEN) {
+            TransactionHistoryScreen(navController = navController)
         }
 
         // ==================================================================================
