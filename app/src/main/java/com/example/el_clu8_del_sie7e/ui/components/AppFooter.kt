@@ -44,7 +44,7 @@ import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
  * -----------
  * - Inicio: Navega al Lobby (pantalla principal)
  * - Mesas: Navega al Buscador de Juegos
- * - Cartera: Navega a la pantalla de Depósito
+ * - Cartera: Navega a la pantalla de Cartera (Wallet)
  * - Perfil: (Pendiente de implementar)
  *
  * =====================================================================================
@@ -95,8 +95,8 @@ fun AppFooter(
             selected = selectedItem == "Cartera",
             onClick = {
                 onItemSelected("Cartera")
-                // Navegar a la pantalla de Depósito
-                navController?.navigate(Routes.DEPOSIT_SCREEN) {
+                // Navegar a la pantalla de Cartera (Wallet)
+                navController?.navigate(Routes.WALLET_SCREEN) {
                     launchSingleTop = true
                 }
             }

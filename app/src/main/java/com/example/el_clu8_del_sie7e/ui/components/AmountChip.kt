@@ -11,7 +11,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -23,51 +25,30 @@ import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
  * =====================================================================================
  * AMOUNTCHIP.KT - COMPONENTE DE CHIP DE MONTO
  * =====================================================================================
- *
- * Este componente muestra un chip seleccionable para montos predefinidos.
- * Usado en la pantalla de depósito para seleccionar cantidades rápidas.
- *
- * DISEÑO:
- * -------
- * - Seleccionado: Fondo dorado con texto oscuro
- * - No seleccionado: Fondo transparente con borde dorado
- *
- * PARÁMETROS:
- * -----------
- * @param amount Monto a mostrar (ej: "+$50", "+$100")
- * @param selected Estado de selección del chip
- * @param onClick Acción al presionar el chip
- * @param modifier Modificador opcional
- *
- * =====================================================================================
  */
 @Composable
 fun AmountChip(
     amount: String,
     selected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectedBrush: Brush? = null, // Permite personalizar el fondo cuando está seleccionado
+    selectedTextColor: Color = Color.Black // Permite personalizar el color del texto cuando está seleccionado
 ) {
     Box(
         modifier = modifier
-            .then(
-                if (selected) {
-                    Modifier.background(
-                        color = AccentGold,
-                        shape = RoundedCornerShape(20.dp)
-                    )
+            .background(
+                brush = if (selected) {
+                    selectedBrush ?: SolidColor(AccentGold)
                 } else {
-                    Modifier
-                        .background(
-                            color = Color.Transparent,
-                            shape = RoundedCornerShape(20.dp)
-                        )
-                        .border(
-                            width = 1.5.dp,
-                            color = Color(0xFF777150),
-                            shape = RoundedCornerShape(20.dp)
-                        )
-                }
+                    SolidColor(Color.Transparent)
+                },
+                shape = RoundedCornerShape(20.dp)
+            )
+            .border(
+                width = 1.5.dp,
+                color = if (selected) AccentGold else Color(0xFF777150),
+                shape = RoundedCornerShape(20.dp)
             )
             .clickable(onClick = onClick)
             .padding(horizontal = 20.dp, vertical = 12.dp),
@@ -75,28 +56,25 @@ fun AmountChip(
     ) {
         Text(
             text = amount,
-            color = if (selected) Color.Black else AccentGold,
+            color = if (selected) selectedTextColor else AccentGold,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )
     }
 }
 
-// ======================================================================================
-// PREVIEW - VISTA PREVIA EN ANDROID STUDIO
-// ======================================================================================
 @Preview(showBackground = true, backgroundColor = 0xFF1E1E1E)
 @Composable
 fun AmountChipPreview() {
     EL_CLU8_DEL_SIE7ETheme {
         Row(modifier = Modifier.padding(16.dp)) {
             AmountChip(
-                amount = "+\$50",
+                amount = "+$50",
                 selected = false,
                 onClick = {}
             )
             AmountChip(
-                amount = "+\$500",
+                amount = "+$500",
                 selected = true,
                 onClick = {},
                 modifier = Modifier.padding(start = 8.dp)
