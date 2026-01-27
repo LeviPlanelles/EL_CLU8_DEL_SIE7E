@@ -22,9 +22,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +40,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -56,11 +63,6 @@ import com.example.el_clu8_del_sie7e.viewmodel.TransactionHistoryViewModel
 import com.example.el_clu8_del_sie7e.viewmodel.TransactionStatus
 import com.example.el_clu8_del_sie7e.viewmodel.TransactionType
 
-/**
- * =====================================================================================
- * TRANSACTIONHISTORYSCREEN.KT - PANTALLA DE HISTORIAL DE TRANSACCIONES
- * =====================================================================================
- */
 @Composable
 fun TransactionHistoryScreen(
     navController: NavController,
@@ -84,16 +86,15 @@ fun TransactionHistoryScreen(
                 navController = navController
             )
 
-            // CONTENIDO PRINCIPAL
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
-                    .padding(vertical = 16.dp), // Solo padding vertical para permitir carrusel full-width
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(vertical = 16.dp),
+                verticalArrangement = Arrangement.Top // Eliminamos spacedBy para control manual
             ) {
-                // SECCIÓN 1: TÍTULO (con padding horizontal manual)
+                // SECCIÓN 1: TÍTULO
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -117,17 +118,19 @@ fun TransactionHistoryScreen(
                     )
                 }
 
-                // SECCIÓN 2: FILTROS (CARRUSEL con fondo diferente)
+                Spacer(modifier = Modifier.height(16.dp)) // Espacio entre título y filtros
+
+                // SECCIÓN 2: FILTROS (CARRUSEL)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(DarkBackground) // Fondo diferente para el carrusel
+                        .background(DarkBackground)
                         .horizontalScroll(rememberScrollState())
                         .padding(vertical = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Spacer(modifier = Modifier.width(21.dp)) // Espaciado inicial
+                    Spacer(modifier = Modifier.width(21.dp))
                     FilterChip(
                         text = "Todos",
                         icon = null,
@@ -141,10 +144,10 @@ fun TransactionHistoryScreen(
                         onClick = { viewModel.setFilter("Depósitos") }
                     )
                     FilterChip(
-                        text = "Retirados",
+                        text = "Retiradas",
                         icon = Icons.Filled.AccountBalance,
-                        isSelected = selectedFilter == "Retirados",
-                        onClick = { viewModel.setFilter("Retirados") }
+                        isSelected = selectedFilter == "Retiradas",
+                        onClick = { viewModel.setFilter("Retiradas") }
                     )
                     FilterChip(
                         text = "Ganados",
@@ -152,32 +155,42 @@ fun TransactionHistoryScreen(
                         isSelected = selectedFilter == "Ganados",
                         onClick = { viewModel.setFilter("Ganados") }
                     )
-                    Spacer(modifier = Modifier.width(21.dp)) // Espaciado final
+                    FilterChip(
+                        text = "Pérdidas",
+                        icon = Icons.Filled.Casino,
+                        isSelected = selectedFilter == "Pérdidas",
+                        onClick = { viewModel.setFilter("Pérdidas") }
+                    )
+                    Spacer(modifier = Modifier.width(21.dp))
                 }
 
-                // SECCIÓN 3: TRANSACCIONES (con padding horizontal manual)
+                // SECCIÓN 3: TRANSACCIONES
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 21.dp)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     val groupedTransactions = transactions.groupBy { it.date }
 
                     groupedTransactions.forEach { (date, transactionsOfDay) ->
-                        Text(
-                            text = date,
-                            color = Color.White.copy(alpha = 0.5f),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
+                        // Título de fecha
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 21.dp, end = 21.dp, top = 18.dp, bottom = 12.dp)
+                        ) {
+                            Text(
+                                text = date.uppercase(),
+                                color = Color.White.copy(alpha = 0.4f),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            )
+                        }
 
                         transactionsOfDay.forEach { transaction ->
                             TransactionItem(
                                 transaction = transaction,
                                 viewModel = viewModel
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
                 }
@@ -194,9 +207,6 @@ fun TransactionHistoryScreen(
     }
 }
 
-/**
- * FILTERCHIP - COMPONENTE DE FILTRO (Con borde de 10dp)
- */
 @Composable
 private fun FilterChip(
     text: String,
@@ -209,56 +219,49 @@ private fun FilterChip(
         modifier = modifier
             .background(
                 color = if (isSelected) PrimaryRed else Color.Transparent,
-                shape = RoundedCornerShape(10.dp) // Redondeado de 10dp
+                shape = RoundedCornerShape(10.dp)
             )
             .border(
                 width = 1.dp,
-                color = AccentGold,
-                shape = RoundedCornerShape(10.dp) // Redondeado de 10dp
+                color = AccentGold.copy(alpha = 0.6f),
+                shape = RoundedCornerShape(10.dp)
             )
             .clickable { onClick() }
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .padding(horizontal = 14.dp, vertical = 8.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             if (icon != null) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = AccentGold,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
+                Icon(icon, null, tint = AccentGold, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(6.dp))
             }
-            Text(
-                text = text,
-                color = Color.White,
-                fontSize = 12.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-            )
+            Text(text, color = Color.White, fontSize = 13.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
         }
     }
 }
 
-/**
- * TRANSACTIONITEM - COMPONENTE DE ITEM DE TRANSACCIÓN
- */
 @Composable
 private fun TransactionItem(
     transaction: Transaction,
     viewModel: TransactionHistoryViewModel,
     modifier: Modifier = Modifier
 ) {
+    val isNegative = transaction.type == TransactionType.WITHDRAWAL || transaction.type == TransactionType.LOSS
+    val itemBackground = if (isNegative) Color(0xFF2A0C0D) else Color(0xFF1E1E1E)
+    val separatorColor = Color.White.copy(alpha = 0.12f)
+
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(
-                color = DarkBackground,
-                shape = RoundedCornerShape(12.dp)
-            )
-            .padding(12.dp)
+            .background(itemBackground)
+            .drawBehind {
+                drawLine(
+                    color = separatorColor,
+                    start = Offset(0f, size.height),
+                    end = Offset(size.width, size.height),
+                    strokeWidth = 1.dp.toPx()
+                )
+            }
+            .padding(horizontal = 21.dp, vertical = 16.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -266,83 +269,82 @@ private fun TransactionItem(
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        color = when (transaction.type) {
-                            TransactionType.DEPOSIT -> AccentGold.copy(alpha = 0.2f)
-                            TransactionType.WITHDRAWAL -> Color(0xFF4B0000).copy(alpha = 0.3f)
-                            TransactionType.WIN -> AccentGold.copy(alpha = 0.2f)
-                            TransactionType.LOSS -> Color.White.copy(alpha = 0.1f)
-                        },
-                        shape = CircleShape
-                    ),
+                    .size(44.dp)
+                    .background(Color.White.copy(alpha = 0.05f), CircleShape)
+                    .border(1.dp, Color.White.copy(alpha = 0.1f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = when (transaction.type) {
-                        TransactionType.DEPOSIT -> Icons.Filled.CreditCard
-                        TransactionType.WITHDRAWAL -> Icons.Filled.AccountBalance
+                        TransactionType.DEPOSIT -> Icons.Filled.ArrowDownward
+                        TransactionType.WITHDRAWAL -> Icons.Filled.ArrowUpward
                         TransactionType.WIN -> Icons.Filled.EmojiEvents
                         TransactionType.LOSS -> Icons.Filled.Casino
                     },
                     contentDescription = null,
                     tint = when (transaction.type) {
-                        TransactionType.DEPOSIT -> AccentGold
-                        TransactionType.WITHDRAWAL -> Color.White
-                        TransactionType.WIN -> AccentGold
-                        TransactionType.LOSS -> Color.White
+                        TransactionType.DEPOSIT, TransactionType.WIN -> AccentGold
+                        else -> Color.White.copy(alpha = 0.6f)
                     },
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = transaction.description,
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "${transaction.time} · ID: ${transaction.id}",
-                    color = Color.White.copy(alpha = 0.5f),
-                    fontSize = 11.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
-                Text(
-                    text = viewModel.formatAmount(transaction.amount),
-                    color = viewModel.getAmountColor(transaction.amount),
+                    color = if (transaction.type == TransactionType.WIN) AccentGold else Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = when (transaction.status) {
-                        TransactionStatus.SUCCESS -> "EXITOSO"
-                        TransactionStatus.COMPLETED -> "COMPLETADO"
-                        TransactionStatus.PENDING -> "PENDIENTE"
-                        TransactionStatus.CANCELLED -> "CANCELADA"
-                    },
-                    color = when (transaction.status) {
-                        TransactionStatus.SUCCESS -> Color(0xFF00C853)
-                        TransactionStatus.COMPLETED -> Color.White.copy(alpha = 0.5f)
-                        TransactionStatus.PENDING -> Color(0xFFFFB300)
-                        TransactionStatus.CANCELLED -> Color(0xFFFF5252)
-                    },
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Medium
+                    text = "${transaction.time} · ID: ${transaction.id}",
+                    color = Color.White.copy(alpha = 0.4f),
+                    fontSize = 13.sp
                 )
+            }
+
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = viewModel.formatAmount(transaction.amount),
+                    color = viewModel.getAmountColor(transaction.amount),
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val statusColor = when (transaction.status) {
+                        TransactionStatus.SUCCESS -> Color(0xFF00C853)
+                        TransactionStatus.COMPLETED -> Color.White.copy(alpha = 0.4f)
+                        TransactionStatus.PENDING -> Color(0xFFFFA000)
+                        TransactionStatus.CANCELLED -> Color(0xFFFF5252)
+                    }
+                    
+                    Icon(
+                        imageVector = when(transaction.status) {
+                            TransactionStatus.SUCCESS -> Icons.Filled.CheckCircle
+                            TransactionStatus.PENDING -> Icons.Filled.Schedule
+                            TransactionStatus.CANCELLED -> Icons.Filled.Close
+                            else -> Icons.Filled.CheckCircle
+                        },
+                        contentDescription = null,
+                        tint = statusColor,
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = when (transaction.status) {
+                            TransactionStatus.SUCCESS -> "EXITOSO"
+                            TransactionStatus.COMPLETED -> "COMPLETADO"
+                            TransactionStatus.PENDING -> "PENDIENTE"
+                            TransactionStatus.CANCELLED -> "CANCELADA"
+                        },
+                        color = statusColor,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
