@@ -12,6 +12,7 @@ import com.example.el_clu8_del_sie7e.ui.screens.ProfileScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SplashScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SupportScreen
 import com.example.el_clu8_del_sie7e.ui.screens.WalletScreen
+import com.example.el_clu8_del_sie7e.ui.screens.WithdrawScreen
 
 /**
  * =====================================================================================
@@ -173,6 +174,17 @@ fun NavGraph() {
          */
         composable(route = Routes.DEPOSIT_SCREEN) {
             DepositScreen(navController = navController)
+        }
+
+        /**
+         * Pantalla de Retiro de Fondos
+         * - Permite retirar ganancias de la cuenta
+         * - Selección de método de retiro (Transferencia, Visa/Mastercard, Cripto)
+         * - Muestra saldo disponible y límites
+         * - Sin comisiones
+         */
+        composable(route = Routes.WITHDRAW_SCREEN) {
+            WithdrawScreen(navController = navController)
         }
 
         /**
