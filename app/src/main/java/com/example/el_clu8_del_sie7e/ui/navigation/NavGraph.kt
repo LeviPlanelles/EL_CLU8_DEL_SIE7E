@@ -9,6 +9,7 @@ import com.example.el_clu8_del_sie7e.ui.screens.GameSearchScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LobbyScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LoginScreen
 import com.example.el_clu8_del_sie7e.ui.screens.ProfileScreen
+import com.example.el_clu8_del_sie7e.ui.screens.SlotsScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SplashScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SupportScreen
 import com.example.el_clu8_del_sie7e.ui.screens.TransactionHistoryScreen
@@ -161,6 +162,16 @@ fun NavGraph() {
          */
         composable(route = Routes.GAME_SEARCH_SCREEN) {
             GameSearchScreen(navController = navController)
+        }
+
+        /**
+         * Pantalla de Galería de Slots
+         * - Muestra todos los juegos de slots disponibles
+         * - Grid de 2 columnas con scroll vertical
+         * - 6 slots: Neon Fortune, Golden Empire, Inferno Fortunes, Zeus, Bonus Slot 1, Bonus Slot 2
+         */
+        composable(route = Routes.SLOTS_GAME_SCREEN) {
+            SlotsScreen(navController = navController)
         }
 
         // ==================================================================================
