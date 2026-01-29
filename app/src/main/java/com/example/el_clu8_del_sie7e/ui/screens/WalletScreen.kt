@@ -85,7 +85,7 @@ import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 fun WalletScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
-    balanceViewModel: BalanceViewModel = viewModel()
+    balanceViewModel: BalanceViewModel  // Se pasa desde NavGraph (compartido)
 ) {
     // ===================================================================
     // ESTADO DE LA PANTALLA
@@ -280,6 +280,9 @@ fun WalletScreen(
 @Composable
 fun WalletScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
-        WalletScreen(navController = rememberNavController())
+        WalletScreen(
+            navController = rememberNavController(),
+            balanceViewModel = BalanceViewModel()
+        )
     }
 }

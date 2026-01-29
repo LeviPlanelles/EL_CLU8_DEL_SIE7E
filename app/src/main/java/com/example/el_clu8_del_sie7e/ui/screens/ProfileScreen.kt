@@ -91,7 +91,7 @@ import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    balanceViewModel: BalanceViewModel = viewModel()
+    balanceViewModel: BalanceViewModel  // Se pasa desde NavGraph (compartido)
 ) {
     // Estado para el item seleccionado en el footer
     var selectedFooterItem by remember { mutableStateOf("Perfil") }
@@ -260,6 +260,9 @@ fun ProfileScreen(
 @Composable
 fun ProfileScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
-        ProfileScreen(navController = rememberNavController())
+        ProfileScreen(
+            navController = rememberNavController(),
+            balanceViewModel = BalanceViewModel()
+        )
     }
 }

@@ -76,7 +76,7 @@ enum class PaymentMethod {
 @Composable
 fun DepositScreen(
     navController: NavController,
-    balanceViewModel: BalanceViewModel = viewModel()
+    balanceViewModel: BalanceViewModel  // Se pasa desde NavGraph (compartido)
 ) {
     // ===================================================================
     // ESTADO DE LA PANTALLA
@@ -498,6 +498,9 @@ private fun formatExpiration(input: String): String {
 @Composable
 fun DepositScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
-        DepositScreen(navController = rememberNavController())
+        DepositScreen(
+            navController = rememberNavController(),
+            balanceViewModel = BalanceViewModel()
+        )
     }
 }

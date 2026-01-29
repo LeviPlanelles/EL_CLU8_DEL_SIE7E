@@ -93,7 +93,7 @@ fun TransactionHistoryScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
     viewModel: TransactionHistoryViewModel = viewModel(),
-    balanceViewModel: BalanceViewModel = viewModel()
+    balanceViewModel: BalanceViewModel  // Se pasa desde NavGraph (compartido)
 ) {
     // ===================================================================
     // ESTADO DE LA PANTALLA
@@ -265,6 +265,9 @@ fun TransactionHistoryScreen(
 @Composable
 fun TransactionHistoryScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
-        TransactionHistoryScreen(navController = rememberNavController())
+        TransactionHistoryScreen(
+            navController = rememberNavController(),
+            balanceViewModel = BalanceViewModel()
+        )
     }
 }

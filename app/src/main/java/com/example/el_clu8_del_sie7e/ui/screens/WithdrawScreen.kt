@@ -94,7 +94,7 @@ import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 @Composable
 fun WithdrawScreen(
     navController: NavController,
-    balanceViewModel: BalanceViewModel = viewModel()
+    balanceViewModel: BalanceViewModel  // Se pasa desde NavGraph (compartido)
 ) {
     // ===================================================================
     // ESTADO DE LA PANTALLA
@@ -463,6 +463,9 @@ fun WithdrawScreen(
 @Composable
 fun WithdrawScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
-        WithdrawScreen(navController = rememberNavController())
+        WithdrawScreen(
+            navController = rememberNavController(),
+            balanceViewModel = BalanceViewModel()
+        )
     }
 }

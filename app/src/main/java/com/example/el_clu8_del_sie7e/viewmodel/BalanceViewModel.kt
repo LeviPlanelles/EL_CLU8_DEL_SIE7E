@@ -28,13 +28,14 @@ import kotlin.random.Random
  * USO:
  * ----
  * Este ViewModel debe ser compartido entre todas las pantallas que necesiten
- * acceder o modificar el balance del usuario.
+ * acceder o modificar el balance del usuario. Se crea UNA SOLA instancia
+ * en NavGraph.kt y se pasa a todas las pantallas.
  *
  * IMPORTANTE:
  * -----------
- * - El balance inicial es $5,000.00
+ * - El balance inicial es $0.00 (el usuario debe depositar para tener fondos)
  * - Todas las transacciones se registran automáticamente
- * - Los retiros verifican que haya fondos suficientes
+ * - Los retiros verifican que haya fondos suficientes (no se permiten negativos)
  * - Los números de tarjeta son aleatorios pero con formato válido
  *
  * =====================================================================================
@@ -47,14 +48,14 @@ class BalanceViewModel : ViewModel() {
     
     /**
      * Balance actual del usuario
-     * Valor inicial: $5,000.00
+     * Valor inicial: $0.00 (el usuario empieza sin fondos)
      */
-    private val _balance = MutableStateFlow(5000.00)
+    private val _balance = MutableStateFlow(0.00)
     val balance: StateFlow<Double> = _balance.asStateFlow()
 
     /**
      * Balance formateado para mostrar en UI
-     * Ejemplo: "$5,000.00"
+     * Ejemplo: "$0.00"
      */
     val formattedBalance: StateFlow<String> = MutableStateFlow("").apply {
         _balance.value.let { value = formatBalance(it) }
@@ -66,6 +67,7 @@ class BalanceViewModel : ViewModel() {
     
     /**
      * Lista mutable de todas las transacciones realizadas
+     * Comienza vacía - se llena conforme el usuario hace operaciones
      */
     private val _transactionHistory = MutableStateFlow<List<Transaction>>(emptyList())
     val transactionHistory: StateFlow<List<Transaction>> = _transactionHistory.asStateFlow()
@@ -74,45 +76,7 @@ class BalanceViewModel : ViewModel() {
     // INICIALIZACIÓN
     // ===================================================================
     
-    init {
-        // Cargar transacciones de ejemplo iniciales
-        loadInitialTransactions()
-    }
-
-    /**
-     * Carga transacciones de ejemplo para demostración
-     */
-    private fun loadInitialTransactions() {
-        _transactionHistory.value = listOf(
-            Transaction(
-                id = "#98281",
-                type = TransactionType.DEPOSIT,
-                description = "Depósito Bitcoin",
-                amount = 500.00,
-                status = TransactionStatus.SUCCESS,
-                time = "14:30",
-                date = "HOY"
-            ),
-            Transaction(
-                id = "#99123",
-                type = TransactionType.LOSS,
-                description = "Blackjack VIP",
-                amount = -50.00,
-                status = TransactionStatus.COMPLETED,
-                time = "14:15",
-                date = "HOY"
-            ),
-            Transaction(
-                id = "#9891",
-                type = TransactionType.WIN,
-                description = "Ruleta Europea",
-                amount = 1200.00,
-                status = TransactionStatus.SUCCESS,
-                time = "14:10",
-                date = "HOY"
-            )
-        )
-    }
+    // No se cargan transacciones iniciales - el usuario empieza de cero
 
     // ===================================================================
     // OPERACIONES DE BALANCE
@@ -292,11 +256,10 @@ class BalanceViewModel : ViewModel() {
     }
 
     /**
-     * Resetea el balance a su valor inicial (útil para testing)
+     * Resetea el balance a cero y limpia el historial (útil para testing o logout)
      */
     fun resetBalance() {
-        _balance.value = 5000.00
+        _balance.value = 0.00
         _transactionHistory.value = emptyList()
-        loadInitialTransactions()
     }
 }

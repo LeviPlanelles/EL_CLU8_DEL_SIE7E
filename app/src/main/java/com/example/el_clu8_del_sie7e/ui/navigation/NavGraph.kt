@@ -1,6 +1,7 @@
 package com.example.el_clu8_del_sie7e.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -14,6 +15,7 @@ import com.example.el_clu8_del_sie7e.ui.screens.SupportScreen
 import com.example.el_clu8_del_sie7e.ui.screens.TransactionHistoryScreen
 import com.example.el_clu8_del_sie7e.ui.screens.WalletScreen
 import com.example.el_clu8_del_sie7e.ui.screens.WithdrawScreen
+import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
 /**
  * =====================================================================================
@@ -94,6 +96,14 @@ fun NavGraph() {
     // Creamos el controlador de navegacion
     // rememberNavController() asegura que sobreviva a recomposiciones
     val navController = rememberNavController()
+    
+    // ===================================================================
+    // VIEWMODEL COMPARTIDO DE BALANCE
+    // ===================================================================
+    // Creamos UNA SOLA instancia del BalanceViewModel a nivel de NavGraph
+    // para que sea compartida por TODAS las pantallas de la aplicación.
+    // Esto asegura que el balance se mantenga sincronizado en toda la app.
+    val balanceViewModel: BalanceViewModel = viewModel()
 
     // NavHost es el contenedor de todas las pantallas
     NavHost(
@@ -174,7 +184,10 @@ fun NavGraph() {
          * - Montos rápidos y formulario de tarjeta
          */
         composable(route = Routes.DEPOSIT_SCREEN) {
-            DepositScreen(navController = navController)
+            DepositScreen(
+                navController = navController,
+                balanceViewModel = balanceViewModel
+            )
         }
 
         /**
@@ -185,7 +198,10 @@ fun NavGraph() {
          * - Sin comisiones
          */
         composable(route = Routes.WITHDRAW_SCREEN) {
-            WithdrawScreen(navController = navController)
+            WithdrawScreen(
+                navController = navController,
+                balanceViewModel = balanceViewModel
+            )
         }
 
         /**
@@ -195,7 +211,10 @@ fun NavGraph() {
          * - Banner de seguridad premium
          */
         composable(route = Routes.WALLET_SCREEN) {
-            WalletScreen(navController = navController)
+            WalletScreen(
+                navController = navController,
+                balanceViewModel = balanceViewModel
+            )
         }
 
         /**
@@ -206,7 +225,10 @@ fun NavGraph() {
          * - Indicadores de estado: EXITOSO, COMPLETADO, PENDIENTE, CANCELADA
          */
         composable(route = Routes.TRANSACTION_HISTORY_SCREEN) {
-            TransactionHistoryScreen(navController = navController)
+            TransactionHistoryScreen(
+                navController = navController,
+                balanceViewModel = balanceViewModel
+            )
         }
 
         // ==================================================================================
@@ -221,7 +243,10 @@ fun NavGraph() {
          * - Botón de cerrar sesión
          */
         composable(route = Routes.PROFILE_SCREEN) {
-            ProfileScreen(navController = navController)
+            ProfileScreen(
+                navController = navController,
+                balanceViewModel = balanceViewModel
+            )
         }
 
         // ==================================================================================
