@@ -29,10 +29,12 @@ import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -58,6 +60,7 @@ import com.example.el_clu8_del_sie7e.ui.theme.ButtonRedStart
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.ui.theme.SurfaceDark
+import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 import java.util.Locale
 
 /**
@@ -72,20 +75,34 @@ enum class PaymentMethod {
 
 @Composable
 fun DepositScreen(
-    navController: NavController
+    navController: NavController,
+    balanceViewModel: BalanceViewModel  // Se pasa desde NavGraph (compartido)
 ) {
     // ===================================================================
     // ESTADO DE LA PANTALLA
     // ===================================================================
     var selectedPaymentMethod by remember { mutableStateOf(PaymentMethod.CARD) }
-    var depositAmount by remember { mutableStateOf("0.00") }
+    var depositAmount by remember { mutableStateOf("") }
     var selectedAmountChip by remember { mutableStateOf("") }
     var cardNumber by remember { mutableStateOf("") }
     var expirationDate by remember { mutableStateOf("") }
     var cvv by remember { mutableStateOf("") }
     var selectedFooterItem by remember { mutableStateOf("Cartera") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showSuccess by remember { mutableStateOf(false) }
+
+    // Obtener balance actual del ViewModel
+    val currentBalance by balanceViewModel.balance.collectAsState()
+    val formattedBalance = balanceViewModel.formatBalance(currentBalance)
 
     val quickAmounts = listOf("+\$50", "+\$100", "+\$500", "+\$1000")
+    
+    // Nombres de métodos para transacciones
+    val methodName = when (selectedPaymentMethod) {
+        PaymentMethod.CARD -> "Tarjeta"
+        PaymentMethod.TRANSFER -> "Transferencia"
+        PaymentMethod.EWALLET -> "E-Wallet"
+    }
 
     // Gradiente rojo del proyecto
     val redGradient = Brush.horizontalGradient(
@@ -100,7 +117,7 @@ fun DepositScreen(
             .background(DarkBackground)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            AppHeader(balance = "$5,000.00", navController = navController)
+            AppHeader(balance = formattedBalance, navController = navController)
 
             Column(
                 modifier = Modifier
@@ -202,7 +219,11 @@ fun DepositScreen(
                                 modifier = Modifier.width(150.dp)
                             )
                         }
-                        Text("MÁXIMO", color = AccentGold, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { depositAmount = "10000.00" })
+                        Text("MÁXIMO", color = AccentGold, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { 
+                            depositAmount = "10000.00"
+                            errorMessage = null
+                            showSuccess = false
+                        })
                     }
                 }
 
@@ -300,9 +321,110 @@ fun DepositScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    // Botón para generar tarjeta aleatoria
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = AccentGold.copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = AccentGold.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable {
+                                // Generar datos aleatorios de tarjeta
+                                cardNumber = balanceViewModel.generateRandomCardNumber()
+                                expirationDate = balanceViewModel.generateRandomExpiry()
+                                cvv = balanceViewModel.generateRandomCVV()
+                                errorMessage = null
+                            }
+                            .padding(12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🎲 GENERAR TARJETA ALEATORIA",
+                            color = AccentGold,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Mostrar mensaje de error si existe
+                    if (errorMessage != null) {
+                        Text(
+                            text = errorMessage!!,
+                            color = Color(0xFFFF5252),
+                            fontSize = 13.sp,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    // Mostrar mensaje de éxito
+                    if (showSuccess) {
+                        Text(
+                            text = "✓ Depósito exitoso. Nuevo balance: ${formattedBalance}",
+                            color = Color(0xFF00C853),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
                     PrimaryButton(
                         text = "DEPOSITAR",
-                        onClick = { /* Procesar */ },
+                        onClick = {
+                            // Resetear mensajes
+                            errorMessage = null
+                            showSuccess = false
+
+                            // Validar que se haya ingresado un monto
+                            val amount = depositAmount.toDoubleOrNull()
+                            if (amount == null || amount <= 0) {
+                                errorMessage = "Por favor ingresa un monto válido"
+                                return@PrimaryButton
+                            }
+
+                            // Validar datos de tarjeta si el método es tarjeta
+                            if (selectedPaymentMethod == PaymentMethod.CARD) {
+                                if (cardNumber.isEmpty() || cardNumber.replace(" ", "").length < 16) {
+                                    errorMessage = "Por favor ingresa un número de tarjeta válido"
+                                    return@PrimaryButton
+                                }
+                                if (expirationDate.isEmpty() || expirationDate.length < 5) {
+                                    errorMessage = "Por favor ingresa una fecha de expiración válida"
+                                    return@PrimaryButton
+                                }
+                                if (cvv.isEmpty() || cvv.length < 3) {
+                                    errorMessage = "Por favor ingresa un CVV válido"
+                                    return@PrimaryButton
+                                }
+                            }
+
+                            // Procesar depósito
+                            val success = balanceViewModel.deposit(
+                                amount = amount,
+                                method = methodName
+                            )
+
+                            if (success) {
+                                showSuccess = true
+                                // Limpiar campos
+                                depositAmount = ""
+                                cardNumber = ""
+                                expirationDate = ""
+                                cvv = ""
+                                selectedAmountChip = ""
+                            } else {
+                                errorMessage = "Error al procesar el depósito. Inténtalo nuevamente."
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         brush = redGradient,
                         textColor = Color.White
@@ -376,6 +498,9 @@ private fun formatExpiration(input: String): String {
 @Composable
 fun DepositScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
-        DepositScreen(navController = rememberNavController())
+        DepositScreen(
+            navController = rememberNavController(),
+            balanceViewModel = BalanceViewModel()
+        )
     }
 }

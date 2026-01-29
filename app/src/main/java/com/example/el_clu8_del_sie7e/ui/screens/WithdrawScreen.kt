@@ -2,6 +2,7 @@ package com.example.el_clu8_del_sie7e.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,10 +26,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -52,6 +55,7 @@ import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.ui.theme.GradientCenter
 import com.example.el_clu8_del_sie7e.ui.theme.GradientEdge
 import com.example.el_clu8_del_sie7e.ui.theme.PrimaryRed
+import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
 /**
  * =====================================================================================
@@ -89,20 +93,37 @@ import com.example.el_clu8_del_sie7e.ui.theme.PrimaryRed
 
 @Composable
 fun WithdrawScreen(
-    navController: NavController
+    navController: NavController,
+    balanceViewModel: BalanceViewModel  // Se pasa desde NavGraph (compartido)
 ) {
+    // ===================================================================
+    // ESTADO DE LA PANTALLA
+    // ===================================================================
+    
     // Estado para el item seleccionado en el footer
     var selectedFooterItem by remember { mutableStateOf("Cartera") }
 
     // Estado para el monto a retirar
-    var withdrawAmount by remember { mutableStateOf("0.00") }
+    var withdrawAmount by remember { mutableStateOf("") }
 
     // Estado para el método seleccionado (0 = Bancaria, 1 = Tarjeta, 2 = Cripto)
     var selectedMethod by remember { mutableStateOf(0) }
 
-    // Saldo disponible para retirar
-    val availableBalance = 5000.00
+    // Estado para mensajes de error
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Estado para mostrar éxito
+    var showSuccess by remember { mutableStateOf(false) }
+
+    // Obtener balance actual del ViewModel
+    val currentBalance by balanceViewModel.balance.collectAsState()
+    val formattedBalance by balanceViewModel.formattedBalance.collectAsState()
+    
+    // Constantes
     val minWithdrawal = 50.00
+    
+    // Nombres de métodos para mostrar en mensajes
+    val methodNames = listOf("Transferencia Bancaria", "Visa/Mastercard", "Criptomonedas")
 
     Box(
         modifier = Modifier
@@ -116,7 +137,7 @@ fun WithdrawScreen(
             // APP HEADER
             // ------------------------------------------------------------------
             AppHeader(
-                balance = "$${"%.2f".format(availableBalance)}",
+                balance = formattedBalance,
                 navController = navController
             )
 
@@ -177,11 +198,36 @@ fun WithdrawScreen(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = "$${"%.2f".format(availableBalance)}",
+                        text = formattedBalance,
                         style = MaterialTheme.typography.displaySmall,
                         color = AccentGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 36.sp
+                    )
+                }
+
+                // Mostrar mensaje de error si existe
+                if (errorMessage != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = errorMessage!!,
+                        color = Color.Red,
+                        fontSize = 13.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                // Mostrar mensaje de éxito
+                if (showSuccess) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "✓ Retiro exitoso",
+                        color = Color(0xFF00C853),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
 
@@ -263,6 +309,13 @@ fun WithdrawScreen(
                                     shape = RoundedCornerShape(6.dp)
                                 )
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
+                                .then(
+                                    Modifier.clickable {
+                                        withdrawAmount = "%.2f".format(currentBalance)
+                                        errorMessage = null
+                                        showSuccess = false
+                                    }
+                                )
                         )
                     }
                 }
@@ -344,10 +397,47 @@ fun WithdrawScreen(
                     text = "RETIRAR FONDOS",
                     icon = null,
                     onClick = {
-                        // TODO: Implementar lógica de retiro
+                        // Resetear mensajes
+                        errorMessage = null
+                        showSuccess = false
+
+                        // Validar que se haya ingresado un monto
+                        val amount = withdrawAmount.toDoubleOrNull()
+                        if (amount == null || amount <= 0) {
+                            errorMessage = "Por favor ingresa un monto válido"
+                            return@RedButton
+                        }
+
                         // Validar monto mínimo
-                        // Validar saldo disponible
-                        // Procesar retiro según método seleccionado
+                        if (amount < minWithdrawal) {
+                            errorMessage = "El monto mínimo es $${String.format("%.2f", minWithdrawal)}"
+                            return@RedButton
+                        }
+
+                        // Validar fondos suficientes
+                        if (!balanceViewModel.hasSufficientFunds(amount)) {
+                            errorMessage = "Fondos insuficientes. Saldo actual: ${formattedBalance}"
+                            return@RedButton
+                        }
+
+                        // Procesar retiro
+                        val success = balanceViewModel.withdraw(
+                            amount = amount,
+                            method = methodNames[selectedMethod]
+                        )
+
+                        if (success) {
+                            showSuccess = true
+                            withdrawAmount = ""
+                            
+                            // Opcionalmente, navegar de vuelta después de 2 segundos
+                            // kotlinx.coroutines.GlobalScope.launch {
+                            //     kotlinx.coroutines.delay(2000)
+                            //     navController.popBackStack()
+                            // }
+                        } else {
+                            errorMessage = "Error al procesar el retiro. Inténtalo nuevamente."
+                        }
                     }
                 )
 
@@ -373,6 +463,9 @@ fun WithdrawScreen(
 @Composable
 fun WithdrawScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
-        WithdrawScreen(navController = rememberNavController())
+        WithdrawScreen(
+            navController = rememberNavController(),
+            balanceViewModel = BalanceViewModel()
+        )
     }
 }

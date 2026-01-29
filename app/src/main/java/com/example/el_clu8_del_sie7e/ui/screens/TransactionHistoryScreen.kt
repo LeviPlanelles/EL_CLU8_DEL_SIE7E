@@ -48,6 +48,7 @@ import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.ui.theme.RegisterBackground
+import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 import com.example.el_clu8_del_sie7e.viewmodel.TransactionHistoryViewModel
 
 /**
@@ -91,14 +92,20 @@ import com.example.el_clu8_del_sie7e.viewmodel.TransactionHistoryViewModel
 fun TransactionHistoryScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
-    viewModel: TransactionHistoryViewModel = viewModel()
+    viewModel: TransactionHistoryViewModel = viewModel(),
+    balanceViewModel: BalanceViewModel  // Se pasa desde NavGraph (compartido)
 ) {
     // ===================================================================
     // ESTADO DE LA PANTALLA
     // ===================================================================
     var selectedFooterItem by remember { mutableStateOf("Cartera") }
     val selectedFilter by viewModel.selectedFilter.collectAsState()
-    val transactions by viewModel.transactions.collectAsState()
+    
+    // Obtener transacciones del BalanceViewModel en lugar del TransactionHistoryViewModel
+    val transactions by balanceViewModel.transactionHistory.collectAsState()
+    
+    // Obtener balance actual
+    val formattedBalance = balanceViewModel.formatBalance(balanceViewModel.balance.value)
 
     // ===================================================================
     // UI DE LA PANTALLA
@@ -115,7 +122,7 @@ fun TransactionHistoryScreen(
             // HEADER CON LOGO Y SALDO
             // ============================================================
             AppHeader(
-                balance = "$5,000.00",
+                balance = formattedBalance,
                 navController = navController
             )
 
@@ -258,6 +265,9 @@ fun TransactionHistoryScreen(
 @Composable
 fun TransactionHistoryScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
-        TransactionHistoryScreen(navController = rememberNavController())
+        TransactionHistoryScreen(
+            navController = rememberNavController(),
+            balanceViewModel = BalanceViewModel()
+        )
     }
 }

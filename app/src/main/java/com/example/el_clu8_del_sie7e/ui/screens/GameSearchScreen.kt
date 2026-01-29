@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +50,7 @@ import com.example.el_clu8_del_sie7e.ui.components.SearchGameCard
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
 /**
  * =====================================================================================
@@ -87,7 +89,8 @@ data class SearchGame(
 
 @Composable
 fun GameSearchScreen(
-    navController: NavController
+    navController: NavController,
+    balanceViewModel: BalanceViewModel  // Se pasa desde NavGraph (compartido)
 ) {
     // ===================================================================
     // ESTADO DE LA PANTALLA
@@ -95,6 +98,9 @@ fun GameSearchScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("Todos") }
     var selectedFooterItem by remember { mutableStateOf("Mesas") }
+    
+    // Obtener balance formateado del ViewModel (se actualiza automáticamente)
+    val formattedBalance by balanceViewModel.formattedBalance.collectAsState()
 
     // Lista de juegos populares (hardcoded para demo)
     val allGames = remember {
@@ -158,7 +164,7 @@ fun GameSearchScreen(
             // HEADER CON SALDO
             // ===================================================================
             AppHeader(
-                balance = "$5,000.00",
+                balance = formattedBalance,
                 navController = navController
             )
 
@@ -355,6 +361,9 @@ fun GameSearchScreen(
 @Composable
 fun GameSearchScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
-        GameSearchScreen(navController = rememberNavController())
+        GameSearchScreen(
+            navController = rememberNavController(),
+            balanceViewModel = BalanceViewModel()
+        )
     }
 }

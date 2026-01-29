@@ -26,10 +26,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -54,6 +56,7 @@ import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.ui.theme.GradientCenter
 import com.example.el_clu8_del_sie7e.ui.theme.GradientEdge
+import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
 /**
  * =====================================================================================
@@ -87,10 +90,14 @@ import com.example.el_clu8_del_sie7e.ui.theme.GradientEdge
 
 @Composable
 fun ProfileScreen(
-    navController: NavController
+    navController: NavController,
+    balanceViewModel: BalanceViewModel  // Se pasa desde NavGraph (compartido)
 ) {
     // Estado para el item seleccionado en el footer
     var selectedFooterItem by remember { mutableStateOf("Perfil") }
+    
+    // Obtener balance actual del ViewModel
+    val formattedBalance = balanceViewModel.formatBalance(balanceViewModel.balance.value)
 
     Box(
         modifier = Modifier
@@ -101,7 +108,7 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             // HEADER GLOBAL
-            AppHeader(balance = "$5,000.00", navController = navController)
+            AppHeader(balance = formattedBalance, navController = navController)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -170,7 +177,7 @@ fun ProfileScreen(
                 ) {
                     ProfileStatsCard(
                         title = "Saldo Actual",
-                        value = "$5,000.00",
+                        value = formattedBalance,
                         modifier = Modifier.weight(1f)
                     )
 
@@ -253,6 +260,9 @@ fun ProfileScreen(
 @Composable
 fun ProfileScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
-        ProfileScreen(navController = rememberNavController())
+        ProfileScreen(
+            navController = rememberNavController(),
+            balanceViewModel = BalanceViewModel()
+        )
     }
 }
