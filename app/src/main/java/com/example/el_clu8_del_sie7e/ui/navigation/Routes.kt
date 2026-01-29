@@ -80,6 +80,9 @@ object Routes {
     /** Juego de Tragaperras/Slots */
     const val SLOTS_GAME_SCREEN = "slots_game_screen"
 
+    /** Juego de Zeus Slot (Tragaperras) */
+    const val ZEUS_SLOT_SCREEN = "zeus_slot_screen"
+
     /** Juego de Ruleta */
     const val ROULETTE_GAME_SCREEN = "roulette_game_screen"
 

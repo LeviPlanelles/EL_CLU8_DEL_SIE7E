@@ -14,6 +14,7 @@ import com.example.el_clu8_del_sie7e.ui.screens.SupportScreen
 import com.example.el_clu8_del_sie7e.ui.screens.TransactionHistoryScreen
 import com.example.el_clu8_del_sie7e.ui.screens.WalletScreen
 import com.example.el_clu8_del_sie7e.ui.screens.WithdrawScreen
+import com.example.el_clu8_del_sie7e.ui.screens.ZeusSlotScreen
 
 /**
  * =====================================================================================
@@ -161,6 +162,18 @@ fun NavGraph() {
          */
         composable(route = Routes.GAME_SEARCH_SCREEN) {
             GameSearchScreen(navController = navController)
+        }
+
+        /**
+         * Pantalla de Zeus Slot (Tragaperras)
+         * - Juego de tragaperras de 5 rodillos
+         * - Sistema de apuestas con botones rápidos
+         * - Animación de giro realista
+         * - Cálculo automático de premios
+         * - Auto-roll para giros automáticos
+         */
+        composable(route = Routes.ZEUS_SLOT_SCREEN) {
+            ZeusSlotScreen(navController = navController)
         }
 
         // ==================================================================================

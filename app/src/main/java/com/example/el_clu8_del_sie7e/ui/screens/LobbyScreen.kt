@@ -34,6 +34,7 @@ import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
 import com.example.el_clu8_del_sie7e.ui.components.BonusBanner
 import com.example.el_clu8_del_sie7e.ui.components.GameCard
+import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
@@ -256,7 +257,8 @@ fun LobbyScreen(
                                 gameCount = featuredGames[0].count,
                                 backgroundImage = featuredGames[0].backgroundImage,
                                 onPlayClick = {
-                                    // TODO: Navegar a juego de slots
+                                    // Navegar al juego Zeus Slot
+                                    navController.navigate(Routes.ZEUS_SLOT_SCREEN)
                                 },
                                 modifier = Modifier.weight(1f)
                             )
