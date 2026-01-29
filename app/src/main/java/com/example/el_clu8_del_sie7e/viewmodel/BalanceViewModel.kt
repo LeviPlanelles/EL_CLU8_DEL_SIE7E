@@ -1,9 +1,13 @@
 package com.example.el_clu8_del_sie7e.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -55,11 +59,16 @@ class BalanceViewModel : ViewModel() {
 
     /**
      * Balance formateado para mostrar en UI
-     * Ejemplo: "$0.00"
+     * Se actualiza AUTOMÁTICAMENTE cuando cambia _balance
+     * Ejemplo: "$0.00", "$1,500.00"
      */
-    val formattedBalance: StateFlow<String> = MutableStateFlow("").apply {
-        _balance.value.let { value = formatBalance(it) }
-    }
+    val formattedBalance: StateFlow<String> = _balance
+        .map { formatBalance(it) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = formatBalance(_balance.value)
+        )
 
     // ===================================================================
     // HISTORIAL DE TRANSACCIONES

@@ -156,7 +156,10 @@ fun NavGraph() {
          * - Muestra juegos destacados, bonos y navegacion
          */
         composable(route = Routes.LOBBY_SCREEN) {
-            LobbyScreen(navController = navController)
+            LobbyScreen(
+                navController = navController,
+                balanceViewModel = balanceViewModel
+            )
         }
 
         // ==================================================================================
@@ -170,7 +173,10 @@ fun NavGraph() {
          * - Filtros por categoría (Todos, Slots, Cartas, Otros)
          */
         composable(route = Routes.GAME_SEARCH_SCREEN) {
-            GameSearchScreen(navController = navController)
+            GameSearchScreen(
+                navController = navController,
+                balanceViewModel = balanceViewModel
+            )
         }
 
         // ==================================================================================

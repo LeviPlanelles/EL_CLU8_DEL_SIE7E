@@ -16,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +38,7 @@ import com.example.el_clu8_del_sie7e.ui.components.GameCard
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
 /**
  * =====================================================================================
@@ -87,6 +89,7 @@ data class Game(
 @Composable
 fun LobbyScreen(
     navController: NavController,
+    balanceViewModel: BalanceViewModel,  // Se pasa desde NavGraph (compartido)
     modifier: Modifier = Modifier
 ) {
     // Estado para el item seleccionado del footer
@@ -94,6 +97,9 @@ fun LobbyScreen(
     
     // Estado para mostrar/ocultar el banner de bono
     var showBonusBanner by remember { mutableStateOf(true) }
+    
+    // Obtener balance formateado del ViewModel (se actualiza automáticamente)
+    val formattedBalance by balanceViewModel.formattedBalance.collectAsState()
 
     // Lista de juegos destacados
     val featuredGames = remember {
@@ -133,7 +139,7 @@ fun LobbyScreen(
         // Header superior con logo y balance
         topBar = {
             AppHeader(
-                balance = "\$5,000.00",
+                balance = formattedBalance,
                 navController = navController
             )
         },
@@ -317,6 +323,9 @@ fun LobbyScreen(
 @Composable
 fun LobbyScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
-        LobbyScreen(navController = rememberNavController())
+        LobbyScreen(
+            navController = rememberNavController(),
+            balanceViewModel = BalanceViewModel()
+        )
     }
 }
