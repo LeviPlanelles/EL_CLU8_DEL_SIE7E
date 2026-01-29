@@ -24,10 +24,12 @@ import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,6 +49,7 @@ import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.ui.theme.RegisterBackground
+import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
 /**
  * =====================================================================================
@@ -81,12 +84,16 @@ import com.example.el_clu8_del_sie7e.ui.theme.RegisterBackground
 @Composable
 fun WalletScreen(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    balanceViewModel: BalanceViewModel = viewModel()
 ) {
     // ===================================================================
     // ESTADO DE LA PANTALLA
     // ===================================================================
     var selectedFooterItem by remember { mutableStateOf("Cartera") }
+    
+    // Obtener balance actual del ViewModel
+    val formattedBalance = balanceViewModel.formatBalance(balanceViewModel.balance.value)
 
     // ===================================================================
     // UI DE LA PANTALLA
@@ -103,7 +110,7 @@ fun WalletScreen(
             // HEADER CON LOGO Y SALDO
             // ===================================================================
             AppHeader(
-                balance = "$5,000.00",
+                balance = formattedBalance,
                 navController = navController
             )
 
