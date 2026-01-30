@@ -25,8 +25,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -154,6 +158,7 @@ fun SlotGamePlayScreen(
                         currentBet = chip
                     },
                     currentBet = currentBet,
+                    onBetChange = { newBet -> currentBet = newBet },
                     onBetIncrease = { currentBet += selectedBetChip },
                     onBetDecrease = { if (currentBet > selectedBetChip) currentBet -= selectedBetChip },
                     selectedMultiplier = selectedMultiplier,
@@ -514,6 +519,7 @@ private fun BetSection(
     selectedChip: Int,
     onChipSelected: (Int) -> Unit,
     currentBet: Int,
+    onBetChange: (Int) -> Unit,
     onBetIncrease: () -> Unit,
     onBetDecrease: () -> Unit,
     selectedMultiplier: Int,
@@ -556,9 +562,10 @@ private fun BetSection(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Control de cantidad de apuesta
+            // Control de cantidad de apuesta (editable)
             BetAmountControl(
                 currentBet = currentBet,
+                onBetChange = onBetChange,
                 onIncrease = onBetIncrease,
                 onDecrease = onBetDecrease
             )
@@ -631,13 +638,18 @@ private fun BetChip(
 
 /**
  * Control de cantidad de apuesta con botones - y +
+ * El campo central es editable para que el usuario pueda escribir el importe manualmente
  */
 @Composable
 private fun BetAmountControl(
     currentBet: Int,
+    onBetChange: (Int) -> Unit,
     onIncrease: () -> Unit,
     onDecrease: () -> Unit
 ) {
+    // Estado local para el texto del campo editable
+    var betText by remember(currentBet) { mutableStateOf(currentBet.toString()) }
+    
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -660,7 +672,7 @@ private fun BetAmountControl(
             )
         }
 
-        // Cantidad actual
+        // Campo editable para la cantidad
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -670,11 +682,46 @@ private fun BetAmountControl(
                 .border(1.dp, Color(0xFF3A3A3A), RoundedCornerShape(8.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "+$currentBet €",
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+            BasicTextField(
+                value = betText,
+                onValueChange = { newValue ->
+                    // Solo permitir números
+                    val filtered = newValue.filter { it.isDigit() }
+                    betText = filtered
+                    // Actualizar el valor si es válido
+                    val newBet = filtered.toIntOrNull() ?: 0
+                    if (newBet > 0) {
+                        onBetChange(newBet)
+                    }
+                },
+                textStyle = TextStyle(
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center
+                ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number
+                ),
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                decorationBox = { innerTextField ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        innerTextField()
+                        Text(
+                            text = " €",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
             )
         }
 
