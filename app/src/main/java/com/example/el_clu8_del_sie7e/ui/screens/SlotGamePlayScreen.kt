@@ -142,7 +142,7 @@ fun SlotGamePlayScreen(
                     onLeverPull = { /* TODO: Implementar giro */ }
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // ---------------------------------------------------------------
                 // 2.3 SECCIÓN "TU APUESTA"
@@ -162,7 +162,7 @@ fun SlotGamePlayScreen(
                     }
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
             // ===================================================================
@@ -273,7 +273,7 @@ private fun SlotMachine() {
     Box(
         modifier = Modifier
             .width(280.dp)
-            .height(200.dp)
+            .height(260.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(SlotMachineBg)
             .border(2.dp, SlotBorderGold.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
