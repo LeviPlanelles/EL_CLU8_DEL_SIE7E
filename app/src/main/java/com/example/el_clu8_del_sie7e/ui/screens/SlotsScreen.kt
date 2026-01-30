@@ -32,6 +32,7 @@ import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
 import com.example.el_clu8_del_sie7e.ui.components.UnifiedFilterChip
+import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
@@ -139,8 +140,16 @@ fun SlotsScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Grid de Slots
-                SlotGrid(slots = slots)
+                // Grid de Slots (con navegación al juego)
+                SlotGrid(
+                    slots = slots,
+                    onSlotPlay = { slotName ->
+                        // Navegar a la pantalla de juego del slot
+                        // Usamos URL encoding por si el nombre tiene espacios
+                        val encodedName = java.net.URLEncoder.encode(slotName, "UTF-8")
+                        navController.navigate("slot_game_play/$encodedName")
+                    }
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -257,7 +266,10 @@ fun SlotFiltersRow(
 }
 
 @Composable
-fun SlotGrid(slots: List<SlotGame>) {
+fun SlotGrid(
+    slots: List<SlotGame>,
+    onSlotPlay: (String) -> Unit = {}
+) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         slots.chunked(2).forEach { rowItems ->
             Row(
@@ -265,7 +277,11 @@ fun SlotGrid(slots: List<SlotGame>) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 rowItems.forEach { slot ->
-                    SlotCard(slot = slot, modifier = Modifier.weight(1f))
+                    SlotCard(
+                        slot = slot,
+                        onPlayClick = { onSlotPlay(slot.name) },
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 if (rowItems.size < 2) {
                     Spacer(modifier = Modifier.weight(1f))
@@ -276,11 +292,15 @@ fun SlotGrid(slots: List<SlotGame>) {
 }
 
 @Composable
-fun SlotCard(slot: SlotGame, modifier: Modifier = Modifier) {
+fun SlotCard(
+    slot: SlotGame,
+    onPlayClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier
             .aspectRatio(0.75f)
-            .clickable { },
+            .clickable { onPlayClick() },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
@@ -328,7 +348,7 @@ fun SlotCard(slot: SlotGame, modifier: Modifier = Modifier) {
                         .background(CardOverlayColor)
                         .border(1.dp, CasinoGold, RoundedCornerShape(50))
                         .padding(horizontal = 24.dp, vertical = 6.dp)
-                        .clickable { /* Jugar */ }
+                        .clickable { onPlayClick() }
                 ) {
                     Text(
                         text = "JUGAR",
