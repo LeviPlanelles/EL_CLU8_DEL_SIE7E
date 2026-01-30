@@ -112,6 +112,9 @@ object Routes {
     /** Bonos y promociones */
     const val BONUSES_SCREEN = "bonuses_screen"
 
+    /** Pantalla de promociones */
+    const val PROMOTIONS_SCREEN = "promotions_screen"
+
     /** Torneos disponibles */
     const val TOURNAMENTS_SCREEN = "tournaments_screen"
 

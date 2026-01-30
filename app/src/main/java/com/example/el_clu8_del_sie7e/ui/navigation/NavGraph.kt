@@ -16,6 +16,7 @@ import com.example.el_clu8_del_sie7e.ui.screens.SupportScreen
 import com.example.el_clu8_del_sie7e.ui.screens.TransactionHistoryScreen
 import com.example.el_clu8_del_sie7e.ui.screens.WalletScreen
 import com.example.el_clu8_del_sie7e.ui.screens.WithdrawScreen
+import com.example.el_clu8_del_sie7e.ui.screens.PromocionesScreen
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
 /**
@@ -185,9 +186,13 @@ fun NavGraph() {
          * - Muestra todos los juegos de slots disponibles
          * - Grid de 2 columnas con scroll vertical
          * - 6 slots: Neon Fortune, Golden Empire, Inferno Fortunes, Zeus, Bonus Slot 1, Bonus Slot 2
+         * - Balance sincronizado con BalanceViewModel
          */
         composable(route = Routes.SLOTS_GAME_SCREEN) {
-            SlotsScreen(navController = navController)
+            SlotsScreen(
+                navController = navController,
+                balanceViewModel = balanceViewModel
+            )
         }
 
         // ==================================================================================
@@ -271,14 +276,29 @@ fun NavGraph() {
         // ==================================================================================
 
         /**
-         * Pantalla de Soporte y Ayuda
-         * - Canales de atención: Chat en Vivo y Tickets
-         * - FAQs (Preguntas Frecuentes) expandibles
-         * - Información de contacto telefónico
-         * - Accesible desde el icono de ayuda en ProfileScreen
-         */
+          * Pantalla de Soporte y Ayuda
+          * - Canales de atención: Chat en Vivo y Tickets
+          * - FAQs (Preguntas Frecuentes) expandibles
+          * - Información de contacto telefónico
+          * - Accesible desde el icono de ayuda en ProfileScreen
+          */
         composable(route = Routes.SUPPORT_SCREEN) {
             SupportScreen(navController = navController)
+        }
+
+        /**
+         * Pantalla de Promociones
+         * - Muestra todas las promociones y bonos disponibles
+         * - Filtros: Todos, Casino Live, Slots, Roulette
+         * - Tarjeta principal de bono de bienvenida
+         * - Sección "PARA TI" con promociones personalizadas
+         * - Balance sincronizado con BalanceViewModel
+         */
+        composable(route = Routes.PROMOTIONS_SCREEN) {
+            PromocionesScreen(
+                navController = navController,
+                balanceViewModel = balanceViewModel
+            )
         }
     }
 }

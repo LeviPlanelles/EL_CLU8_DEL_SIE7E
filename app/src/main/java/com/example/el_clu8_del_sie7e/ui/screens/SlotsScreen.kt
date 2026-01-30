@@ -6,7 +6,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -32,6 +31,33 @@ import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
+import com.example.el_clu8_del_sie7e.ui.components.UnifiedFilterChip
+import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
+
+/**
+ * =====================================================================================
+ * SLOTSSCREEN.KT - PANTALLA DE GALERÍA DE SLOTS
+ * =====================================================================================
+ *
+ * Esta pantalla muestra una galería con todos los juegos de slots disponibles.
+ *
+ * ESTRUCTURA:
+ * -----------
+ * - AppHeader: Logo y balance del usuario (sincronizado con BalanceViewModel)
+ * - Título "SLOTS" con flecha de retorno y línea dorada
+ * - Barra de búsqueda
+ * - Filtros: Todos, Nuevos, Jackpot, Clásico
+ * - Grid de slots en 2 columnas con scroll vertical
+ * - AppFooter: Navegación inferior
+ *
+ * BALANCE:
+ * --------
+ * El balance se obtiene del BalanceViewModel compartido que se pasa desde NavGraph.
+ * Esto asegura que el balance esté sincronizado en toda la aplicación.
+ *
+ * =====================================================================================
+ */
 
 // Colores extraídos de la imagen
 val CasinoGold = Color(0xFFC6A966) // Dorado suave
@@ -52,15 +78,18 @@ data class SlotGame(
 @Composable
 fun SlotsScreen(
     navController: NavController,
+    balanceViewModel: BalanceViewModel,  // ViewModel compartido para el balance
     modifier: Modifier = Modifier
 ) {
+    // Obtener balance formateado del ViewModel (se actualiza automáticamente)
+    val formattedBalance by balanceViewModel.formattedBalance.collectAsState()
+
     // Datos de ejemplo basados en la imagen
     val slots = listOf(
         SlotGame("Neon Fortune", R.drawable.slot_neon_fortune),
         SlotGame("Golden Empire", R.drawable.slot_golden_empire),
         SlotGame("Inferno Spin", R.drawable.slot_inferno_fortunes, SlotBadgeType.HOT),
         SlotGame("Zeus Slot", R.drawable.slot_zeus, SlotBadgeType.NUEVO),
-        // Rellenos para simular más elementos
         SlotGame("Classic 777", R.drawable.slot_additional_1, SlotBadgeType.JACKPOT),
         SlotGame("Lucky Diamond", R.drawable.slot_additional_2)
     )
@@ -76,9 +105,9 @@ fun SlotsScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // 1. HEADER (Reutilizando tu componente o simulándolo)
+            // 1. HEADER con balance sincronizado
             AppHeader(
-                balance = "$5,000.00",
+                balance = formattedBalance,
                 navController = navController
             )
 
@@ -118,7 +147,7 @@ fun SlotsScreen(
 
             // 3. FOOTER
             AppFooter(
-                selectedItem = "Mesas", // Aunque estemos en Slots, mantenemos la selección activa o cambiamos a "Slots" si existe
+                selectedItem = "Mesas",
                 onItemSelected = { /* Navegación footer */ },
                 navController = navController
             )
@@ -198,64 +227,37 @@ fun SlotSearchBar(value: String, onValueChange: (String) -> Unit) {
     )
 }
 
+/**
+ * Fila de filtros para la pantalla de Slots.
+ * Usa el componente UnifiedFilterChip para mantener consistencia visual.
+ */
 @Composable
 fun SlotFiltersRow(
     selectedFilter: String,
     onFilterSelected: (String) -> Unit
 ) {
+    // Lista de filtros disponibles
     val filters = listOf("Todos", "Nuevos", "Jackpot", "Clásico")
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         filters.forEach { filter ->
-            val isSelected = filter == selectedFilter
-            // El botón "Todos" es rojo sólido en la imagen si está seleccionado
-            // Los demás son oscuros con borde dorado.
-            val isRedButton = filter == "Todos" && isSelected
-
-            val bgColor = if (isRedButton) CasinoRed else Color(0xFF2C2C2C)
-            val borderColor = if (isRedButton) Color.Transparent else if (isSelected) CasinoGold else Color(0xFF3E3E3E)
-            val textColor = if (isSelected || isRedButton) Color.White else CasinoGold
-
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 4.dp)
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(bgColor)
-                    .border(1.dp, borderColor, RoundedCornerShape(8.dp))
-                    .clickable { onFilterSelected(filter) },
-                contentAlignment = Alignment.Center
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (filter == "Todos") {
-                        Icon(
-                            imageVector = Icons.Default.GridView,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                    }
-                    Text(
-                        text = filter,
-                        color = textColor,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1
-                    )
-                }
-            }
+            UnifiedFilterChip(
+                text = filter,
+                isSelected = filter == selectedFilter,
+                onClick = { onFilterSelected(filter) },
+                // Solo "Todos" tiene icono
+                icon = if (filter == "Todos") Icons.Default.GridView else null,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
 
 @Composable
 fun SlotGrid(slots: List<SlotGame>) {
-    // Implementación manual de grid de 2 columnas para control total
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         slots.chunked(2).forEach { rowItems ->
             Row(
@@ -265,7 +267,6 @@ fun SlotGrid(slots: List<SlotGame>) {
                 rowItems.forEach { slot ->
                     SlotCard(slot = slot, modifier = Modifier.weight(1f))
                 }
-                // Si la fila tiene un número impar, rellenamos con espacio vacío
                 if (rowItems.size < 2) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
@@ -278,13 +279,13 @@ fun SlotGrid(slots: List<SlotGame>) {
 fun SlotCard(slot: SlotGame, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier
-            .aspectRatio(0.75f) // Proporción vertical (aprox 3:4)
+            .aspectRatio(0.75f)
             .clickable { },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // 1. Imagen de Fondo (Llena toda la tarjeta)
+            // 1. Imagen de Fondo
             Image(
                 painter = painterResource(id = slot.imageRes),
                 contentDescription = slot.name,
@@ -292,7 +293,7 @@ fun SlotCard(slot: SlotGame, modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxSize()
             )
 
-            // 2. Degradado Oscuro en la parte inferior para legibilidad del texto
+            // 2. Degradado Oscuro
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -321,11 +322,10 @@ fun SlotCard(slot: SlotGame, modifier: Modifier = Modifier) {
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                // Botón "JUGAR" estilo píldora con borde dorado
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(50)) // Píldora
-                        .background(CardOverlayColor) // Fondo negro semitransparente
+                        .clip(RoundedCornerShape(50))
+                        .background(CardOverlayColor)
                         .border(1.dp, CasinoGold, RoundedCornerShape(50))
                         .padding(horizontal = 24.dp, vertical = 6.dp)
                         .clickable { /* Jugar */ }
@@ -340,7 +340,7 @@ fun SlotCard(slot: SlotGame, modifier: Modifier = Modifier) {
                 }
             }
 
-            // 4. Badges (Etiquetas en la esquina)
+            // 4. Badges
             if (slot.badge != SlotBadgeType.NONE) {
                 SlotBadgeComponent(
                     type = slot.badge,
@@ -380,5 +380,10 @@ fun SlotBadgeComponent(type: SlotBadgeType, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun SlotsPreview() {
-    SlotsScreen(navController = rememberNavController())
+    EL_CLU8_DEL_SIE7ETheme {
+        SlotsScreen(
+            navController = rememberNavController(),
+            balanceViewModel = BalanceViewModel()
+        )
+    }
 }

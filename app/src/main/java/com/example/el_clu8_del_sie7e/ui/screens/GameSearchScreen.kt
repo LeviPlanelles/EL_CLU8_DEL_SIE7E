@@ -45,7 +45,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
-import com.example.el_clu8_del_sie7e.ui.components.FilterButton
+import com.example.el_clu8_del_sie7e.ui.components.UnifiedFilterChip
 import com.example.el_clu8_del_sie7e.ui.components.SearchGameCard
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
@@ -255,6 +255,7 @@ fun GameSearchScreen(
 
                 // ============================================================
                 // SECCIÓN 3: FILTROS DE CATEGORÍA (horizontal scroll)
+                // Usa UnifiedFilterChip para mantener consistencia visual
                 // ============================================================
                 item {
                     LazyRow(
@@ -262,32 +263,32 @@ fun GameSearchScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         item {
-                            FilterButton(
+                            UnifiedFilterChip(
                                 text = "Todos",
-                                selected = selectedFilter == "Todos",
+                                isSelected = selectedFilter == "Todos",
                                 onClick = { selectedFilter = "Todos" }
                             )
                         }
                         item {
-                            FilterButton(
+                            UnifiedFilterChip(
                                 text = "Slots",
-                                icon = R.drawable.game_slots,
-                                selected = selectedFilter == "Slots",
+                                iconRes = R.drawable.game_slots,
+                                isSelected = selectedFilter == "Slots",
                                 onClick = { selectedFilter = "Slots" }
                             )
                         }
                         item {
-                            FilterButton(
+                            UnifiedFilterChip(
                                 text = "Cartas",
-                                icon = R.drawable.ic_cards,
-                                selected = selectedFilter == "Cartas",
+                                iconRes = R.drawable.ic_cards,
+                                isSelected = selectedFilter == "Cartas",
                                 onClick = { selectedFilter = "Cartas" }
                             )
                         }
                         item {
-                            FilterButton(
+                            UnifiedFilterChip(
                                 text = "Otros",
-                                selected = selectedFilter == "Otros",
+                                isSelected = selectedFilter == "Otros",
                                 onClick = { selectedFilter = "Otros" }
                             )
                         }

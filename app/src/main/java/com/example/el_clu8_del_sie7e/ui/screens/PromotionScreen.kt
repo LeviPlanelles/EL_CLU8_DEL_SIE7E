@@ -30,34 +30,68 @@ import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
+import com.example.el_clu8_del_sie7e.ui.components.UnifiedFilterChip
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
-import com.example.el_clu8_del_sie7e.ui.theme.PrimaryRed // Asegúrate de tener este color en tu Theme
-import com.example.el_clu8_del_sie7e.ui.viewmodel.PromotionModel
-import com.example.el_clu8_del_sie7e.ui.viewmodel.PromotionsViewModel
+import com.example.el_clu8_del_sie7e.ui.theme.PrimaryRed
+import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
+import com.example.el_clu8_del_sie7e.viewmodel.PromotionModel
+import com.example.el_clu8_del_sie7e.viewmodel.PromotionsViewModel
+
+/**
+ * =====================================================================================
+ * PROMOTIONSCREEN.KT - PANTALLA DE PROMOCIONES
+ * =====================================================================================
+ *
+ * Esta pantalla muestra todas las promociones y bonos disponibles para el usuario.
+ *
+ * ESTRUCTURA:
+ * -----------
+ * - AppHeader: Logo y balance del usuario (sincronizado con BalanceViewModel)
+ * - Título "PROMOCIONES" con flecha de retorno y línea dorada
+ * - Filtros: Todos, Casino Live, Slots, Roulette
+ * - Tarjeta de promoción principal (grande)
+ * - Sección "PARA TI" con tarjetas secundarias
+ * - AppFooter: Navegación inferior
+ *
+ * BALANCE:
+ * --------
+ * El balance se obtiene del BalanceViewModel compartido que se pasa desde NavGraph.
+ * Esto asegura que el balance esté sincronizado en toda la aplicación.
+ *
+ * NAVEGACION:
+ * -----------
+ * - Flecha atrás: Vuelve a la pantalla anterior
+ * - Footer: Navegación a otras secciones de la app
+ *
+ * =====================================================================================
+ */
 
 // =====================================================================
-// 1. PANTALLA PRINCIPAL (STATEFUL - CONECTADA AL VIEWMODEL)
+// 1. PANTALLA PRINCIPAL (STATEFUL - CONECTADA A LOS VIEWMODELS)
 // =====================================================================
 @Composable
 fun PromocionesScreen(
     navController: NavController,
-    viewModel: PromotionsViewModel = viewModel(),
+    balanceViewModel: BalanceViewModel,  // ViewModel compartido para el balance
+    promotionsViewModel: PromotionsViewModel = viewModel(),  // ViewModel local para promociones
     modifier: Modifier = Modifier
 ) {
-    // Recolectamos los estados del ViewModel
-    val balance by viewModel.userBalance.collectAsState()
-    val promotions by viewModel.promotions.collectAsState()
-    val selectedFilter by viewModel.selectedFilter.collectAsState()
+    // Recolectamos el balance del ViewModel compartido (se actualiza automáticamente)
+    val formattedBalance by balanceViewModel.formattedBalance.collectAsState()
+    
+    // Recolectamos los estados del PromotionsViewModel
+    val promotions by promotionsViewModel.promotions.collectAsState()
+    val selectedFilter by promotionsViewModel.selectedFilter.collectAsState()
 
     // Llamamos al contenido visual puro
     PromocionesContent(
         navController = navController,
-        balance = balance,
+        balance = formattedBalance,  // Usamos el balance del BalanceViewModel
         promotions = promotions,
         selectedFilter = selectedFilter,
-        onFilterSelected = { viewModel.setFilter(it) },
+        onFilterSelected = { promotionsViewModel.setFilter(it) },
         onBackClick = { navController.popBackStack() },
         modifier = modifier
     )
@@ -94,7 +128,7 @@ fun PromocionesContent(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // HEADER
+            // HEADER con balance sincronizado
             AppHeader(
                 balance = balance,
                 navController = navController
@@ -106,9 +140,6 @@ fun PromocionesContent(
                     .weight(1f) // Ocupa todo el espacio disponible menos header/footer
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp),
-
-                // *** SOLUCIÓN DEL HUECO ***
-                // Alineamos todo ARRIBA (Top). Esto elimina espacios extraños distribuidos.
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -123,7 +154,7 @@ fun PromocionesContent(
                     onFilterSelected = onFilterSelected
                 )
 
-                // Espacio fijo entre filtros y tarjeta (Idéntico a la imagen)
+                // Espacio fijo entre filtros y tarjeta
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Lógica de visualización de tarjetas
@@ -135,13 +166,11 @@ fun PromocionesContent(
                     MainPromotionCard(promotion = mainPromo)
                     Spacer(modifier = Modifier.height(24.dp))
                 } else {
-                    // Placeholder invisible por si no carga la data, para mantener estructura
                     Spacer(modifier = Modifier.height(20.dp))
                 }
 
                 // -- Sección "PARA TI" --
                 if (secondaryPromos.isNotEmpty()) {
-                    // Alineamos el título a la izquierda (Start) explícitamente
                     Box(modifier = Modifier.fillMaxWidth()) {
                         SectionDivider(title = "PARA TI")
                     }
@@ -160,7 +189,6 @@ fun PromocionesContent(
             }
 
             // FOOTER
-            // Seleccionamos "" o "Inicio" ya que esta pantalla es navegación interna
             AppFooter(
                 selectedItem = "",
                 onItemSelected = { /* Navegación */ },
@@ -214,46 +242,28 @@ fun PromotionsHeader(onBackClick: () -> Unit) {
     }
 }
 
+/**
+ * Fila de filtros para la pantalla de Promociones.
+ * Usa el componente UnifiedFilterChip para mantener consistencia visual.
+ */
 @Composable
 fun PromotionsFilters(
     selectedFilter: String,
     onFilterSelected: (String) -> Unit
 ) {
+    // Lista de filtros disponibles para promociones
     val filters = listOf("Todos", "Casino Live", "Slots", "Roulette")
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp) // Espacio entre botones
-        // Nota: Si hay muchos filtros, cambiar Row por LazyRow o agregar .horizontalScroll
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         filters.forEach { filter ->
-            val isSelected = filter == selectedFilter
-            val isRedButton = filter == "Todos" && isSelected
-
-            // Colores según estado
-            val backgroundColor = if (isRedButton) PrimaryRed else Color.Transparent
-            val textColor = if (isRedButton) Color.White else AccentGold
-
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(backgroundColor)
-                    .border(
-                        width = 1.dp,
-                        // Borde dorado solo si está seleccionado (y no es el botón rojo)
-                        color = if (!isRedButton && isSelected) AccentGold else if(isRedButton) Color.Transparent else Color.Gray.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .clickable { onFilterSelected(filter) }
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Text(
-                    text = filter,
-                    color = textColor,
-                    fontSize = 12.sp,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                )
-            }
+            UnifiedFilterChip(
+                text = filter,
+                isSelected = filter == selectedFilter,
+                onClick = { onFilterSelected(filter) }
+            )
         }
     }
 }
@@ -302,8 +312,8 @@ fun MainPromotionCard(promotion: PromotionModel) {
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color.Black.copy(alpha = 0.3f), // Arriba más claro
-                                Color.Black.copy(alpha = 0.9f)  // Abajo oscuro
+                                Color.Black.copy(alpha = 0.3f),
+                                Color.Black.copy(alpha = 0.9f)
                             )
                         )
                     )
@@ -355,13 +365,13 @@ fun MainPromotionCard(promotion: PromotionModel) {
                         .fillMaxWidth()
                         .height(48.dp)
                         .border(1.dp, AccentGold, RoundedCornerShape(8.dp))
-                        .background(AccentGold.copy(alpha = 0.2f)) // Fondo dorado transparente
+                        .background(AccentGold.copy(alpha = 0.2f))
                         .clickable { },
                     contentAlignment = Alignment.Center
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            painter = painterResource(id = android.R.drawable.star_on), // Icono estrella/diamante
+                            painter = painterResource(id = android.R.drawable.star_on),
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier.size(20.dp)
@@ -428,7 +438,6 @@ fun SecondaryPromotionCard(promotion: PromotionModel) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start
             ) {
-                // Color Badge: Si es Express usamos naranja, sino Dorado
                 val badgeColor = if(promotion.badgeText.equals("EXPRESS", ignoreCase = true)) Color(0xFFFFB300) else AccentGold
 
                 BadgeChip(text = promotion.badgeText, color = badgeColor)
@@ -449,7 +458,7 @@ fun SecondaryPromotionCard(promotion: PromotionModel) {
                     color = Color.White.copy(alpha = 0.9f),
                     fontSize = 12.sp,
                     lineHeight = 16.sp,
-                    modifier = Modifier.fillMaxWidth(0.7f) // Limita el ancho del texto
+                    modifier = Modifier.fillMaxWidth(0.7f)
                 )
             }
         }
@@ -474,15 +483,15 @@ fun BadgeChip(text: String, color: Color) {
 }
 
 // =====================================================================
-// 4. PREVIEW (CON DATOS FALSOS PARA VER EL DISEÑO FINAL)
+// 4. PREVIEW
 // =====================================================================
 @Preview(
     showBackground = true,
-    name = "Diseño Final Corregido"
+    name = "Promociones Screen Preview"
 )
 @Composable
 fun PromocionesScreenPreview() {
-    // Datos Mock (Falsos) para que el Preview NO tenga huecos vacíos
+    // Datos Mock para el Preview
     val fakePromotions = listOf(
         PromotionModel(
             id = 1,

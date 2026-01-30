@@ -42,7 +42,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
 import com.example.el_clu8_del_sie7e.ui.components.DateHeader
-import com.example.el_clu8_del_sie7e.ui.components.FilterChip
+import com.example.el_clu8_del_sie7e.ui.components.UnifiedFilterChip
 import com.example.el_clu8_del_sie7e.ui.components.TransactionItem
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
@@ -167,6 +167,7 @@ fun TransactionHistoryScreen(
 
                 // ========================================================
                 // SECCIÓN 2: FILTROS (CARRUSEL HORIZONTAL)
+                // Usa UnifiedFilterChip para mantener consistencia visual
                 // ========================================================
                 Row(
                     modifier = Modifier
@@ -180,15 +181,14 @@ fun TransactionHistoryScreen(
                     Spacer(modifier = Modifier.width(21.dp))
                     
                     // Filtro: Todos
-                    FilterChip(
+                    UnifiedFilterChip(
                         text = "Todos",
-                        icon = null,
                         isSelected = selectedFilter == "Todos",
                         onClick = { viewModel.setFilter("Todos") }
                     )
                     
                     // Filtro: Depósitos
-                    FilterChip(
+                    UnifiedFilterChip(
                         text = "Depósitos",
                         icon = Icons.Filled.CreditCard,
                         isSelected = selectedFilter == "Depósitos",
@@ -196,7 +196,7 @@ fun TransactionHistoryScreen(
                     )
                     
                     // Filtro: Retiradas
-                    FilterChip(
+                    UnifiedFilterChip(
                         text = "Retiradas",
                         icon = Icons.Filled.AccountBalance,
                         isSelected = selectedFilter == "Retiradas",
@@ -204,7 +204,7 @@ fun TransactionHistoryScreen(
                     )
                     
                     // Filtro: Ganados
-                    FilterChip(
+                    UnifiedFilterChip(
                         text = "Ganados",
                         icon = Icons.Filled.EmojiEvents,
                         isSelected = selectedFilter == "Ganados",
@@ -212,7 +212,7 @@ fun TransactionHistoryScreen(
                     )
                     
                     // Filtro: Pérdidas
-                    FilterChip(
+                    UnifiedFilterChip(
                         text = "Pérdidas",
                         icon = Icons.Filled.Casino,
                         isSelected = selectedFilter == "Pérdidas",

@@ -205,7 +205,8 @@ fun LobbyScreen(
                         buttonText = "RECLAMAR AHORA",
                         backgroundImage = R.drawable.game_casino,
                         onButtonClick = {
-                            // TODO: Navegar a pantalla de deposito
+                            // Navegar a la pantalla de promociones
+                            navController.navigate(Routes.PROMOTIONS_SCREEN)
                         },
                         modifier = Modifier.fillMaxWidth() // Respeta el padding del contenedor padre
                     )

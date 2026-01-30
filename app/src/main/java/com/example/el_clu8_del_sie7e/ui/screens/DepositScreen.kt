@@ -14,12 +14,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBalance
@@ -34,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -67,6 +65,18 @@ import java.util.Locale
  * =====================================================================================
  * DEPOSITSCREEN.KT - PANTALLA DE DEPÓSITO DE FONDOS
  * =====================================================================================
+ *
+ * COMPORTAMIENTO DE SCROLL ESPECIAL:
+ * ----------------------------------
+ * 1. Estado inicial: AppHeader (logo+balance) arriba, luego "← DEPÓSITO" debajo
+ * 2. Al hacer scroll hacia abajo: AppHeader se esconde, "← DEPÓSITO" sube y se 
+ *    queda FIJO en el borde superior de la pantalla
+ * 3. Al hacer scroll hacia arriba: AppHeader vuelve a aparecer y todo vuelve
+ *    a su posición original
+ *
+ * Esto se logra usando LazyColumn con stickyHeader para el título "DEPÓSITO"
+ *
+ * =====================================================================================
  */
 
 enum class PaymentMethod {
@@ -76,7 +86,7 @@ enum class PaymentMethod {
 @Composable
 fun DepositScreen(
     navController: NavController,
-    balanceViewModel: BalanceViewModel  // Se pasa desde NavGraph (compartido)
+    balanceViewModel: BalanceViewModel
 ) {
     // ===================================================================
     // ESTADO DE LA PANTALLA
@@ -97,14 +107,12 @@ fun DepositScreen(
 
     val quickAmounts = listOf("+\$50", "+\$100", "+\$500", "+\$1000")
     
-    // Nombres de métodos para transacciones
     val methodName = when (selectedPaymentMethod) {
         PaymentMethod.CARD -> "Tarjeta"
         PaymentMethod.TRANSFER -> "Transferencia"
         PaymentMethod.EWALLET -> "E-Wallet"
     }
 
-    // Gradiente rojo del proyecto
     val redGradient = Brush.horizontalGradient(
         colors = listOf(ButtonRedStart, ButtonRedCenter, ButtonRedEnd)
     )
@@ -113,327 +121,378 @@ fun DepositScreen(
     // UI DE LA PANTALLA
     // ===================================================================
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .background(DarkBackground)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            AppHeader(balance = formattedBalance, navController = navController)
-
-            Column(
+            // ==========================================
+            // CONTENIDO CON LAZY COLUMN Y STICKY HEADER
+            // ==========================================
+            LazyColumn(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 21.dp, vertical = 16.dp)
             ) {
-                // TÍTULO Y BOTÓN VOLVER
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Volver",
-                        tint = AccentGold,
-                        modifier = Modifier.size(24.dp).clickable { navController.popBackStack() }
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(text = "DEPÓSITO", color = AccentGold, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                // ==========================================
+                // ITEM 1: AppHeader (Logo + Balance) - SCROLLABLE
+                // ==========================================
+                item {
+                    AppHeader(balance = formattedBalance, navController = navController)
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // SECCIÓN MÉTODO DE PAGO
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.CreditCard, null, tint = AccentGold, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Método de Pago", color = AccentGold, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Fila 1: Tarjeta y Transferencia
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    PaymentMethodBox(
-                        icon = Icons.Default.CreditCard,
-                        label = "TARJETA",
-                        selected = selectedPaymentMethod == PaymentMethod.CARD,
-                        onClick = { selectedPaymentMethod = PaymentMethod.CARD },
-                        modifier = Modifier.weight(1f)
-                    )
-                    PaymentMethodBox(
-                        icon = Icons.Default.AccountBalance,
-                        label = "TRANSFERENCIA",
-                        selected = selectedPaymentMethod == PaymentMethod.TRANSFER,
-                        onClick = { selectedPaymentMethod = PaymentMethod.TRANSFER },
-                        modifier = Modifier.weight(1f)
+                // ==========================================
+                // STICKY HEADER: Título "← DEPÓSITO" - SE QUEDA FIJO ARRIBA
+                // ==========================================
+                stickyHeader {
+                    DepositStickyHeader(
+                        onBackClick = { navController.popBackStack() }
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Fila 2: E-Wallet
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    PaymentMethodBox(
-                        icon = Icons.Default.Wallet,
-                        label = "E-WALLET",
-                        selected = selectedPaymentMethod == PaymentMethod.EWALLET,
-                        onClick = { selectedPaymentMethod = PaymentMethod.EWALLET },
-                        modifier = Modifier.weight(1f)
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-
-                Spacer(modifier = Modifier.height(28.dp))
-
-                // SECCIÓN MONTO A DEPOSITAR
-                Text("MONTO A DEPOSITAR", color = AccentGold, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .background(color = SurfaceDark, shape = RoundedCornerShape(8.dp))
-                        .border(width = 1.5.dp, color = Color(0xFF777150), shape = RoundedCornerShape(8.dp))
-                        .padding(horizontal = 16.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                // ==========================================
+                // ITEM 2: Contenido del formulario
+                // ==========================================
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 21.dp, vertical = 16.dp)
                     ) {
+                        // SECCIÓN MÉTODO DE PAGO
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("$", color = AccentGold, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Icon(Icons.Default.CreditCard, null, tint = AccentGold, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            BasicTextField(
-                                value = depositAmount,
-                                onValueChange = { depositAmount = it },
-                                textStyle = TextStyle(color = Color.White, fontSize = 18.sp),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                cursorBrush = SolidColor(AccentGold),
-                                modifier = Modifier.width(150.dp)
+                            Text("Método de Pago", color = AccentGold, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Fila 1: Tarjeta y Transferencia
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            PaymentMethodBox(
+                                icon = Icons.Default.CreditCard,
+                                label = "TARJETA",
+                                selected = selectedPaymentMethod == PaymentMethod.CARD,
+                                onClick = { selectedPaymentMethod = PaymentMethod.CARD },
+                                modifier = Modifier.weight(1f)
+                            )
+                            PaymentMethodBox(
+                                icon = Icons.Default.AccountBalance,
+                                label = "TRANSFERENCIA",
+                                selected = selectedPaymentMethod == PaymentMethod.TRANSFER,
+                                onClick = { selectedPaymentMethod = PaymentMethod.TRANSFER },
+                                modifier = Modifier.weight(1f)
                             )
                         }
-                        Text("MÁXIMO", color = AccentGold, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { 
-                            depositAmount = "10000.00"
-                            errorMessage = null
-                            showSuccess = false
-                        })
-                    }
-                }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                // Chips de montos rápidos - MODIFICADO: AHORA SUMAN AL TOTAL
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    quickAmounts.forEach { amount ->
-                        AmountChip(
-                            amount = amount,
-                            selected = selectedAmountChip == amount,
-                            onClick = {
-                                selectedAmountChip = amount
-                                // Obtener valor actual y sumarle el del chip
-                                val currentVal = depositAmount.toDoubleOrNull() ?: 0.0
-                                val addedVal = amount.replace("+\$", "").toDoubleOrNull() ?: 0.0
-                                depositAmount = String.format(Locale.US, "%.2f", currentVal + addedVal)
-                            },
-                            selectedBrush = redGradient,
-                            selectedTextColor = Color.White
-                        )
-                    }
-                }
+                        // Fila 2: E-Wallet
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            PaymentMethodBox(
+                                icon = Icons.Default.Wallet,
+                                label = "E-WALLET",
+                                selected = selectedPaymentMethod == PaymentMethod.EWALLET,
+                                onClick = { selectedPaymentMethod = PaymentMethod.EWALLET },
+                                modifier = Modifier.weight(1f)
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
 
-                Spacer(modifier = Modifier.height(28.dp))
+                        Spacer(modifier = Modifier.height(28.dp))
 
-                // SECCIÓN DETALLES DE TARJETA
-                if (selectedPaymentMethod == PaymentMethod.CARD) {
-                    Text("DETALLES DE LA TARJETA", color = AccentGold, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("NÚMERO DE TARJETA", color = Color.Gray, fontSize = 11.sp)
-                    Spacer(modifier = Modifier.height(6.dp))
+                        // SECCIÓN MONTO A DEPOSITAR
+                        Text("MONTO A DEPOSITAR", color = AccentGold, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp)
-                            .background(color = SurfaceDark, shape = RoundedCornerShape(8.dp))
-                            .border(width = 1.5.dp, color = Color(0xFF777150), shape = RoundedCornerShape(8.dp))
-                            .padding(horizontal = 16.dp),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            BasicTextField(
-                                value = cardNumber,
-                                onValueChange = { if (it.length <= 19) cardNumber = formatCardNumber(it) },
-                                textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                cursorBrush = SolidColor(AccentGold),
-                                modifier = Modifier.weight(1f),
-                                decorationBox = { innerTextField ->
-                                    if (cardNumber.isEmpty()) Text("0000  0000  0000  0000", color = Color.Gray, fontSize = 16.sp)
-                                    innerTextField()
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .background(color = SurfaceDark, shape = RoundedCornerShape(8.dp))
+                                .border(width = 1.5.dp, color = Color(0xFF777150), shape = RoundedCornerShape(8.dp))
+                                .padding(horizontal = 16.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("$", color = AccentGold, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    BasicTextField(
+                                        value = depositAmount,
+                                        onValueChange = { depositAmount = it },
+                                        textStyle = TextStyle(color = Color.White, fontSize = 18.sp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                        cursorBrush = SolidColor(AccentGold),
+                                        modifier = Modifier.width(150.dp)
+                                    )
                                 }
-                            )
-                            Icon(Icons.Default.CreditCard, null, tint = AccentGold, modifier = Modifier.size(24.dp))
+                                Text("MÁXIMO", color = AccentGold, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { 
+                                    depositAmount = "10000.00"
+                                    errorMessage = null
+                                    showSuccess = false
+                                })
+                            }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("EXPIRACIÓN", color = Color.Gray, fontSize = 11.sp)
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Box(modifier = Modifier.fillMaxWidth().height(50.dp).background(color = SurfaceDark, shape = RoundedCornerShape(8.dp)).border(width = 1.dp, color = Color(0xFF4A4A4A), shape = RoundedCornerShape(8.dp)).padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart) {
-                                BasicTextField(
-                                    value = expirationDate,
-                                    onValueChange = { if (it.length <= 5) expirationDate = formatExpiration(it) },
-                                    textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    cursorBrush = SolidColor(AccentGold),
-                                    decorationBox = { if (expirationDate.isEmpty()) Text("MM/YY", color = Color.Gray, fontSize = 16.sp); it() }
+                        // Chips de montos rápidos
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            quickAmounts.forEach { amount ->
+                                AmountChip(
+                                    amount = amount,
+                                    selected = selectedAmountChip == amount,
+                                    onClick = {
+                                        selectedAmountChip = amount
+                                        val currentVal = depositAmount.toDoubleOrNull() ?: 0.0
+                                        val addedVal = amount.replace("+\$", "").toDoubleOrNull() ?: 0.0
+                                        depositAmount = String.format(Locale.US, "%.2f", currentVal + addedVal)
+                                    },
+                                    selectedBrush = redGradient,
+                                    selectedTextColor = Color.White
                                 )
                             }
                         }
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("CVV", color = Color.Gray, fontSize = 11.sp)
+
+                        Spacer(modifier = Modifier.height(28.dp))
+
+                        // SECCIÓN DETALLES DE TARJETA
+                        if (selectedPaymentMethod == PaymentMethod.CARD) {
+                            Text("DETALLES DE LA TARJETA", color = AccentGold, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("NÚMERO DE TARJETA", color = Color.Gray, fontSize = 11.sp)
                             Spacer(modifier = Modifier.height(6.dp))
-                            Box(modifier = Modifier.fillMaxWidth().height(50.dp).background(color = SurfaceDark, shape = RoundedCornerShape(8.dp)).border(width = 1.dp, color = Color(0xFF4A4A4A), shape = RoundedCornerShape(8.dp)).padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart) {
-                                BasicTextField(
-                                    value = cvv,
-                                    onValueChange = { if (it.length <= 4) cvv = it.filter { c -> c.isDigit() } },
-                                    textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    cursorBrush = SolidColor(AccentGold),
-                                    decorationBox = { if (cvv.isEmpty()) Text("***", color = Color.Gray, fontSize = 16.sp); it() }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp)
+                                    .background(color = SurfaceDark, shape = RoundedCornerShape(8.dp))
+                                    .border(width = 1.5.dp, color = Color(0xFF777150), shape = RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 16.dp),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                    BasicTextField(
+                                        value = cardNumber,
+                                        onValueChange = { if (it.length <= 19) cardNumber = formatCardNumber(it) },
+                                        textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        cursorBrush = SolidColor(AccentGold),
+                                        modifier = Modifier.weight(1f),
+                                        decorationBox = { innerTextField ->
+                                            if (cardNumber.isEmpty()) Text("0000  0000  0000  0000", color = Color.Gray, fontSize = 16.sp)
+                                            innerTextField()
+                                        }
+                                    )
+                                    Icon(Icons.Default.CreditCard, null, tint = AccentGold, modifier = Modifier.size(24.dp))
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text("EXPIRACIÓN", color = Color.Gray, fontSize = 11.sp)
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Box(modifier = Modifier.fillMaxWidth().height(50.dp).background(color = SurfaceDark, shape = RoundedCornerShape(8.dp)).border(width = 1.dp, color = Color(0xFF4A4A4A), shape = RoundedCornerShape(8.dp)).padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart) {
+                                        BasicTextField(
+                                            value = expirationDate,
+                                            onValueChange = { if (it.length <= 5) expirationDate = formatExpiration(it) },
+                                            textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
+                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                            cursorBrush = SolidColor(AccentGold),
+                                            decorationBox = { if (expirationDate.isEmpty()) Text("MM/YY", color = Color.Gray, fontSize = 16.sp); it() }
+                                        )
+                                    }
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text("CVV", color = Color.Gray, fontSize = 11.sp)
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Box(modifier = Modifier.fillMaxWidth().height(50.dp).background(color = SurfaceDark, shape = RoundedCornerShape(8.dp)).border(width = 1.dp, color = Color(0xFF4A4A4A), shape = RoundedCornerShape(8.dp)).padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart) {
+                                        BasicTextField(
+                                            value = cvv,
+                                            onValueChange = { if (it.length <= 4) cvv = it.filter { c -> c.isDigit() } },
+                                            textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
+                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                            cursorBrush = SolidColor(AccentGold),
+                                            decorationBox = { if (cvv.isEmpty()) Text("***", color = Color.Gray, fontSize = 16.sp); it() }
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            // Botón para generar tarjeta aleatoria
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        color = AccentGold.copy(alpha = 0.1f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .border(
+                                        width = 1.dp,
+                                        color = AccentGold.copy(alpha = 0.5f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable {
+                                        cardNumber = balanceViewModel.generateRandomCardNumber()
+                                        expirationDate = balanceViewModel.generateRandomExpiry()
+                                        cvv = balanceViewModel.generateRandomCVV()
+                                        errorMessage = null
+                                    }
+                                    .padding(12.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "GENERAR TARJETA ALEATORIA",
+                                    color = AccentGold,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Mostrar mensaje de error
+                            if (errorMessage != null) {
+                                Text(
+                                    text = errorMessage!!,
+                                    color = Color(0xFFFF5252),
+                                    fontSize = 13.sp,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+
+                            // Mostrar mensaje de éxito
+                            if (showSuccess) {
+                                Text(
+                                    text = "Depósito exitoso. Nuevo balance: ${formattedBalance}",
+                                    color = Color(0xFF00C853),
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+
+                            PrimaryButton(
+                                text = "DEPOSITAR",
+                                onClick = {
+                                    errorMessage = null
+                                    showSuccess = false
+
+                                    val amount = depositAmount.toDoubleOrNull()
+                                    if (amount == null || amount <= 0) {
+                                        errorMessage = "Por favor ingresa un monto válido"
+                                        return@PrimaryButton
+                                    }
+
+                                    if (selectedPaymentMethod == PaymentMethod.CARD) {
+                                        if (cardNumber.isEmpty() || cardNumber.replace(" ", "").length < 16) {
+                                            errorMessage = "Por favor ingresa un número de tarjeta válido"
+                                            return@PrimaryButton
+                                        }
+                                        if (expirationDate.isEmpty() || expirationDate.length < 5) {
+                                            errorMessage = "Por favor ingresa una fecha de expiración válida"
+                                            return@PrimaryButton
+                                        }
+                                        if (cvv.isEmpty() || cvv.length < 3) {
+                                            errorMessage = "Por favor ingresa un CVV válido"
+                                            return@PrimaryButton
+                                        }
+                                    }
+
+                                    val success = balanceViewModel.deposit(
+                                        amount = amount,
+                                        method = methodName
+                                    )
+
+                                    if (success) {
+                                        showSuccess = true
+                                        depositAmount = ""
+                                        cardNumber = ""
+                                        expirationDate = ""
+                                        cvv = ""
+                                        selectedAmountChip = ""
+                                    } else {
+                                        errorMessage = "Error al procesar el depósito. Inténtalo nuevamente."
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                brush = redGradient,
+                                textColor = Color.White
+                            )
                         }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Botón para generar tarjeta aleatoria
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = AccentGold.copy(alpha = 0.1f),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .border(
-                                width = 1.dp,
-                                color = AccentGold.copy(alpha = 0.5f),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .clickable {
-                                // Generar datos aleatorios de tarjeta
-                                cardNumber = balanceViewModel.generateRandomCardNumber()
-                                expirationDate = balanceViewModel.generateRandomExpiry()
-                                cvv = balanceViewModel.generateRandomCVV()
-                                errorMessage = null
-                            }
-                            .padding(12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "🎲 GENERAR TARJETA ALEATORIA",
-                            color = AccentGold,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Mostrar mensaje de error si existe
-                    if (errorMessage != null) {
-                        Text(
-                            text = errorMessage!!,
-                            color = Color(0xFFFF5252),
-                            fontSize = 13.sp,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-
-                    // Mostrar mensaje de éxito
-                    if (showSuccess) {
-                        Text(
-                            text = "✓ Depósito exitoso. Nuevo balance: ${formattedBalance}",
-                            color = Color(0xFF00C853),
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-
-                    PrimaryButton(
-                        text = "DEPOSITAR",
-                        onClick = {
-                            // Resetear mensajes
-                            errorMessage = null
-                            showSuccess = false
-
-                            // Validar que se haya ingresado un monto
-                            val amount = depositAmount.toDoubleOrNull()
-                            if (amount == null || amount <= 0) {
-                                errorMessage = "Por favor ingresa un monto válido"
-                                return@PrimaryButton
-                            }
-
-                            // Validar datos de tarjeta si el método es tarjeta
-                            if (selectedPaymentMethod == PaymentMethod.CARD) {
-                                if (cardNumber.isEmpty() || cardNumber.replace(" ", "").length < 16) {
-                                    errorMessage = "Por favor ingresa un número de tarjeta válido"
-                                    return@PrimaryButton
-                                }
-                                if (expirationDate.isEmpty() || expirationDate.length < 5) {
-                                    errorMessage = "Por favor ingresa una fecha de expiración válida"
-                                    return@PrimaryButton
-                                }
-                                if (cvv.isEmpty() || cvv.length < 3) {
-                                    errorMessage = "Por favor ingresa un CVV válido"
-                                    return@PrimaryButton
-                                }
-                            }
-
-                            // Procesar depósito
-                            val success = balanceViewModel.deposit(
-                                amount = amount,
-                                method = methodName
-                            )
-
-                            if (success) {
-                                showSuccess = true
-                                // Limpiar campos
-                                depositAmount = ""
-                                cardNumber = ""
-                                expirationDate = ""
-                                cvv = ""
-                                selectedAmountChip = ""
-                            } else {
-                                errorMessage = "Error al procesar el depósito. Inténtalo nuevamente."
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        brush = redGradient,
-                        textColor = Color.White
-                    )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            AppFooter(selectedItem = selectedFooterItem, onItemSelected = { selectedFooterItem = it }, navController = navController)
+            // ==========================================
+            // FOOTER FIJO
+            // ==========================================
+            AppFooter(
+                selectedItem = selectedFooterItem,
+                onItemSelected = { selectedFooterItem = it },
+                navController = navController
+            )
+        }
+    }
+}
+
+/**
+ * Header sticky con el título "← DEPÓSITO".
+ * Se queda fijo en la parte superior cuando el usuario hace scroll hacia abajo.
+ */
+@Composable
+private fun DepositStickyHeader(
+    onBackClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(DarkBackground)  // Fondo sólido para tapar el contenido que pasa por debajo
+            .padding(horizontal = 21.dp, vertical = 16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Volver",
+                tint = AccentGold,
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable { onBackClick() }
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = "DEPÓSITO",
+                color = AccentGold,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
@@ -467,7 +526,10 @@ private fun PaymentMethodBox(
         }
         if (selected) {
             Box(
-                modifier = Modifier.align(Alignment.TopEnd).size(20.dp).background(Color(0xFF4CAF50), CircleShape),
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(20.dp)
+                    .background(Color(0xFF4CAF50), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(Icons.Default.Check, null, tint = Color.White, modifier = Modifier.size(14.dp))
