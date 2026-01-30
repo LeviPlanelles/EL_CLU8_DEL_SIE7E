@@ -1,5 +1,12 @@
 package com.example.el_clu8_del_sie7e.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,13 +25,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -42,27 +49,34 @@ import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
+import com.example.el_clu8_del_sie7e.viewmodel.GameState
+import com.example.el_clu8_del_sie7e.viewmodel.SlotGameViewModel
+import com.example.el_clu8_del_sie7e.viewmodel.SlotSymbol
 
 /**
  * =====================================================================================
  * SLOTGAMEPLAYSCREEN.KT - PANTALLA DE JUEGO DE SLOT MACHINE
  * =====================================================================================
  *
- * Esta pantalla muestra el juego de slot machine interactivo.
+ * Esta pantalla muestra el juego de slot machine interactivo "Zeus Slot".
+ *
+ * CARACTERÍSTICAS:
+ * ----------------
+ * - 5 columnas x 3 filas de símbolos con animación de giro
+ * - Sistema de apuestas con validación de saldo
+ * - Detección de victorias (3, 4 o 5 símbolos iguales)
+ * - Auto-roll con multiplicadores x3, x5, x10
+ * - Feedback visual para victorias y derrotas
  *
  * ESTRUCTURA:
  * -----------
  * - AppHeader: Logo y balance del usuario
- * - Título del juego con botón atrás y ayuda (?)
- * - Máquina de slots: 5 carriles x 3 filas con símbolos
+ * - Título del juego con botón atrás y ayuda
+ * - Máquina de slots: 5 carriles x 3 filas
  * - Palanca roja para girar
- * - Sección de apuesta: chips de apuesta rápida
- * - Control de cantidad: - / cantidad / +
+ * - Sección de apuesta: chips y control de cantidad
  * - Auto-roll: multiplicadores de tiradas automáticas
  * - AppFooter: Navegación inferior
- *
- * NOTA: Esta pantalla es solo UI, la funcionalidad del juego
- * se implementará posteriormente.
  *
  * =====================================================================================
  */
@@ -79,28 +93,44 @@ private val ChipSelectedBg = Color(0xFFD4AF37)      // Fondo chip seleccionado (
 private val ChipUnselectedBg = Color.Transparent    // Fondo chip no seleccionado
 private val ChipBorder = Color(0xFF4A4A4A)          // Borde de chips no seleccionados
 private val BetControlBg = Color(0xFF2A2A2A)        // Fondo del control de apuesta
+private val WinGreen = Color(0xFF4CAF50)            // Verde para victorias
+private val LoseRed = Color(0xFFE53935)             // Rojo para derrotas
 
 // Colores de los símbolos
 private val SymbolYellow = Color(0xFFFFD54F)        // Amarillo para estrella
 private val SymbolRed = Color(0xFFE53935)           // Rojo para corazón
-private val SymbolBlue = Color(0xFF42A5F5)          // Azul para rayo/diamante
+private val SymbolBlue = Color(0xFF42A5F5)          // Azul para rayo
 private val SymbolCyan = Color(0xFF4DD0E1)          // Cyan para diamante
-private val SymbolGray = Color(0xFF9E9E9E)          // Gris para 7
+private val SymbolWhite = Color(0xFFEEEEEE)         // Blanco para templo
 
 @Composable
 fun SlotGamePlayScreen(
     navController: NavController,
     slotName: String,
     balanceViewModel: BalanceViewModel,
+    slotGameViewModel: SlotGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    // Estado del balance
+    // =========================================================================
+    // ESTADOS DEL VIEWMODEL
+    // =========================================================================
     val formattedBalance by balanceViewModel.formattedBalance.collectAsState()
-    
-    // Estados de la UI (solo para mostrar, sin funcionalidad real)
-    var selectedBetChip by remember { mutableIntStateOf(5) }    // Chip seleccionado (+1, +5, etc)
-    var currentBet by remember { mutableIntStateOf(5) }         // Apuesta actual
-    var selectedMultiplier by remember { mutableIntStateOf(0) } // 0 = ninguno, 3, 5, 10
+    val gameState by slotGameViewModel.gameState.collectAsState()
+    val currentBet by slotGameViewModel.currentBet.collectAsState()
+    val selectedChip by slotGameViewModel.selectedChip.collectAsState()
+    val autoRollMultiplier by slotGameViewModel.autoRollMultiplier.collectAsState()
+    val autoRollRemaining by slotGameViewModel.autoRollRemaining.collectAsState()
+    val reels by slotGameViewModel.reels.collectAsState()
+    val revealedColumns by slotGameViewModel.revealedColumns.collectAsState()
+    val message by slotGameViewModel.message.collectAsState()
+    val lastWinAmount by slotGameViewModel.lastWinAmount.collectAsState()
+    val lastSpinResult by slotGameViewModel.lastSpinResult.collectAsState()
+
+    // Estado para controlar la edición manual del campo de apuesta
+    var betText by remember(currentBet) { mutableStateOf(currentBet.toString()) }
+
+    // Determinar si el juego está activo (girando o revelando)
+    val isGameActive = gameState == GameState.SPINNING || gameState == GameState.REVEALING
 
     Box(
         modifier = modifier
@@ -133,38 +163,83 @@ fun SlotGamePlayScreen(
                 // ---------------------------------------------------------------
                 SlotGameHeader(
                     title = slotName.uppercase(),
-                    onBackClick = { navController.popBackStack() },
-                    onHelpClick = { /* TODO: Mostrar ayuda */ }
+                    onBackClick = { 
+                        slotGameViewModel.stopAutoRoll()
+                        navController.popBackStack() 
+                    },
+                    onHelpClick = { /* TODO: Mostrar ayuda con tabla de pagos */ }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 // ---------------------------------------------------------------
-                // 2.2 MÁQUINA DE SLOTS CON PALANCA
+                // 2.2 MENSAJE DE RESULTADO (Victoria/Derrota)
+                // ---------------------------------------------------------------
+                ResultMessage(
+                    message = message,
+                    isWin = gameState == GameState.WIN,
+                    winAmount = lastWinAmount
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // ---------------------------------------------------------------
+                // 2.3 MÁQUINA DE SLOTS CON PALANCA
                 // ---------------------------------------------------------------
                 SlotMachineWithLever(
-                    onLeverPull = { /* TODO: Implementar giro */ }
+                    reels = reels,
+                    revealedColumns = revealedColumns,
+                    isSpinning = isGameActive,
+                    winLines = lastSpinResult?.winLines?.map { it.rowIndex } ?: emptyList(),
+                    showWinHighlight = gameState == GameState.WIN,
+                    onLeverPull = {
+                        if (autoRollMultiplier > 0) {
+                            slotGameViewModel.startAutoRoll()
+                        } else {
+                            slotGameViewModel.spin()
+                        }
+                    },
+                    enabled = !isGameActive && slotGameViewModel.canSpin()
                 )
+
+                // Mostrar tiradas restantes de auto-roll
+                if (autoRollRemaining > 0) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Tiradas restantes: $autoRollRemaining",
+                        color = AccentGold,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // ---------------------------------------------------------------
-                // 2.3 SECCIÓN "TU APUESTA"
+                // 2.4 SECCIÓN "TU APUESTA"
                 // ---------------------------------------------------------------
                 BetSection(
-                    selectedChip = selectedBetChip,
-                    onChipSelected = { chip ->
-                        selectedBetChip = chip
-                        currentBet = chip
-                    },
+                    selectedChip = selectedChip,
+                    onChipSelected = { chip -> slotGameViewModel.selectChip(chip) },
                     currentBet = currentBet,
-                    onBetChange = { newBet -> currentBet = newBet },
-                    onBetIncrease = { currentBet += selectedBetChip },
-                    onBetDecrease = { if (currentBet > selectedBetChip) currentBet -= selectedBetChip },
-                    selectedMultiplier = selectedMultiplier,
-                    onMultiplierSelected = { mult ->
-                        selectedMultiplier = if (selectedMultiplier == mult) 0 else mult
-                    }
+                    betText = betText,
+                    onBetTextChange = { newText ->
+                        betText = newText
+                        newText.toIntOrNull()?.let { slotGameViewModel.setBet(it) }
+                    },
+                    onBetIncrease = { slotGameViewModel.increaseBet() },
+                    onBetDecrease = { slotGameViewModel.decreaseBet() },
+                    selectedMultiplier = autoRollMultiplier,
+                    onMultiplierSelected = { mult -> slotGameViewModel.toggleAutoRollMultiplier(mult) },
+                    onAutoRollClick = {
+                        if (autoRollRemaining > 0) {
+                            slotGameViewModel.stopAutoRoll()
+                        } else if (autoRollMultiplier > 0) {
+                            slotGameViewModel.startAutoRoll()
+                        }
+                    },
+                    isAutoRollActive = autoRollRemaining > 0,
+                    enabled = !isGameActive
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -185,6 +260,53 @@ fun SlotGamePlayScreen(
 // =====================================================================================
 // COMPONENTES DE LA PANTALLA
 // =====================================================================================
+
+/**
+ * Mensaje de resultado que muestra victoria o derrota con animación
+ */
+@Composable
+private fun ResultMessage(
+    message: String,
+    isWin: Boolean,
+    winAmount: Double
+) {
+    AnimatedVisibility(
+        visible = message.isNotEmpty(),
+        enter = fadeIn() + scaleIn(),
+        exit = fadeOut() + scaleOut()
+    ) {
+        val backgroundColor = if (isWin) WinGreen else LoseRed.copy(alpha = 0.8f)
+        val textColor = Color.White
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .background(backgroundColor)
+                .padding(vertical = 12.dp, horizontal = 16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = if (isWin) "!GANASTE!" else "SIN PREMIO",
+                    color = textColor,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                if (isWin && winAmount > 0) {
+                    Text(
+                        text = "+${String.format("%.2f", winAmount)} €",
+                        color = textColor,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
 
 /**
  * Header del juego con título, botón atrás y botón de ayuda
@@ -246,7 +368,13 @@ private fun SlotGameHeader(
  */
 @Composable
 private fun SlotMachineWithLever(
-    onLeverPull: () -> Unit
+    reels: List<List<SlotSymbol>>,
+    revealedColumns: Int,
+    isSpinning: Boolean,
+    winLines: List<Int>,
+    showWinHighlight: Boolean,
+    onLeverPull: () -> Unit,
+    enabled: Boolean
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -254,27 +382,37 @@ private fun SlotMachineWithLever(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Máquina de slots
-        SlotMachine()
+        SlotMachine(
+            reels = reels,
+            revealedColumns = revealedColumns,
+            isSpinning = isSpinning,
+            winLines = winLines,
+            showWinHighlight = showWinHighlight
+        )
 
         Spacer(modifier = Modifier.width(8.dp))
 
         // Palanca
-        SlotLever(onClick = onLeverPull)
+        SlotLever(
+            onClick = onLeverPull,
+            enabled = enabled,
+            isSpinning = isSpinning
+        )
     }
 }
 
 /**
  * Máquina de slots con 5 carriles y 3 filas
+ * Muestra los símbolos del ViewModel con animación de revelación
  */
 @Composable
-private fun SlotMachine() {
-    // Símbolos de ejemplo para mostrar en la máquina (3 filas x 5 columnas)
-    val symbols = listOf(
-        listOf("7", "7", "7", "7", "7"),      // Fila superior (gris/desenfocada)
-        listOf("star", "heart", "bolt", "temple", "diamond"), // Fila central (activa)
-        listOf("7", "7", "7", "7", "7")       // Fila inferior (gris/desenfocada)
-    )
-
+private fun SlotMachine(
+    reels: List<List<SlotSymbol>>,
+    revealedColumns: Int,
+    isSpinning: Boolean,
+    winLines: List<Int>,
+    showWinHighlight: Boolean
+) {
     Box(
         modifier = Modifier
             .width(280.dp)
@@ -288,40 +426,43 @@ private fun SlotMachine() {
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
-            symbols.forEachIndexed { rowIndex, row ->
-                val isActiveRow = rowIndex == 1 // Fila central es la activa
+            reels.forEachIndexed { rowIndex, row ->
+                val isWinningRow = showWinHighlight && winLines.contains(rowIndex)
                 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
+                        .weight(1f)
+                        .then(
+                            if (isWinningRow) {
+                                Modifier
+                                    .background(
+                                        WinGreen.copy(alpha = 0.2f),
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .border(2.dp, WinGreen, RoundedCornerShape(8.dp))
+                            } else Modifier
+                        ),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    row.forEach { symbol ->
-                        SlotSymbol(
+                    row.forEachIndexed { colIndex, symbol ->
+                        val isRevealed = colIndex < revealedColumns
+                        SlotSymbolView(
                             symbol = symbol,
-                            isActive = isActiveRow
+                            isRevealed = isRevealed,
+                            isSpinning = isSpinning && !isRevealed,
+                            isWinning = isWinningRow
                         )
                     }
                 }
                 
-                // Línea dorada después de la primera fila (línea de pago superior)
-                if (rowIndex == 0) {
+                // Línea dorada separadora entre filas
+                if (rowIndex < reels.size - 1) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(1.dp)
-                            .background(AccentGold.copy(alpha = 0.5f))
-                    )
-                }
-                
-                // Línea dorada después de la fila activa (línea de pago inferior)
-                if (rowIndex == 1) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(1.dp)
+                            .height(2.dp)
                             .background(AccentGold.copy(alpha = 0.5f))
                     )
                 }
@@ -331,124 +472,133 @@ private fun SlotMachine() {
 }
 
 /**
- * Símbolo individual de la máquina de slots
- * Usa composables simples para representar cada símbolo
+ * Vista de un símbolo individual con animación
  */
 @Composable
-private fun SlotSymbol(
-    symbol: String,
-    isActive: Boolean
+private fun SlotSymbolView(
+    symbol: SlotSymbol,
+    isRevealed: Boolean,
+    isSpinning: Boolean,
+    isWinning: Boolean
 ) {
-    val alpha = if (isActive) 1f else 0.3f
-    
+    // Animación de escala para símbolos ganadores
+    val scale by animateFloatAsState(
+        targetValue = if (isWinning) 1.1f else 1f,
+        animationSpec = tween(300),
+        label = "symbol_scale"
+    )
+
     Box(
         modifier = Modifier
-            .size(44.dp)
+            .size(48.dp)
+            .scale(scale)
             .clip(RoundedCornerShape(8.dp))
-            .background(SlotReelBg),
+            .background(SlotReelBg)
+            .then(
+                if (isWinning) {
+                    Modifier.border(2.dp, AccentGold, RoundedCornerShape(8.dp))
+                } else Modifier
+            ),
         contentAlignment = Alignment.Center
     ) {
-        when (symbol) {
-            "7" -> {
-                // Número 7 con Text
-                Text(
-                    text = "7",
-                    color = SymbolGray.copy(alpha = alpha),
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            "star" -> {
-                // Estrella amarilla - círculo con estrella interior
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(SymbolYellow.copy(alpha = alpha)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "★",
-                        color = Color.Black.copy(alpha = alpha * 0.8f),
-                        fontSize = 18.sp
-                    )
-                }
-            }
-            "heart" -> {
-                // Corazón rojo - círculo con corazón
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(SymbolRed.copy(alpha = alpha)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "♥",
-                        color = Color.White.copy(alpha = alpha),
-                        fontSize = 16.sp
-                    )
-                }
-            }
-            "bolt" -> {
-                // Rayo azul
-                Text(
-                    text = "⚡",
-                    color = SymbolBlue.copy(alpha = alpha),
-                    fontSize = 24.sp
-                )
-            }
-            "temple" -> {
-                // Templo griego - usando Canvas para dibujar
-                Canvas(modifier = Modifier.size(32.dp)) {
-                    val templeColor = Color.White.copy(alpha = alpha * 0.9f)
-                    // Base
-                    drawRoundRect(
-                        color = templeColor,
-                        topLeft = Offset(size.width * 0.2f, size.height * 0.75f),
-                        size = Size(size.width * 0.6f, size.height * 0.1f),
-                        cornerRadius = CornerRadius(2f)
-                    )
-                    // Columnas
-                    drawRoundRect(
-                        color = templeColor,
-                        topLeft = Offset(size.width * 0.25f, size.height * 0.35f),
-                        size = Size(size.width * 0.1f, size.height * 0.4f),
-                        cornerRadius = CornerRadius(2f)
-                    )
-                    drawRoundRect(
-                        color = templeColor,
-                        topLeft = Offset(size.width * 0.45f, size.height * 0.35f),
-                        size = Size(size.width * 0.1f, size.height * 0.4f),
-                        cornerRadius = CornerRadius(2f)
-                    )
-                    drawRoundRect(
-                        color = templeColor,
-                        topLeft = Offset(size.width * 0.65f, size.height * 0.35f),
-                        size = Size(size.width * 0.1f, size.height * 0.4f),
-                        cornerRadius = CornerRadius(2f)
-                    )
-                    // Techo triangular
-                    val roofPath = Path().apply {
-                        moveTo(size.width * 0.5f, size.height * 0.15f)
-                        lineTo(size.width * 0.15f, size.height * 0.35f)
-                        lineTo(size.width * 0.85f, size.height * 0.35f)
-                        close()
+        if (isSpinning) {
+            // Mostrar símbolo aleatorio durante el giro (efecto blur)
+            Text(
+                text = "?",
+                color = Color.Gray,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+        } else {
+            // Mostrar símbolo real
+            when (symbol) {
+                SlotSymbol.STAR -> {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(SymbolYellow),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "★",
+                            color = Color.Black.copy(alpha = 0.8f),
+                            fontSize = 20.sp
+                        )
                     }
-                    drawPath(roofPath, templeColor)
                 }
-            }
-            "diamond" -> {
-                // Diamante cyan
-                Canvas(modifier = Modifier.size(32.dp)) {
-                    val diamondPath = Path().apply {
-                        moveTo(size.width * 0.5f, size.height * 0.1f)
-                        lineTo(size.width * 0.85f, size.height * 0.4f)
-                        lineTo(size.width * 0.5f, size.height * 0.9f)
-                        lineTo(size.width * 0.15f, size.height * 0.4f)
-                        close()
+                SlotSymbol.HEART -> {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(SymbolRed),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "♥",
+                            color = Color.White,
+                            fontSize = 18.sp
+                        )
                     }
-                    drawPath(diamondPath, SymbolCyan.copy(alpha = alpha))
+                }
+                SlotSymbol.BOLT -> {
+                    Text(
+                        text = "⚡",
+                        color = SymbolBlue,
+                        fontSize = 28.sp
+                    )
+                }
+                SlotSymbol.TEMPLE -> {
+                    Canvas(modifier = Modifier.size(36.dp)) {
+                        val templeColor = SymbolWhite
+                        // Base
+                        drawRoundRect(
+                            color = templeColor,
+                            topLeft = Offset(size.width * 0.15f, size.height * 0.75f),
+                            size = Size(size.width * 0.7f, size.height * 0.1f),
+                            cornerRadius = CornerRadius(2f)
+                        )
+                        // Columnas
+                        drawRoundRect(
+                            color = templeColor,
+                            topLeft = Offset(size.width * 0.2f, size.height * 0.35f),
+                            size = Size(size.width * 0.12f, size.height * 0.4f),
+                            cornerRadius = CornerRadius(2f)
+                        )
+                        drawRoundRect(
+                            color = templeColor,
+                            topLeft = Offset(size.width * 0.44f, size.height * 0.35f),
+                            size = Size(size.width * 0.12f, size.height * 0.4f),
+                            cornerRadius = CornerRadius(2f)
+                        )
+                        drawRoundRect(
+                            color = templeColor,
+                            topLeft = Offset(size.width * 0.68f, size.height * 0.35f),
+                            size = Size(size.width * 0.12f, size.height * 0.4f),
+                            cornerRadius = CornerRadius(2f)
+                        )
+                        // Techo triangular
+                        val roofPath = Path().apply {
+                            moveTo(size.width * 0.5f, size.height * 0.1f)
+                            lineTo(size.width * 0.1f, size.height * 0.35f)
+                            lineTo(size.width * 0.9f, size.height * 0.35f)
+                            close()
+                        }
+                        drawPath(roofPath, templeColor)
+                    }
+                }
+                SlotSymbol.DIAMOND -> {
+                    Canvas(modifier = Modifier.size(36.dp)) {
+                        val diamondPath = Path().apply {
+                            moveTo(size.width * 0.5f, size.height * 0.05f)
+                            lineTo(size.width * 0.9f, size.height * 0.4f)
+                            lineTo(size.width * 0.5f, size.height * 0.95f)
+                            lineTo(size.width * 0.1f, size.height * 0.4f)
+                            close()
+                        }
+                        drawPath(diamondPath, SymbolCyan)
+                    }
                 }
             }
         }
@@ -456,29 +606,40 @@ private fun SlotSymbol(
 }
 
 /**
- * Palanca de la máquina de slots
+ * Palanca de la máquina de slots con animación
  */
 @Composable
 private fun SlotLever(
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enabled: Boolean,
+    isSpinning: Boolean
 ) {
+    // Animación de la palanca cuando está girando
+    val leverOffset by animateFloatAsState(
+        targetValue = if (isSpinning) 20f else 0f,
+        animationSpec = tween(200),
+        label = "lever_animation"
+    )
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .clickable { onClick() }
+            .clickable(enabled = enabled) { onClick() }
             .padding(4.dp)
     ) {
         // Bola roja de la palanca
         Box(
             modifier = Modifier
                 .size(36.dp)
+                .offset(y = leverOffset.dp)
                 .clip(CircleShape)
                 .background(
                     brush = Brush.radialGradient(
-                        colors = listOf(
-                            LeverRed,
-                            LeverRedDark
-                        )
+                        colors = if (enabled) {
+                            listOf(LeverRed, LeverRedDark)
+                        } else {
+                            listOf(Color.Gray, Color.DarkGray)
+                        }
                     )
                 )
         )
@@ -487,7 +648,7 @@ private fun SlotLever(
         Box(
             modifier = Modifier
                 .width(8.dp)
-                .height(80.dp)
+                .height((80 + leverOffset).dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(
                     brush = Brush.horizontalGradient(
@@ -519,11 +680,15 @@ private fun BetSection(
     selectedChip: Int,
     onChipSelected: (Int) -> Unit,
     currentBet: Int,
-    onBetChange: (Int) -> Unit,
+    betText: String,
+    onBetTextChange: (String) -> Unit,
     onBetIncrease: () -> Unit,
     onBetDecrease: () -> Unit,
     selectedMultiplier: Int,
-    onMultiplierSelected: (Int) -> Unit
+    onMultiplierSelected: (Int) -> Unit,
+    onAutoRollClick: () -> Unit,
+    isAutoRollActive: Boolean,
+    enabled: Boolean
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -557,7 +722,8 @@ private fun BetSection(
             BetChipsRow(
                 chips = listOf(1, 5, 10, 25, 100),
                 selectedChip = selectedChip,
-                onChipSelected = onChipSelected
+                onChipSelected = onChipSelected,
+                enabled = enabled
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -565,9 +731,11 @@ private fun BetSection(
             // Control de cantidad de apuesta (editable)
             BetAmountControl(
                 currentBet = currentBet,
-                onBetChange = onBetChange,
+                betText = betText,
+                onBetTextChange = onBetTextChange,
                 onIncrease = onBetIncrease,
-                onDecrease = onBetDecrease
+                onDecrease = onBetDecrease,
+                enabled = enabled
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -576,7 +744,10 @@ private fun BetSection(
             AutoRollRow(
                 multipliers = listOf(3, 5, 10),
                 selectedMultiplier = selectedMultiplier,
-                onMultiplierSelected = onMultiplierSelected
+                onMultiplierSelected = onMultiplierSelected,
+                onAutoRollClick = onAutoRollClick,
+                isAutoRollActive = isAutoRollActive,
+                enabled = enabled
             )
         }
     }
@@ -589,7 +760,8 @@ private fun BetSection(
 private fun BetChipsRow(
     chips: List<Int>,
     selectedChip: Int,
-    onChipSelected: (Int) -> Unit
+    onChipSelected: (Int) -> Unit,
+    enabled: Boolean
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -599,7 +771,8 @@ private fun BetChipsRow(
             BetChip(
                 value = chip,
                 isSelected = chip == selectedChip,
-                onClick = { onChipSelected(chip) }
+                onClick = { onChipSelected(chip) },
+                enabled = enabled
             )
         }
     }
@@ -612,10 +785,11 @@ private fun BetChipsRow(
 private fun BetChip(
     value: Int,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enabled: Boolean
 ) {
     val backgroundColor = if (isSelected) ChipSelectedBg else ChipUnselectedBg
-    val textColor = if (isSelected) Color.Black else Color.White
+    val textColor = if (isSelected) Color.Black else if (enabled) Color.White else Color.Gray
     val borderColor = if (isSelected) ChipSelectedBg else ChipBorder
 
     Box(
@@ -623,7 +797,7 @@ private fun BetChip(
             .clip(RoundedCornerShape(8.dp))
             .background(backgroundColor)
             .border(1.dp, borderColor, RoundedCornerShape(8.dp))
-            .clickable { onClick() }
+            .clickable(enabled = enabled) { onClick() }
             .padding(horizontal = 16.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -643,13 +817,12 @@ private fun BetChip(
 @Composable
 private fun BetAmountControl(
     currentBet: Int,
-    onBetChange: (Int) -> Unit,
+    betText: String,
+    onBetTextChange: (String) -> Unit,
     onIncrease: () -> Unit,
-    onDecrease: () -> Unit
+    onDecrease: () -> Unit,
+    enabled: Boolean
 ) {
-    // Estado local para el texto del campo editable
-    var betText by remember(currentBet) { mutableStateOf(currentBet.toString()) }
-    
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -660,14 +833,14 @@ private fun BetAmountControl(
             modifier = Modifier
                 .size(48.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .border(1.dp, AccentGold, RoundedCornerShape(8.dp))
-                .clickable { onDecrease() },
+                .border(1.dp, if (enabled) AccentGold else Color.Gray, RoundedCornerShape(8.dp))
+                .clickable(enabled = enabled) { onDecrease() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Remove,
                 contentDescription = "Disminuir apuesta",
-                tint = AccentGold,
+                tint = if (enabled) AccentGold else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -687,15 +860,10 @@ private fun BetAmountControl(
                 onValueChange = { newValue ->
                     // Solo permitir números
                     val filtered = newValue.filter { it.isDigit() }
-                    betText = filtered
-                    // Actualizar el valor si es válido
-                    val newBet = filtered.toIntOrNull() ?: 0
-                    if (newBet > 0) {
-                        onBetChange(newBet)
-                    }
+                    onBetTextChange(filtered)
                 },
                 textStyle = TextStyle(
-                    color = Color.White,
+                    color = if (enabled) Color.White else Color.Gray,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center
@@ -704,6 +872,7 @@ private fun BetAmountControl(
                     keyboardType = KeyboardType.Number
                 ),
                 singleLine = true,
+                enabled = enabled,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp),
@@ -716,7 +885,7 @@ private fun BetAmountControl(
                         innerTextField()
                         Text(
                             text = " €",
-                            color = Color.White,
+                            color = if (enabled) Color.White else Color.Gray,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -730,14 +899,14 @@ private fun BetAmountControl(
             modifier = Modifier
                 .size(48.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .border(1.dp, AccentGold, RoundedCornerShape(8.dp))
-                .clickable { onIncrease() },
+                .border(1.dp, if (enabled) AccentGold else Color.Gray, RoundedCornerShape(8.dp))
+                .clickable(enabled = enabled) { onIncrease() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Aumentar apuesta",
-                tint = AccentGold,
+                tint = if (enabled) AccentGold else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -751,7 +920,10 @@ private fun BetAmountControl(
 private fun AutoRollRow(
     multipliers: List<Int>,
     selectedMultiplier: Int,
-    onMultiplierSelected: (Int) -> Unit
+    onMultiplierSelected: (Int) -> Unit,
+    onAutoRollClick: () -> Unit,
+    isAutoRollActive: Boolean,
+    enabled: Boolean
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -762,14 +934,14 @@ private fun AutoRollRow(
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFF1A1A1A))
-                .border(1.dp, Color(0xFF3A3A3A), RoundedCornerShape(8.dp))
-                .clickable { /* TODO: Activar auto-roll */ }
+                .background(if (isAutoRollActive) LoseRed else Color(0xFF1A1A1A))
+                .border(1.dp, if (isAutoRollActive) LoseRed else Color(0xFF3A3A3A), RoundedCornerShape(8.dp))
+                .clickable(enabled = enabled || isAutoRollActive) { onAutoRollClick() }
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "AUTO-ROLL",
+                text = if (isAutoRollActive) "PARAR" else "AUTO-ROLL",
                 color = Color.White,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
@@ -781,7 +953,8 @@ private fun AutoRollRow(
             MultiplierChip(
                 multiplier = mult,
                 isSelected = mult == selectedMultiplier,
-                onClick = { onMultiplierSelected(mult) }
+                onClick = { onMultiplierSelected(mult) },
+                enabled = enabled && !isAutoRollActive
             )
         }
     }
@@ -794,10 +967,11 @@ private fun AutoRollRow(
 private fun MultiplierChip(
     multiplier: Int,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enabled: Boolean
 ) {
     val backgroundColor = if (isSelected) AccentGold else Color(0xFF1A1A1A)
-    val textColor = if (isSelected) Color.Black else Color.White
+    val textColor = if (isSelected) Color.Black else if (enabled) Color.White else Color.Gray
     val borderColor = if (isSelected) AccentGold else Color(0xFF3A3A3A)
 
     Box(
@@ -805,7 +979,7 @@ private fun MultiplierChip(
             .clip(RoundedCornerShape(8.dp))
             .background(backgroundColor)
             .border(1.dp, borderColor, RoundedCornerShape(8.dp))
-            .clickable { onClick() }
+            .clickable(enabled = enabled) { onClick() }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -825,10 +999,18 @@ private fun MultiplierChip(
 @Composable
 fun SlotGamePlayScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
-        SlotGamePlayScreen(
-            navController = rememberNavController(),
-            slotName = "Zeus Slot",
-            balanceViewModel = BalanceViewModel()
-        )
+        // Preview simplificado - en la app real se pasaría el ViewModel
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(DarkBackground),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Preview no disponible\n(requiere ViewModels)",
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
