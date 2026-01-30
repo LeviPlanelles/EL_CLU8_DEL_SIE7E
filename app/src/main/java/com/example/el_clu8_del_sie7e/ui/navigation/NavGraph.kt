@@ -1,6 +1,7 @@
 package com.example.el_clu8_del_sie7e.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -21,6 +22,7 @@ import com.example.el_clu8_del_sie7e.ui.screens.WalletScreen
 import com.example.el_clu8_del_sie7e.ui.screens.WithdrawScreen
 import com.example.el_clu8_del_sie7e.ui.screens.PromocionesScreen
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
+import com.example.el_clu8_del_sie7e.viewmodel.SlotGameViewModel
 
 /**
  * =====================================================================================
@@ -204,6 +206,7 @@ fun NavGraph() {
          * - Recibe el nombre del slot como parámetro
          * - UI: Máquina con 5 carriles, palanca, controles de apuesta
          * - Balance sincronizado con BalanceViewModel
+         * - Lógica del juego manejada por SlotGameViewModel
          */
         composable(
             route = Routes.SLOT_GAME_PLAY_SCREEN,
@@ -215,10 +218,15 @@ fun NavGraph() {
             )
         ) { backStackEntry ->
             val slotName = backStackEntry.arguments?.getString("slotName") ?: "Slot"
+            // Crear SlotGameViewModel con el BalanceViewModel como dependencia
+            val slotGameViewModel = remember(balanceViewModel) {
+                SlotGameViewModel(balanceViewModel)
+            }
             SlotGamePlayScreen(
                 navController = navController,
                 slotName = slotName,
-                balanceViewModel = balanceViewModel
+                balanceViewModel = balanceViewModel,
+                slotGameViewModel = slotGameViewModel
             )
         }
 
