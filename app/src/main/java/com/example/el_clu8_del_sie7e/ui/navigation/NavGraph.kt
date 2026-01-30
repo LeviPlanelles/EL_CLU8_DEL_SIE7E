@@ -2,14 +2,17 @@ package com.example.el_clu8_del_sie7e.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.el_clu8_del_sie7e.ui.screens.DepositScreen
 import com.example.el_clu8_del_sie7e.ui.screens.GameSearchScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LobbyScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LoginScreen
 import com.example.el_clu8_del_sie7e.ui.screens.ProfileScreen
+import com.example.el_clu8_del_sie7e.ui.screens.SlotGamePlayScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SlotsScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SplashScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SupportScreen
@@ -191,6 +194,30 @@ fun NavGraph() {
         composable(route = Routes.SLOTS_GAME_SCREEN) {
             SlotsScreen(
                 navController = navController,
+                balanceViewModel = balanceViewModel
+            )
+        }
+
+        /**
+         * Pantalla de Juego de Slot (Individual)
+         * - Muestra la máquina tragaperras para jugar
+         * - Recibe el nombre del slot como parámetro
+         * - UI: Máquina con 5 carriles, palanca, controles de apuesta
+         * - Balance sincronizado con BalanceViewModel
+         */
+        composable(
+            route = Routes.SLOT_GAME_PLAY_SCREEN,
+            arguments = listOf(
+                navArgument("slotName") {
+                    type = NavType.StringType
+                    defaultValue = "Slot"
+                }
+            )
+        ) { backStackEntry ->
+            val slotName = backStackEntry.arguments?.getString("slotName") ?: "Slot"
+            SlotGamePlayScreen(
+                navController = navController,
+                slotName = slotName,
                 balanceViewModel = balanceViewModel
             )
         }

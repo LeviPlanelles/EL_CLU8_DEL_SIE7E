@@ -77,8 +77,14 @@ object Routes {
     /** Juego de Blackjack */
     const val BLACKJACK_GAME_SCREEN = "blackjack_game_screen"
 
-    /** Juego de Tragaperras/Slots */
+    /** Juego de Tragaperras/Slots - Galería */
     const val SLOTS_GAME_SCREEN = "slots_game_screen"
+
+    /** 
+     * Juego de Tragaperras/Slots - Pantalla de juego individual
+     * Recibe el nombre del slot como parámetro: slot_game_play/{slotName}
+     */
+    const val SLOT_GAME_PLAY_SCREEN = "slot_game_play/{slotName}"
 
     /** Juego de Ruleta */
     const val ROULETTE_GAME_SCREEN = "roulette_game_screen"
