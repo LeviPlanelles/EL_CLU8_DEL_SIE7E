@@ -4,34 +4,17 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,7 +22,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,53 +32,21 @@ import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
-import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
-import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
-import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 
-/**
- * =====================================================================================
- * SLOTSSCREEN.KT - PANTALLA DE GALERIA DE SLOTS
- * =====================================================================================
- *
- * Esta pantalla muestra una galeria con todos los juegos de slots disponibles.
- * Incluye barra de busqueda, filtros por categoria y grid de slots.
- *
- * ESTRUCTURA:
- * -----------
- * - AppHeader: Logo y balance del usuario
- * - Titulo "SLOTS" con flecha de retorno y linea dorada
- * - Barra de busqueda
- * - Filtros: Todos, Nuevos, Jackpot, Clasico
- * - Grid de slots en 2 columnas con scroll vertical
- * - Cada slot tiene imagen, nombre, badge y boton JUGAR
- * - AppFooter: Navegacion inferior con "Mesas" seleccionado
- *
- * FONDO:
- * ------
- * - Fondo oscuro solido (DarkBackground #1E1E1E)
- *
- * NAVEGACION:
- * -----------
- * - Puede volver a la pantalla anterior
- * - Cada slot navega al juego correspondiente
- *
- * =====================================================================================
- */
+// Colores extraídos de la imagen
+val CasinoGold = Color(0xFFC6A966) // Dorado suave
+val CasinoRed = Color(0xFFA80F25)  // Rojo oscuro para botón "Todos"
+val CasinoDarkBg = Color(0xFF1E1E1E) // Fondo principal
+val CardOverlayColor = Color(0xB3000000) // Negro semitransparente para botón jugar
+val BadgeHotRed = Color(0xFFD32F2F)
+val BadgeNewGold = Color(0xFFFFB300)
 
-// Enum para los tipos de badge de los slots
-enum class SlotBadge {
-    NONE,       // Sin badge
-    HOT,        // Badge rojo "HOT"
-    NUEVO,      // Badge verde "NUEVO"
-    JACKPOT     // Badge dorado "JACKPOT"
-}
+enum class SlotBadgeType { NONE, HOT, NUEVO, JACKPOT }
 
-// Data class para representar un slot
-data class SlotItem(
+data class SlotGame(
     val name: String,
     val imageRes: Int,
-    val badge: SlotBadge = SlotBadge.NONE
+    val badge: SlotBadgeType = SlotBadgeType.NONE
 )
 
 @Composable
@@ -104,322 +54,219 @@ fun SlotsScreen(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
-    // Estado para la busqueda
-    var searchQuery by remember { mutableStateOf("") }
-    
-    // Estado para el filtro seleccionado
-    var selectedFilter by remember { mutableStateOf("Todos") }
-    
-    // Estado para el item seleccionado en el footer
-    var selectedFooterItem by remember { mutableStateOf("Mesas") }
-    
-    // Lista de filtros disponibles
-    val filters = listOf("Todos", "Nuevos", "Jackpot", "Clásico")
-    
-    // Lista de slots disponibles
+    // Datos de ejemplo basados en la imagen
     val slots = listOf(
-        SlotItem("Neon Fortune", R.drawable.slot_neon_fortune, SlotBadge.NONE),
-        SlotItem("Golden Empire", R.drawable.slot_golden_empire, SlotBadge.NONE),
-        SlotItem("Inferno Spin", R.drawable.slot_inferno_fortunes, SlotBadge.HOT),
-        SlotItem("Zeus Slot", R.drawable.slot_zeus, SlotBadge.NUEVO),
-        SlotItem("Bonus Slot 1", R.drawable.slot_additional_1, SlotBadge.NONE),
-        SlotItem("Bonus Slot 2", R.drawable.slot_additional_2, SlotBadge.JACKPOT)
+        SlotGame("Neon Fortune", R.drawable.slot_neon_fortune),
+        SlotGame("Golden Empire", R.drawable.slot_golden_empire),
+        SlotGame("Inferno Spin", R.drawable.slot_inferno_fortunes, SlotBadgeType.HOT),
+        SlotGame("Zeus Slot", R.drawable.slot_zeus, SlotBadgeType.NUEVO),
+        // Rellenos para simular más elementos
+        SlotGame("Classic 777", R.drawable.slot_additional_1, SlotBadgeType.JACKPOT),
+        SlotGame("Lucky Diamond", R.drawable.slot_additional_2)
     )
-    
-    // Filtrar slots segun busqueda y filtro seleccionado
-    val filteredSlots = slots.filter { slot ->
-        val matchesSearch = slot.name.contains(searchQuery, ignoreCase = true)
-        val matchesFilter = when (selectedFilter) {
-            "Todos" -> true
-            "Nuevos" -> slot.badge == SlotBadge.NUEVO
-            "Jackpot" -> slot.badge == SlotBadge.JACKPOT
-            "Clásico" -> slot.badge == SlotBadge.NONE
-            else -> true
-        }
-        matchesSearch && matchesFilter
-    }
+
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedFilter by remember { mutableStateOf("Todos") }
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(DarkBackground) // Fondo oscuro solido
+            .background(CasinoDarkBg)
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // ==================== HEADER ====================
+            // 1. HEADER (Reutilizando tu componente o simulándolo)
             AppHeader(
                 balance = "$5,000.00",
                 navController = navController
             )
 
-            // ==================== CONTENIDO PRINCIPAL ====================
+            // 2. CONTENIDO SCROLLABLE
             Column(
                 modifier = Modifier
-                    .weight(1f) // Ocupa el espacio disponible entre header y footer
+                    .weight(1f)
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp)
             ) {
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // ==================== TITULO CON FLECHA ATRAS ====================
-                SlotsHeader(
-                    onBackClick = { navController.popBackStack() }
-                )
-                
+                // Título y Flecha atrás
+                SlotScreenTitle(onBackClick = { navController.popBackStack() })
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
-                // ==================== BARRA DE BUSQUEDA ====================
-                SearchBar(
-                    query = searchQuery,
-                    onQueryChange = { searchQuery = it },
-                    modifier = Modifier.fillMaxWidth()
+
+                // Barra de Búsqueda
+                SlotSearchBar(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it }
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
-                // ==================== FILTROS ====================
-                FilterChips(
-                    filters = filters,
+
+                // Filtros (Chips)
+                SlotFiltersRow(
                     selectedFilter = selectedFilter,
                     onFilterSelected = { selectedFilter = it }
                 )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // ==================== GRID DE SLOTS ====================
-                SlotsGrid(
-                    slots = filteredSlots,
-                    onSlotClick = { slotName ->
-                        // Navegar al juego del slot
-                        // navController.navigate("slot_game/$slotName")
-                    }
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Grid de Slots
+                SlotGrid(slots = slots)
+
+                Spacer(modifier = Modifier.height(24.dp))
             }
-            
-            // ==================== FOOTER ====================
+
+            // 3. FOOTER
             AppFooter(
-                selectedItem = selectedFooterItem,
-                onItemSelected = { selectedFooterItem = it },
+                selectedItem = "Mesas", // Aunque estemos en Slots, mantenemos la selección activa o cambiamos a "Slots" si existe
+                onItemSelected = { /* Navegación footer */ },
                 navController = navController
             )
         }
     }
 }
 
-/**
- * Header con titulo "SLOTS", flecha de retorno y linea dorada
- */
+// ----------------------------------------------------------------
+// COMPONENTES UI ESPECÍFICOS DE ESTA PANTALLA
+// ----------------------------------------------------------------
+
 @Composable
-fun SlotsHeader(
-    onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun SlotScreenTitle(onBackClick: () -> Unit) {
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Fila con flecha y titulo
-        Box(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // Flecha de retorno a la izquierda
+        Box(modifier = Modifier.fillMaxWidth()) {
             IconButton(
                 onClick = onBackClick,
                 modifier = Modifier.align(Alignment.CenterStart)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                    contentDescription = "Volver",
-                    tint = AccentGold,
+                    contentDescription = "Atrás",
+                    tint = CasinoGold,
                     modifier = Modifier.size(32.dp)
                 )
             }
-            
-            // Titulo centrado
             Text(
                 text = "SLOTS",
-                color = AccentGold,
-                fontSize = 24.sp,
+                color = CasinoGold,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.Center)
             )
         }
-        
-        // Linea dorada debajo del titulo
+        // Efecto de brillo/línea debajo del título
         Box(
             modifier = Modifier
-                .width(80.dp)
-                .height(3.dp)
+                .width(100.dp)
+                .height(2.dp)
                 .background(
                     brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            AccentGold,
-                            AccentGold,
-                            Color.Transparent
-                        )
+                        colors = listOf(Color.Transparent, CasinoGold, Color.Transparent)
                     )
                 )
         )
     }
 }
 
-/**
- * Barra de busqueda con estilo oscuro
- */
 @Composable
-fun SearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    TextField(
-        value = query,
-        onValueChange = onQueryChange,
+fun SlotSearchBar(value: String, onValueChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(54.dp),
+        shape = RoundedCornerShape(12.dp),
         placeholder = {
-            Text(
-                text = "Busca tu slot favorito...",
-                color = Color.Gray,
-                fontSize = 14.sp
-            )
+            Text("Busca tu slot favorito...", color = Color.Gray, fontSize = 14.sp)
         },
         leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Buscar",
-                tint = Color.Gray
-            )
+            Icon(Icons.Default.Search, contentDescription = null, tint = CasinoGold)
         },
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color(0xFF2A2A2A),
-            unfocusedContainerColor = Color(0xFF2A2A2A),
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            cursorColor = AccentGold,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color(0xFF2C2C2C),
+            unfocusedContainerColor = Color(0xFF2C2C2C),
+            focusedBorderColor = CasinoGold,
+            unfocusedBorderColor = Color(0xFF3E3E3E),
+            cursorColor = CasinoGold,
             focusedTextColor = Color.White,
             unfocusedTextColor = Color.White
         ),
-        textStyle = TextStyle(
-            fontSize = 14.sp
-        ),
-        shape = RoundedCornerShape(12.dp),
-        singleLine = true,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(52.dp)
+        singleLine = true
     )
 }
 
-/**
- * Fila de chips de filtro (Todos, Nuevos, Jackpot, Clasico)
- */
 @Composable
-fun FilterChips(
-    filters: List<String>,
+fun SlotFiltersRow(
     selectedFilter: String,
-    onFilterSelected: (String) -> Unit,
-    modifier: Modifier = Modifier
+    onFilterSelected: (String) -> Unit
 ) {
+    val filters = listOf("Todos", "Nuevos", "Jackpot", "Clásico")
+
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         filters.forEach { filter ->
-            SlotFilterChip(
-                text = filter,
-                isSelected = filter == selectedFilter,
-                onClick = { onFilterSelected(filter) }
-            )
-        }
-    }
-}
+            val isSelected = filter == selectedFilter
+            // El botón "Todos" es rojo sólido en la imagen si está seleccionado
+            // Los demás son oscuros con borde dorado.
+            val isRedButton = filter == "Todos" && isSelected
 
-/**
- * Chip individual de filtro para slots
- */
-@Composable
-fun SlotFilterChip(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val backgroundColor = if (isSelected) AccentGold else Color.Transparent
-    val textColor = if (isSelected) Color.Black else Color.White
-    val borderColor = if (isSelected) AccentGold else Color.Gray
-    
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(backgroundColor)
-            .border(
-                width = 1.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(20.dp)
-            )
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            // Icono de grid solo para "Todos"
-            if (text == "Todos") {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_grid),
-                    contentDescription = null,
-                    tint = textColor,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-            }
-            
-            Text(
-                text = text,
-                color = textColor,
-                fontSize = 14.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-            )
-        }
-    }
-}
+            val bgColor = if (isRedButton) CasinoRed else Color(0xFF2C2C2C)
+            val borderColor = if (isRedButton) Color.Transparent else if (isSelected) CasinoGold else Color(0xFF3E3E3E)
+            val textColor = if (isSelected || isRedButton) Color.White else CasinoGold
 
-/**
- * Grid de slots en 2 columnas
- */
-@Composable
-fun SlotsGrid(
-    slots: List<SlotItem>,
-    onSlotClick: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Crear filas de 2 slots cada una
-        slots.chunked(2).forEach { rowSlots ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 4.dp)
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(bgColor)
+                    .border(1.dp, borderColor, RoundedCornerShape(8.dp))
+                    .clickable { onFilterSelected(filter) },
+                contentAlignment = Alignment.Center
             ) {
-                rowSlots.forEach { slot ->
-                    SlotCard(
-                        slot = slot,
-                        onClick = { onSlotClick(slot.name) },
-                        modifier = Modifier.weight(1f)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (filter == "Todos") {
+                        Icon(
+                            imageVector = Icons.Default.GridView,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                    Text(
+                        text = filter,
+                        color = textColor,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
                     )
                 }
-                
-                // Si la fila tiene solo 1 slot, agregar spacer para mantener el layout
-                if (rowSlots.size == 1) {
+            }
+        }
+    }
+}
+
+@Composable
+fun SlotGrid(slots: List<SlotGame>) {
+    // Implementación manual de grid de 2 columnas para control total
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        slots.chunked(2).forEach { rowItems ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                rowItems.forEach { slot ->
+                    SlotCard(slot = slot, modifier = Modifier.weight(1f))
+                }
+                // Si la fila tiene un número impar, rellenamos con espacio vacío
+                if (rowItems.size < 2) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
             }
@@ -427,117 +274,111 @@ fun SlotsGrid(
     }
 }
 
-/**
- * Card individual de slot con imagen, nombre, badge y boton JUGAR
- */
 @Composable
-fun SlotCard(
-    slot: SlotItem,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
+fun SlotCard(slot: SlotGame, modifier: Modifier = Modifier) {
+    Card(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF1A1A1A))
-            .clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
+            .aspectRatio(0.75f) // Proporción vertical (aprox 3:4)
+            .clickable { },
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        // ==================== IMAGEN CON BADGE ====================
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(140.dp)
-        ) {
-            // Imagen del slot
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 1. Imagen de Fondo (Llena toda la tarjeta)
             Image(
                 painter = painterResource(id = slot.imageRes),
                 contentDescription = slot.name,
                 contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // 2. Degradado Oscuro en la parte inferior para legibilidad del texto
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, Color.Transparent, Color.Black),
+                            startY = 0f,
+                            endY = Float.POSITIVE_INFINITY
+                        )
+                    )
             )
-            
-            // Badge en la esquina superior derecha
-            if (slot.badge != SlotBadge.NONE) {
-                SlotBadgeChip(
-                    badge = slot.badge,
+
+            // 3. Contenido (Nombre y Botón Jugar)
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = slot.name,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                // Botón "JUGAR" estilo píldora con borde dorado
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50)) // Píldora
+                        .background(CardOverlayColor) // Fondo negro semitransparente
+                        .border(1.dp, CasinoGold, RoundedCornerShape(50))
+                        .padding(horizontal = 24.dp, vertical = 6.dp)
+                        .clickable { /* Jugar */ }
+                ) {
+                    Text(
+                        text = "JUGAR",
+                        color = CasinoGold,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                }
+            }
+
+            // 4. Badges (Etiquetas en la esquina)
+            if (slot.badge != SlotBadgeType.NONE) {
+                SlotBadgeComponent(
+                    type = slot.badge,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(8.dp)
                 )
             }
         }
-        
-        // ==================== NOMBRE DEL SLOT ====================
-        Text(
-            text = slot.name,
-            color = Color.White,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp)
-        )
-        
-        // ==================== BOTON JUGAR ====================
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 12.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(AccentGold)
-                .clickable { onClick() }
-                .padding(horizontal = 24.dp, vertical = 8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "JUGAR",
-                color = Color.Black,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
     }
 }
 
-/**
- * Badge chip para mostrar HOT, NUEVO o JACKPOT
- */
 @Composable
-fun SlotBadgeChip(
-    badge: SlotBadge,
-    modifier: Modifier = Modifier
-) {
-    val (backgroundColor, text) = when (badge) {
-        SlotBadge.HOT -> Pair(Color(0xFFE53935), "HOT")
-        SlotBadge.NUEVO -> Pair(Color(0xFF43A047), "NUEVO")
-        SlotBadge.JACKPOT -> Pair(AccentGold, "JACKPOT")
-        SlotBadge.NONE -> return
+fun SlotBadgeComponent(type: SlotBadgeType, modifier: Modifier = Modifier) {
+    val (color, text) = when (type) {
+        SlotBadgeType.HOT -> BadgeHotRed to "HOT"
+        SlotBadgeType.NUEVO -> BadgeNewGold to "NUEVO"
+        SlotBadgeType.JACKPOT -> BadgeNewGold to "JACKPOT"
+        else -> Color.Transparent to ""
     }
-    
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(4.dp))
-            .background(backgroundColor)
-            .padding(horizontal = 6.dp, vertical = 2.dp),
-        contentAlignment = Alignment.Center
+            .background(color)
+            .padding(horizontal = 8.dp, vertical = 2.dp)
     ) {
         Text(
             text = text,
-            color = if (badge == SlotBadge.JACKPOT) Color.Black else Color.White,
+            color = Color.White,
             fontSize = 10.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.ExtraBold
         )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SlotsScreenPreview() {
-    EL_CLU8_DEL_SIE7ETheme {
-        SlotsScreen(navController = rememberNavController())
-    }
+fun SlotsPreview() {
+    SlotsScreen(navController = rememberNavController())
 }
