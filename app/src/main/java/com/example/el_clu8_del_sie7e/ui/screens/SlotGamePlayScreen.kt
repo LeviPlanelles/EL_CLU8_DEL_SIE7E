@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -41,6 +42,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.ui.components.AppFooter
@@ -129,8 +132,21 @@ fun SlotGamePlayScreen(
     // Estado para controlar la edición manual del campo de apuesta
     var betText by remember(currentBet) { mutableStateOf(currentBet.toString()) }
 
+    // Estado para mostrar/ocultar el diálogo de ayuda
+    var showHelpDialog by remember { mutableStateOf(false) }
+
     // Determinar si el juego está activo (girando o revelando)
     val isGameActive = gameState == GameState.SPINNING || gameState == GameState.REVEALING
+
+    // =========================================================================
+    // DIÁLOGO DE AYUDA
+    // =========================================================================
+    if (showHelpDialog) {
+        HelpDialog(
+            slotName = slotName,
+            onDismiss = { showHelpDialog = false }
+        )
+    }
 
     Box(
         modifier = modifier
@@ -167,7 +183,7 @@ fun SlotGamePlayScreen(
                         slotGameViewModel.stopAutoRoll()
                         navController.popBackStack() 
                     },
-                    onHelpClick = { /* TODO: Mostrar ayuda con tabla de pagos */ }
+                    onHelpClick = { showHelpDialog = true }
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -988,6 +1004,315 @@ private fun MultiplierChip(
             color = textColor,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+// =====================================================================================
+// DIÁLOGO DE AYUDA - REGLAS Y TABLA DE PAGOS
+// =====================================================================================
+
+/**
+ * Diálogo de ayuda que muestra las reglas del juego y la tabla de pagos
+ */
+@Composable
+private fun HelpDialog(
+    slotName: String,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color(0xFF1E1E1E))
+                .border(2.dp, AccentGold.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+            ) {
+                // ---------------------------------------------------------------
+                // HEADER DEL DIÁLOGO
+                // ---------------------------------------------------------------
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "AYUDA",
+                        color = AccentGold,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                    
+                    // Botón cerrar
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Cerrar",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // ---------------------------------------------------------------
+                // CONTENIDO SCROLLABLE
+                // ---------------------------------------------------------------
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 400.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    // =====================================================
+                    // SECCIÓN: CÓMO JUGAR
+                    // =====================================================
+                    HelpSectionTitle(title = "COMO JUGAR")
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    HelpText("1. Selecciona tu apuesta usando los chips (+1, +5, +10, +25, +100) o escribe el importe manualmente.")
+                    HelpText("2. Tira de la palanca roja para girar los rodillos.")
+                    HelpText("3. Gana si consigues 3, 4 o 5 simbolos iguales consecutivos en una fila horizontal.")
+                    HelpText("4. Las ganancias se calculan multiplicando tu apuesta por el multiplicador del simbolo.")
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // =====================================================
+                    // SECCIÓN: SÍMBOLOS Y PAGOS
+                    // =====================================================
+                    HelpSectionTitle(title = "TABLA DE PAGOS")
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Encabezado de la tabla
+                    PayTableHeader()
+                    
+                    Spacer(modifier = Modifier.height(4.dp))
+                    
+                    // Filas de la tabla de pagos
+                    PayTableRow(
+                        symbolEmoji = "⭐",
+                        symbolName = "Estrella",
+                        symbolColor = SymbolYellow,
+                        x3 = "x2",
+                        x4 = "x5",
+                        x5 = "x10"
+                    )
+                    PayTableRow(
+                        symbolEmoji = "♥",
+                        symbolName = "Corazon",
+                        symbolColor = SymbolRed,
+                        x3 = "x3",
+                        x4 = "x8",
+                        x5 = "x15"
+                    )
+                    PayTableRow(
+                        symbolEmoji = "⚡",
+                        symbolName = "Rayo",
+                        symbolColor = SymbolBlue,
+                        x3 = "x5",
+                        x4 = "x12",
+                        x5 = "x25"
+                    )
+                    PayTableRow(
+                        symbolEmoji = "🏛",
+                        symbolName = "Templo",
+                        symbolColor = SymbolWhite,
+                        x3 = "x10",
+                        x4 = "x25",
+                        x5 = "x50"
+                    )
+                    PayTableRow(
+                        symbolEmoji = "💎",
+                        symbolName = "Diamante",
+                        symbolColor = SymbolCyan,
+                        x3 = "x15",
+                        x4 = "x40",
+                        x5 = "x100"
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // =====================================================
+                    // SECCIÓN: AUTO-ROLL
+                    // =====================================================
+                    HelpSectionTitle(title = "AUTO-ROLL")
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    HelpText("Selecciona un multiplicador (x3, x5, x10) y pulsa AUTO-ROLL para realizar tiradas automaticas.")
+                    HelpText("El auto-roll se detendra si te quedas sin saldo o si pulsas PARAR.")
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // =====================================================
+                    // SECCIÓN: REGLAS IMPORTANTES
+                    // =====================================================
+                    HelpSectionTitle(title = "REGLAS")
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    HelpText("• La apuesta minima es de 1€.")
+                    HelpText("• No puedes apostar mas de tu saldo disponible.")
+                    HelpText("• Los simbolos deben ser consecutivos desde la izquierda.")
+                    HelpText("• Cada fila es una linea de pago independiente.")
+                    HelpText("• Puedes ganar en multiples filas a la vez.")
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Título de sección en el diálogo de ayuda
+ */
+@Composable
+private fun HelpSectionTitle(title: String) {
+    Text(
+        text = title,
+        color = AccentGold,
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold
+    )
+}
+
+/**
+ * Texto de ayuda con estilo consistente
+ */
+@Composable
+private fun HelpText(text: String) {
+    Text(
+        text = text,
+        color = Color.White.copy(alpha = 0.9f),
+        fontSize = 13.sp,
+        lineHeight = 18.sp,
+        modifier = Modifier.padding(vertical = 2.dp)
+    )
+}
+
+/**
+ * Encabezado de la tabla de pagos
+ */
+@Composable
+private fun PayTableHeader() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF2A2A2A), RoundedCornerShape(8.dp))
+            .padding(vertical = 8.dp, horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Simbolo",
+            color = Color.Gray,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.weight(1.5f)
+        )
+        Text(
+            text = "x3",
+            color = Color.Gray,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = "x4",
+            color = Color.Gray,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = "x5",
+            color = Color.Gray,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+/**
+ * Fila de la tabla de pagos con símbolo y multiplicadores
+ */
+@Composable
+private fun PayTableRow(
+    symbolEmoji: String,
+    symbolName: String,
+    symbolColor: Color,
+    x3: String,
+    x4: String,
+    x5: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp, horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Símbolo y nombre
+        Row(
+            modifier = Modifier.weight(1.5f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = symbolEmoji,
+                fontSize = 18.sp,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(
+                text = symbolName,
+                color = symbolColor,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+        
+        // Multiplicadores
+        Text(
+            text = x3,
+            color = Color.White,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = x4,
+            color = Color.White,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = x5,
+            color = AccentGold,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.weight(1f)
         )
     }
 }
