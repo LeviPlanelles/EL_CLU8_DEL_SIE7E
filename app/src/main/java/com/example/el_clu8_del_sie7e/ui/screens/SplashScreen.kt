@@ -78,12 +78,16 @@ import com.example.el_clu8_del_sie7e.ui.components.LogoChargingScreen
  * Pantalla de Splash (Bienvenida)
  *
  * @param navController Controlador de navegacion para ir a la siguiente pantalla
+ * @param onSplashFinished Callback que se llama cuando termina el splash (para manejar navegación)
  *
- * NOTA: Esta pantalla necesita el navController para poder navegar automaticamente
- * al LoginScreen despues de 3 segundos.
+ * NOTA: Esta pantalla usa un callback para que el NavGraph maneje la navegación
+ * basada en el estado de autenticación (logueado o no).
  */
 @Composable
-fun SplashScreen(navController: NavController) {
+fun SplashScreen(
+    navController: NavController,
+    onSplashFinished: () -> Unit = {}
+) {
 
     // ====================================================================================
     // EFECTO DE NAVEGACION AUTOMATICA
@@ -95,20 +99,15 @@ fun SplashScreen(navController: NavController) {
      *
      * FLUJO:
      * 1. Espera 3 segundos (3000 milisegundos)
-     * 2. Limpia el back stack (para que no se pueda volver a splash)
-     * 3. Navega al Login
+     * 2. Llama al callback onSplashFinished
+     * 3. El NavGraph maneja la navegación basada en estado de auth
      */
     LaunchedEffect(key1 = true) {
         // Esperamos 3 segundos mostrando el splash
         delay(3000)
 
-        // Navegamos al Login y quitamos el Splash del historial
-        // Esto evita que el usuario pueda volver al splash presionando "atras"
-        navController.navigate(Routes.LOGIN_SCREEN) {
-            // popUpTo elimina pantallas del historial hasta llegar a SPLASH_SCREEN
-            // inclusive = true significa que tambien elimina SPLASH_SCREEN
-            popUpTo(Routes.SPLASH_SCREEN) { inclusive = true }
-        }
+        // Llamar al callback para que el NavGraph maneje la navegación
+        onSplashFinished()
     }
 
     // ====================================================================================

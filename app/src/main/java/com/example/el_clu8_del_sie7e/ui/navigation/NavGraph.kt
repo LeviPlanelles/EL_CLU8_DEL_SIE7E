@@ -1,10 +1,13 @@
 package com.example.el_clu8_del_sie7e.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.el_clu8_del_sie7e.data.repository.AuthRepository
 import com.example.el_clu8_del_sie7e.ui.screens.DepositScreen
 import com.example.el_clu8_del_sie7e.ui.screens.GameSearchScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LobbyScreen
@@ -22,96 +25,45 @@ import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
 /**
  * =====================================================================================
- * NAVGRAPH.KT - GRAFO DE NAVEGACION DE LA APLICACION
+ * NAVGRAPH.KT - GRAFO DE NAVEGACION DE LA APLICACION CON FIREBASE AUTH
  * =====================================================================================
  *
  * Este archivo define COMO se navega entre las pantallas de la app.
  *
- * QUE ES UN GRAFO DE NAVEGACION?
- * ------------------------------
- * Es un "mapa" que define:
- * 1. Que pantallas existen en la app
- * 2. Como se puede ir de una pantalla a otra
- * 3. Cual es la pantalla inicial
+ * FLUJO DE AUTENTICACIÓN:
+ * ----------------------
+ * 1. SplashScreen (3 seg) verifica si hay sesión activa
+ * 2. Si hay sesión -> Navega a Lobby
+ * 3. Si NO hay sesión -> Navega a Login
+ * 4. Desde Login puede ir a Register o recuperar contraseña
+ * 5. Todas las pantallas principales requieren autenticación
  *
- * COMPONENTES PRINCIPALES:
- * ------------------------
- *
- * NavController:
- * - Es el "controlador" de la navegacion
- * - Guarda el historial de pantallas (back stack)
- * - Permite navegar a otras pantallas con navigate()
- * - Permite volver atras con popBackStack()
- *
- * NavHost:
- * - Es el "contenedor" donde se muestran las pantallas
- * - Define todas las rutas posibles y sus pantallas
- * - Solo muestra UNA pantalla a la vez
- *
- * composable():
- * - Asocia una ruta (String) con un Composable (pantalla)
- * - Cuando navegas a esa ruta, se muestra ese Composable
- *
- * COMO AGREGAR UNA NUEVA PANTALLA:
- * --------------------------------
- * 1. Crear el archivo de la pantalla en ui/screens/
- * 2. Agregar la ruta en Routes.kt
- * 3. Agregar el composable aqui en el NavHost
- *
- * Ejemplo:
- * ```kotlin
- * composable(Routes.MI_PANTALLA) {
- *     MiPantallaScreen(navController = navController)
- * }
- * ```
- *
- * COMO NAVEGAR ENTRE PANTALLAS:
- * -----------------------------
- * Desde cualquier pantalla que tenga acceso al navController:
- *
- * ```kotlin
- * // Ir a otra pantalla (se agrega al historial)
- * navController.navigate(Routes.OTRA_PANTALLA)
- *
- * // Ir a otra pantalla y borrar el historial (no se puede volver atras)
- * navController.navigate(Routes.OTRA_PANTALLA) {
- *     popUpTo(Routes.PANTALLA_ACTUAL) { inclusive = true }
- * }
- *
- * // Volver a la pantalla anterior
- * navController.popBackStack()
- * ```
+ * PERSISTENCIA DE SESIÓN:
+ * ----------------------
+ * Firebase Auth mantiene la sesión activa automáticamente.
+ * Al reiniciar la app, el usuario sigue logueado.
  *
  * =====================================================================================
  */
 
-/**
- * Composable principal que define la navegacion de toda la app.
- *
- * Este composable se llama desde MainActivity y contiene todas las pantallas.
- *
- * FLUJO DE NAVEGACION ACTUAL:
- * ---------------------------
- * SplashScreen (3 seg) --> LoginScreen --> [Proximas pantallas]
- */
 @Composable
 fun NavGraph() {
-    // Creamos el controlador de navegacion
-    // rememberNavController() asegura que sobreviva a recomposiciones
+    // Controlador de navegación
     val navController = rememberNavController()
     
-    // ===================================================================
-    // VIEWMODEL COMPARTIDO DE BALANCE
-    // ===================================================================
-    // Creamos UNA SOLA instancia del BalanceViewModel a nivel de NavGraph
-    // para que sea compartida por TODAS las pantallas de la aplicación.
-    // Esto asegura que el balance se mantenga sincronizado en toda la app.
+    // ViewModel compartido de Balance
     val balanceViewModel: BalanceViewModel = viewModel()
+    
+    // Repositorio de autenticación para verificar estado
+    val authRepository = AuthRepository.getInstance()
+    val currentUser by authRepository.currentUser.collectAsState()
 
-    // NavHost es el contenedor de todas las pantallas
+    // Determinar pantalla inicial basada en estado de autenticación
+    val startDestination = Routes.SPLASH_SCREEN
+
     NavHost(
-        navController = navController,          // El controlador que gestiona la navegacion
-        startDestination = Routes.SPLASH_SCREEN // La primera pantalla que se muestra
+        navController = navController,
+        startDestination = startDestination
     ) {
         // ==================================================================================
         // PANTALLAS DE AUTENTICACION
@@ -119,43 +71,74 @@ fun NavGraph() {
 
         /**
          * Pantalla de Splash (Bienvenida)
-         * - Primera pantalla que ve el usuario
          * - Muestra el logo por 3 segundos
-         * - Navega automaticamente al Login
+         * - Verifica si hay sesión activa
+         * - Navega a Lobby (si hay sesión) o Login (si no hay sesión)
          */
         composable(route = Routes.SPLASH_SCREEN) {
-            SplashScreen(navController = navController)
+            SplashScreen(
+                navController = navController,
+                onSplashFinished = {
+                    // Verificar si hay usuario logueado
+                    if (currentUser != null) {
+                        // Hay sesión activa -> Ir al Lobby
+                        navController.navigate(Routes.LOBBY_SCREEN) {
+                            popUpTo(Routes.SPLASH_SCREEN) { inclusive = true }
+                        }
+                    } else {
+                        // No hay sesión -> Ir a Login
+                        navController.navigate(Routes.LOGIN_SCREEN) {
+                            popUpTo(Routes.SPLASH_SCREEN) { inclusive = true }
+                        }
+                    }
+                }
+            )
         }
 
         /**
          * Pantalla de Login
-         * - El usuario ingresa sus credenciales
+         * - El usuario ingresa email y contraseña
+         * - Usa Firebase Auth para autenticación
+         * - Navega a Lobby si el login es exitoso
          * - Puede navegar a Registro si no tiene cuenta
          */
         composable(route = Routes.LOGIN_SCREEN) {
-            LoginScreen(navController = navController)
+            LoginScreen(
+                navController = navController,
+                onLoginSuccess = {
+                    // Navegar al Lobby y limpiar historial de auth
+                    navController.navigate(Routes.LOBBY_SCREEN) {
+                        popUpTo(Routes.LOGIN_SCREEN) { inclusive = true }
+                    }
+                }
+            )
         }
-
-        // ==================================================================================
-        // PROXIMAS PANTALLAS (agregar aqui cuando se implementen)
-        // ==================================================================================
 
         /**
          * Pantalla de Registro
-         * - Formulario para crear una nueva cuenta
+         * - Formulario para crear una nueva cuenta con Firebase
+         * - Envía email de verificación
          * - Puede volver al Login si ya tiene cuenta
          */
         composable(route = Routes.REGISTER_SCREEN) {
-            com.example.el_clu8_del_sie7e.ui.screens.RegisterScreen(navController = navController)
+            com.example.el_clu8_del_sie7e.ui.screens.RegisterScreen(
+                navController = navController,
+                onRegisterSuccess = {
+                    // Después de registrar, ir al Login
+                    navController.navigate(Routes.LOGIN_SCREEN) {
+                        popUpTo(Routes.REGISTER_SCREEN) { inclusive = true }
+                    }
+                }
+            )
         }
 
         // ==================================================================================
-        // PANTALLAS PRINCIPALES
+        // PANTALLAS PRINCIPALES (Requieren autenticación)
         // ==================================================================================
 
         /**
          * Pantalla de Lobby (Principal)
-         * - Pantalla principal despues del login
+         * - Pantalla principal después del login
          * - Muestra juegos destacados, bonos y navegacion
          */
         composable(route = Routes.LOBBY_SCREEN) {
@@ -171,9 +154,6 @@ fun NavGraph() {
 
         /**
          * Pantalla de Búsqueda de Juegos
-         * - Permite buscar y filtrar juegos
-         * - Muestra juegos populares con calificación
-         * - Filtros por categoría (Todos, Slots, Cartas, Otros)
          */
         composable(route = Routes.GAME_SEARCH_SCREEN) {
             GameSearchScreen(
@@ -184,10 +164,6 @@ fun NavGraph() {
 
         /**
          * Pantalla de Galería de Slots
-         * - Muestra todos los juegos de slots disponibles
-         * - Grid de 2 columnas con scroll vertical
-         * - 6 slots: Neon Fortune, Golden Empire, Inferno Fortunes, Zeus, Bonus Slot 1, Bonus Slot 2
-         * - Balance sincronizado con BalanceViewModel
          */
         composable(route = Routes.SLOTS_GAME_SCREEN) {
             SlotsScreen(
@@ -198,12 +174,6 @@ fun NavGraph() {
 
         /**
          * Pantalla de Ruleta de Casino
-         * - Mesa de ruleta con números rojos, negros y verde (0)
-         * - Fichas de apuesta seleccionables ($1, $10, $100, $200)
-         * - Botones de acción: Deshacer, Apostar, Repetir
-         * - Temporizador de ronda y últimos números ganadores
-         * - Imagen de mesera en el header
-         * - Balance sincronizado con BalanceViewModel
          */
         composable(route = Routes.ROULETTE_GAME_SCREEN) {
             RouletteGameScreen(
@@ -218,9 +188,6 @@ fun NavGraph() {
 
         /**
          * Pantalla de Depósito
-         * - Permite depositar fondos en la cuenta
-         * - Selección de método de pago (Tarjeta, Transferencia, E-Wallet)
-         * - Montos rápidos y formulario de tarjeta
          */
         composable(route = Routes.DEPOSIT_SCREEN) {
             DepositScreen(
@@ -231,10 +198,6 @@ fun NavGraph() {
 
         /**
          * Pantalla de Retiro de Fondos
-         * - Permite retirar ganancias de la cuenta
-         * - Selección de método de retiro (Transferencia, Visa/Mastercard, Cripto)
-         * - Muestra saldo disponible y límites
-         * - Sin comisiones
          */
         composable(route = Routes.WITHDRAW_SCREEN) {
             WithdrawScreen(
@@ -245,9 +208,6 @@ fun NavGraph() {
 
         /**
          * Pantalla de Cartera (Wallet)
-         * - Pantalla principal de gestión financiera
-         * - Opciones: Depositar, Retirar, Historial
-         * - Banner de seguridad premium
          */
         composable(route = Routes.WALLET_SCREEN) {
             WalletScreen(
@@ -258,10 +218,6 @@ fun NavGraph() {
 
         /**
          * Pantalla de Historial de Transacciones
-         * - Muestra todas las transacciones del usuario
-         * - Filtros: Todos, Depósitos, Retirados, Ganados
-         * - Transacciones agrupadas por fecha (HOY, AYER, etc.)
-         * - Indicadores de estado: EXITOSO, COMPLETADO, PENDIENTE, CANCELADA
          */
         composable(route = Routes.TRANSACTION_HISTORY_SCREEN) {
             TransactionHistoryScreen(
@@ -276,15 +232,20 @@ fun NavGraph() {
 
         /**
          * Pantalla de Perfil
-         * - Muestra información del usuario (foto, nombre, nivel)
-         * - Estadísticas: Saldo Actual y Puntos VIP
-         * - Opciones: Datos Personales, Seguridad, Límites de Juego
-         * - Botón de cerrar sesión
+         * - Muestra información del usuario
+         * - Incluye botón de cerrar sesión
          */
         composable(route = Routes.PROFILE_SCREEN) {
             ProfileScreen(
                 navController = navController,
-                balanceViewModel = balanceViewModel
+                balanceViewModel = balanceViewModel,
+                onLogout = {
+                    // Cerrar sesión y volver al Login
+                    authRepository.logout()
+                    navController.navigate(Routes.LOGIN_SCREEN) {
+                        popUpTo(Routes.LOBBY_SCREEN) { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -293,23 +254,14 @@ fun NavGraph() {
         // ==================================================================================
 
         /**
-          * Pantalla de Soporte y Ayuda
-          * - Canales de atención: Chat en Vivo y Tickets
-          * - FAQs (Preguntas Frecuentes) expandibles
-          * - Información de contacto telefónico
-          * - Accesible desde el icono de ayuda en ProfileScreen
-          */
+         * Pantalla de Soporte y Ayuda
+         */
         composable(route = Routes.SUPPORT_SCREEN) {
             SupportScreen(navController = navController)
         }
 
         /**
          * Pantalla de Promociones
-         * - Muestra todas las promociones y bonos disponibles
-         * - Filtros: Todos, Casino Live, Slots, Roulette
-         * - Tarjeta principal de bono de bienvenida
-         * - Sección "PARA TI" con promociones personalizadas
-         * - Balance sincronizado con BalanceViewModel
          */
         composable(route = Routes.PROMOTIONS_SCREEN) {
             PromocionesScreen(

@@ -14,21 +14,21 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Login
+import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -36,6 +36,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.ui.components.AppLogo
@@ -47,112 +49,71 @@ import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.ui.theme.GradientCenter
 import com.example.el_clu8_del_sie7e.ui.theme.GradientEdge
+import com.example.el_clu8_del_sie7e.viewmodel.LoginViewModel
 
 /**
  * =====================================================================================
- * LOGINSCREEN.KT - PANTALLA DE INICIO DE SESION
+ * LOGINSCREEN.KT - PANTALLA DE INICIO DE SESION CON FIREBASE
  * =====================================================================================
  *
- * Esta pantalla permite al usuario iniciar sesion con su usuario y contrasena.
+ * Esta pantalla permite al usuario iniciar sesion con email y contraseña usando Firebase Auth.
  *
- * CONCEPTOS DE COMPOSE QUE SE USAN AQUI:
- * --------------------------------------
- *
- * 1. remember + mutableStateOf:
- *    - Crea una variable de estado que sobrevive a las recomposiciones
- *    - Cuando el valor cambia, Compose redibuja automaticamente los elementos afectados
- *
- * 2. by (delegado):
- *    - Simplifica el acceso al valor del estado
- *    - Sin "by": username.value = "algo"
- *    - Con "by": username = "algo"
- *
- * 3. State Hoisting (Elevacion de Estado):
- *    - Los componentes (TextField, Button) NO manejan su propio estado
- *    - El estado se "eleva" al composable padre (LoginScreen)
- *    - Esto hace los componentes mas reutilizables y faciles de testear
- *
- * 4. VisualTransformation:
- *    - Transforma como se muestra el texto sin cambiar su valor
- *    - PasswordVisualTransformation() muestra puntos en lugar de letras
- *
- * ESTRUCTURA DE LA PANTALLA:
- * --------------------------
- * - Logo de la app (AppLogo)
- * - Campo de usuario (StyledTextField)
- * - Campo de contrasena (StyledTextField con icono de ojo)
- * - Link "Olvide mi contrasena"
- * - Boton "INICIAR SESION" (PrimaryButton)
- * - Separador
- * - Boton "REGISTRARSE" (SecondaryButton)
- * - Icono de huella dactilar
+ * FUNCIONALIDADES:
+ * - Login con email y contraseña
+ * - Validación de campos
+ * - Indicador de carga
+ * - Manejo de errores
+ * - Navegación a registro
+ * - Navegación a recuperar contraseña
  *
  * =====================================================================================
  */
 
-/**
- * Pantalla de Login.
- *
- * @param navController Controlador de navegacion para ir a otras pantallas
- *
- * NOTA: Actualmente el estado se maneja localmente en la pantalla.
- * En una app real, deberiamos usar un LoginViewModel para:
- * - Validar las credenciales
- * - Llamar a la API de autenticacion
- * - Manejar estados de carga y errores
- */
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(
+    navController: NavController,
+    onLoginSuccess: () -> Unit = {},
+    viewModel: LoginViewModel = viewModel()
+) {
 
-    // ====================================================================================
-    // ESTADO DE LA PANTALLA
-    // ====================================================================================
-    /**
-     * Variables de estado para los campos del formulario.
-     *
-     * remember: Guarda el valor entre recomposiciones
-     * mutableStateOf: Crea un estado observable (cuando cambia, Compose redibuja)
-     * by: Delegado que permite acceder directamente al valor (sin .value)
-     */
+    // Observar estado del ViewModel
+    val email = viewModel.email
+    val password = viewModel.password
+    val isPasswordVisible = viewModel.isPasswordVisible
+    val isLoading = viewModel.isLoading
+    val errorMessage = viewModel.errorMessage
+    val loginSuccess = viewModel.loginSuccess
 
-    // Estado del campo de usuario
-    var username by remember { mutableStateOf("") }
-
-    // Estado del campo de contrasena
-    var password by remember { mutableStateOf("") }
-
-    // Estado para mostrar/ocultar la contrasena
-    var passwordVisible by remember { mutableStateOf(false) }
+    // Efecto para manejar navegación cuando el login es exitoso
+    LaunchedEffect(loginSuccess) {
+        if (loginSuccess) {
+            viewModel.resetLoginSuccess()
+            onLoginSuccess()
+        }
+    }
 
     // ====================================================================================
     // INTERFAZ DE USUARIO (UI)
     // ====================================================================================
-    /**
-     * Box como contenedor principal con el fondo gradiente.
-     *
-     * IMPORTANTE: Usamos el MISMO gradiente que en SplashScreen
-     * para mantener la consistencia visual de la app.
-     */
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        GradientCenter,  // Rojo claro en el centro
-                        GradientEdge     // Rojo oscuro en los bordes
+                        GradientCenter,
+                        GradientEdge
                     ),
                     radius = 900f
                 )
             )
     ) {
-        // Columna principal con scroll para pantallas pequenas
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())  // Permite scroll si no cabe
-                .padding(horizontal = 24.dp)            // Padding lateral
-                .padding(vertical = 48.dp),             // Padding arriba y abajo
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp)
+                .padding(vertical = 48.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -160,80 +121,54 @@ fun LoginScreen(navController: NavController) {
             // ------------------------------------------------------------------
             // LOGO DE LA APP
             // ------------------------------------------------------------------
-            /**
-             * Componente reutilizable que muestra:
-             * - Icono de corona
-             * - "EL CLU8 DEL SIE7E"
-             * - "EXCLUSIVIDAD . LUJO . JUEGO"
-             */
             AppLogo()
 
             Spacer(modifier = Modifier.height(48.dp))
 
             // ------------------------------------------------------------------
-            // CAMPO DE USUARIO
+            // CAMPO DE EMAIL
             // ------------------------------------------------------------------
-            /**
-             * StyledTextField es nuestro componente reutilizable de campo de texto.
-             *
-             * value: El valor actual del campo
-             * onValueChange: Funcion que se llama cuando el usuario escribe
-             * leadingIcon: Icono al inicio del campo
-             */
             StyledTextField(
-                value = username,
-                onValueChange = { nuevoValor ->
-                    username = nuevoValor  // Actualizamos el estado
-                },
-                label = "Usuario",
-                leadingIcon = Icons.Filled.Person  // Icono de persona
+                value = email,
+                onValueChange = viewModel::onEmailChange,
+                label = "Email",
+                leadingIcon = Icons.Filled.Person,
+                enabled = !isLoading
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // ------------------------------------------------------------------
-            // CAMPO DE CONTRASENA
+            // CAMPO DE CONTRASEÑA
             // ------------------------------------------------------------------
-            /**
-             * Campo de contrasena con icono para mostrar/ocultar.
-             *
-             * trailingIcon: Icono al final del campo (el ojo)
-             * visualTransformation: Transforma el texto visualmente
-             */
             StyledTextField(
                 value = password,
-                onValueChange = { nuevoValor ->
-                    password = nuevoValor
-                },
-                label = "Contrasena",
-                leadingIcon = Icons.Filled.Lock,  // Icono de candado
+                onValueChange = viewModel::onPasswordChange,
+                label = "Contraseña",
+                leadingIcon = Icons.Filled.Lock,
+                enabled = !isLoading,
                 trailingIcon = {
-                    // Icono que cambia segun si la contrasena es visible o no
-                    val iconoOjo = if (passwordVisible) {
-                        Icons.Filled.Visibility      // Ojo abierto
+                    val iconoOjo = if (isPasswordVisible) {
+                        Icons.Filled.Visibility
                     } else {
-                        Icons.Filled.VisibilityOff   // Ojo cerrado
+                        Icons.Filled.VisibilityOff
                     }
 
-                    // Boton que al presionarlo cambia la visibilidad
                     IconButton(
-                        onClick = {
-                            passwordVisible = !passwordVisible  // Toggle
-                        }
+                        onClick = viewModel::onTogglePasswordVisibility,
+                        enabled = !isLoading
                     ) {
                         Icon(
                             imageVector = iconoOjo,
-                            contentDescription = if (passwordVisible) {
-                                "Ocultar contrasena"
+                            contentDescription = if (isPasswordVisible) {
+                                "Ocultar contraseña"
                             } else {
-                                "Mostrar contrasena"
+                                "Mostrar contraseña"
                             }
                         )
                     }
                 },
-                // Si passwordVisible es true, muestra el texto normal
-                // Si es false, muestra puntos (oculta la contrasena)
-                visualTransformation = if (passwordVisible) {
+                visualTransformation = if (isPasswordVisible) {
                     VisualTransformation.None
                 } else {
                     PasswordVisualTransformation()
@@ -241,20 +176,14 @@ fun LoginScreen(navController: NavController) {
             )
 
             // ------------------------------------------------------------------
-            // LINK "OLVIDE MI CONTRASENA"
+            // LINK "OLVIDE MI CONTRASEÑA"
             // ------------------------------------------------------------------
-            /**
-             * TextButton es un boton sin fondo, solo texto.
-             * Se usa para acciones secundarias o links.
-             */
             TextButton(
-                onClick = {
-                    // TODO: Navegar a pantalla de recuperar contrasena
-                    // navController.navigate(Routes.FORGOT_PASSWORD_SCREEN)
-                }
+                onClick = viewModel::onForgotPasswordClick,
+                enabled = !isLoading
             ) {
                 Text(
-                    text = "Olvide mi contrasena",
+                    text = "Olvidé mi contraseña",
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
             }
@@ -262,23 +191,37 @@ fun LoginScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             // ------------------------------------------------------------------
-            // BOTON DE INICIAR SESION
+            // INDICADOR DE CARGA O BOTON DE LOGIN
             // ------------------------------------------------------------------
-            /**
-             * PrimaryButton es nuestro boton principal reutilizable.
-             * Tiene fondo dorado y texto oscuro.
-             */
-            PrimaryButton(
-                text = "INICIAR SESION",
-                onClick = {
-                    // TODO: Implementar logica de login
-                    // 1. Validar que username y password no esten vacios
-                    // 2. Llamar al ViewModel para autenticar
-                    // 3. Si es exitoso, navegar al Lobby
-                    navController.navigate(Routes.LOBBY_SCREEN)
-                },
-                icon = Icons.Filled.Login  // Icono de login
-            )
+            if (isLoading) {
+                CircularProgressIndicator(
+                    color = AccentGold,
+                    modifier = Modifier.size(48.dp)
+                )
+            } else {
+                PrimaryButton(
+                    text = "INICIAR SESIÓN",
+                    onClick = viewModel::onLoginClick,
+                    icon = Icons.AutoMirrored.Filled.Login
+                )
+            }
+
+            // ------------------------------------------------------------------
+            // MENSAJE DE ERROR
+            // ------------------------------------------------------------------
+            if (errorMessage != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Snackbar(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    action = {
+                        TextButton(onClick = viewModel::clearError) {
+                            Text("OK", color = AccentGold)
+                        }
+                    }
+                ) {
+                    Text(errorMessage)
+                }
+            }
 
             // ------------------------------------------------------------------
             // SEPARADOR
@@ -291,32 +234,23 @@ fun LoginScreen(navController: NavController) {
             // ------------------------------------------------------------------
             // BOTON DE REGISTRARSE
             // ------------------------------------------------------------------
-            /**
-             * SecondaryButton es nuestro boton secundario.
-             * Tiene fondo transparente y borde/texto dorado.
-             */
             SecondaryButton(
                 text = "REGISTRARSE",
                 onClick = {
                     navController.navigate(Routes.REGISTER_SCREEN)
-                }
+                },
+                enabled = !isLoading
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             // ------------------------------------------------------------------
-            // ICONO DE HUELLA DACTILAR
+            // ICONO DE HUELLA DACTILAR (FUTURO)
             // ------------------------------------------------------------------
-            /**
-             * Icono decorativo para indicar que en el futuro
-             * se podra usar autenticacion biometrica.
-             *
-             * TODO: Implementar login con huella dactilar usando BiometricPrompt
-             */
             Icon(
                 imageVector = Icons.Filled.Fingerprint,
-                contentDescription = "Iniciar sesion con huella dactilar",
-                tint = AccentGold,
+                contentDescription = "Iniciar sesión con huella dactilar",
+                tint = AccentGold.copy(alpha = 0.5f),
                 modifier = Modifier.size(48.dp)
             )
         }
@@ -324,18 +258,15 @@ fun LoginScreen(navController: NavController) {
 }
 
 // ======================================================================================
-// PREVIEW - VISTA PREVIA EN ANDROID STUDIO
+// PREVIEW
 // ======================================================================================
-/**
- * Preview para ver la pantalla en Android Studio.
- *
- * showSystemUi = true muestra la barra de estado y navegacion
- * para ver como se vera en un dispositivo real.
- */
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun LoginScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
-        LoginScreen(navController = rememberNavController())
+        LoginScreen(
+            navController = rememberNavController(),
+            onLoginSuccess = {}
+        )
     }
 }

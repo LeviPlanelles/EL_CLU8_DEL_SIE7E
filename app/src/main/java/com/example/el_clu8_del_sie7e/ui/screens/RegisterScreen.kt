@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -32,6 +33,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.ui.navigation.Routes
@@ -39,14 +41,38 @@ import com.example.el_clu8_del_sie7e.ui.theme.*
 import com.example.el_clu8_del_sie7e.viewmodel.RegisterViewModel
 
 /**
- * REGISTERSCREEN.KT - PANTALLA DE REGISTRO
- * Optimización de espaciados y alineación fiel al diseño.
+ * REGISTERSCREEN.KT - PANTALLA DE REGISTRO CON FIREBASE
+ * 
+ * Esta pantalla permite al usuario crear una cuenta con Firebase Auth.
+ * 
+ * FUNCIONALIDADES:
+ * - Registro con email y contraseña
+ * - Validación de campos
+ * - Indicador de carga
+ * - Manejo de errores
+ * - Envío de email de verificación
  */
 @Composable
 fun RegisterScreen(
     navController: NavController,
-    viewModel: RegisterViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    onRegisterSuccess: () -> Unit = {},
+    viewModel: RegisterViewModel = viewModel()
 ) {
+    
+    // Observar estado del ViewModel
+    val isLoading = viewModel.isLoading
+    val errorMessage = viewModel.errorMessage
+    val successMessage = viewModel.successMessage
+    val registerSuccess = viewModel.registerSuccess
+    
+    // Efecto para manejar navegación cuando el registro es exitoso
+    LaunchedEffect(registerSuccess) {
+        if (registerSuccess) {
+            viewModel.resetRegisterSuccess()
+            onRegisterSuccess()
+        }
+    }
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -58,7 +84,7 @@ fun RegisterScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
         ) {
-            // 1. Cabecera (Reducida a 64dp de altura para que sea menos prominente)
+            // 1. Cabecera
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -79,7 +105,7 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 2. Título "REGÍSTRATE" con tamaño 22sp
+            // 2. Título "REGÍSTRATE"
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -108,13 +134,14 @@ fun RegisterScreen(
                 fontSize = 11.sp
             )
 
-            // 3. Campos del formulario (19dp de separación entre bloques)
+            // 3. Campos del formulario
             RegisterInputField(
                 label = "Nombre Completo",
                 placeholder = "Ej. Guillermo Cholbi",
                 value = viewModel.fullName,
                 onValueChange = { viewModel.onFullNameChange(it) },
-                leadingIcon = Icons.Filled.Person
+                leadingIcon = Icons.Filled.Person,
+                enabled = !isLoading
             )
 
             RegisterInputField(
@@ -122,7 +149,8 @@ fun RegisterScreen(
                 placeholder = "usuario@ejemplo.com",
                 value = viewModel.email,
                 onValueChange = { viewModel.onEmailChange(it) },
-                leadingIcon = Icons.Filled.Email
+                leadingIcon = Icons.Filled.Email,
+                enabled = !isLoading
             )
 
             RegisterInputField(
@@ -131,6 +159,7 @@ fun RegisterScreen(
                 value = viewModel.birthDate,
                 onValueChange = { viewModel.onBirthDateChange(it) },
                 leadingIcon = Icons.Filled.CalendarToday,
+                enabled = !isLoading,
                 trailingIcon = {
                     Icon(Icons.Filled.CalendarToday, null, tint = AccentGold, modifier = Modifier.size(18.dp))
                 }
@@ -144,7 +173,8 @@ fun RegisterScreen(
                 leadingIcon = Icons.Filled.Lock,
                 isPassword = true,
                 isVisible = viewModel.isPasswordVisible,
-                onToggleVisibility = { viewModel.togglePasswordVisibility() }
+                onToggleVisibility = { viewModel.togglePasswordVisibility() },
+                enabled = !isLoading
             )
 
             RegisterInputField(
@@ -155,20 +185,22 @@ fun RegisterScreen(
                 leadingIcon = Icons.Filled.Lock,
                 isPassword = true,
                 isVisible = viewModel.isConfirmPasswordVisible,
-                onToggleVisibility = { viewModel.toggleConfirmPasswordVisibility() }
+                onToggleVisibility = { viewModel.toggleConfirmPasswordVisibility() },
+                enabled = !isLoading
             )
 
-            // 4. Checkbox y Términos (Texto reducido a 9sp)
+            // 4. Checkbox y Términos
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp), // Reducido el padding vertical para ajustar margen
+                    .padding(top = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
                     checked = viewModel.termsAccepted,
                     onCheckedChange = { viewModel.onTermsAcceptedChange(it) },
                     modifier = Modifier.size(24.dp),
+                    enabled = !isLoading,
                     colors = CheckboxDefaults.colors(
                         checkedColor = AccentGold,
                         uncheckedColor = Color.Gray,
@@ -192,32 +224,66 @@ fun RegisterScreen(
             }
 
             HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 40.dp, vertical = 10.dp), // Reducido de 20dp a 10dp
+                modifier = Modifier.padding(horizontal = 40.dp, vertical = 10.dp),
                 color = Color.Gray.copy(alpha = 0.1f)
             )
 
-            // 5. Botón CREAR CUENTA
-            Button(
-                onClick = { navController.navigate(Routes.LOBBY_SCREEN) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(54.dp)
-                    .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp)),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                contentPadding = PaddingValues(0.dp)
-            ) {
+            // 5. Botón CREAR CUENTA o indicador de carga
+            if (isLoading) {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(brush = Brush.verticalGradient(colors = listOf(ButtonRedStart, ButtonRedCenter, ButtonRedEnd))),
+                        .fillMaxWidth()
+                        .height(54.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "CREAR CUENTA", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                    CircularProgressIndicator(color = AccentGold)
+                }
+            } else {
+                Button(
+                    onClick = { viewModel.onRegisterClick() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp)),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(brush = Brush.verticalGradient(colors = listOf(ButtonRedStart, ButtonRedCenter, ButtonRedEnd))),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "CREAR CUENTA", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                    }
                 }
             }
 
-            // 6. Footer
+            // 6. Mensajes de error o éxito
+            if (errorMessage != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = errorMessage,
+                    color = Color(0xFFFF5252),
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            
+            if (successMessage != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = successMessage,
+                    color = Color(0xFF00C853),
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            // 7. Footer
             Row(
                 modifier = Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 24.dp),
                 horizontalArrangement = Arrangement.Center
@@ -245,7 +311,8 @@ fun RegisterInputField(
     isPassword: Boolean = false,
     isVisible: Boolean = false,
     onToggleVisibility: (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
+    enabled: Boolean = true
 ) {
     Column(modifier = Modifier.padding(bottom = 19.dp)) {
         Text(
@@ -267,12 +334,13 @@ fun RegisterInputField(
             visualTransformation = if (isPassword && !isVisible) PasswordVisualTransformation() else VisualTransformation.None,
             trailingIcon = if (isPassword) {
                 {
-                    IconButton(onClick = { onToggleVisibility?.invoke() }) {
+                    IconButton(onClick = { onToggleVisibility?.invoke() }, enabled = enabled) {
                         Icon(imageVector = if (isVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff, contentDescription = null, tint = AccentGold, modifier = Modifier.size(20.dp))
                     }
                 }
             } else trailingIcon,
             singleLine = true,
+            enabled = enabled,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = SurfaceDark,
                 unfocusedContainerColor = SurfaceDark,
@@ -280,7 +348,9 @@ fun RegisterInputField(
                 unfocusedBorderColor = Color.Gray.copy(alpha = 0.3f),
                 cursorColor = AccentGold,
                 focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White
+                unfocusedTextColor = Color.White,
+                disabledContainerColor = SurfaceDark.copy(alpha = 0.5f),
+                disabledTextColor = Color.White.copy(alpha = 0.5f)
             ),
             textStyle = MaterialTheme.typography.bodyMedium.copy(
                 fontSize = 15.sp,

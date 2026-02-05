@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "124470727132",
+    "project_id": "clubdel7-fd150",
+    "storage_bucket": "clubdel7-fd150.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:124470727132:android:6345b2689c3528d4c13f19",
+        "android_client_info": {
+          "package_name": "com.example.el_clu8_del_sie7e"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkdxL_WjxZRchsRMmtKDm-U3svyRrCqLM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

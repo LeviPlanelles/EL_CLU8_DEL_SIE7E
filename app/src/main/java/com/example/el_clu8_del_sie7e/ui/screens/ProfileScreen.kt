@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.R
+import com.example.el_clu8_del_sie7e.data.repository.AuthRepository
 import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
 import com.example.el_clu8_del_sie7e.ui.components.ProfileHeader
@@ -91,13 +92,22 @@ import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    balanceViewModel: BalanceViewModel  // Se pasa desde NavGraph (compartido)
+    balanceViewModel: BalanceViewModel,  // Se pasa desde NavGraph (compartido)
+    onLogout: () -> Unit = {}  // Callback para cerrar sesión
 ) {
     // Estado para el item seleccionado en el footer
     var selectedFooterItem by remember { mutableStateOf("Perfil") }
     
+    // Repositorio de autenticación para obtener datos del usuario
+    val authRepository = remember { AuthRepository.getInstance() }
+    val currentUser by authRepository.currentUser.collectAsState()
+    
     // Obtener balance actual del ViewModel
-    val formattedBalance = balanceViewModel.formatBalance(balanceViewModel.balance.value)
+    val formattedBalance by balanceViewModel.formattedBalance.collectAsState()
+    
+    // Obtener nombre del usuario de Firebase o usar default
+    val userName = authRepository.getCurrentUserName()
+    val userEmail = authRepository.getCurrentUserEmail()
 
     Box(
         modifier = Modifier
@@ -161,7 +171,7 @@ fun ProfileScreen(
                 ProfileHeader(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    userName = "Pingüino machetero",
+                    userName = userName,
                     userLevel = "Diamante",
                     isVip = true,
                     profileImageRes = R.drawable.pinguino_machetero
@@ -233,8 +243,8 @@ fun ProfileScreen(
                     text = "CERRAR SESIÓN",
                     icon = Icons.AutoMirrored.Filled.ExitToApp,
                     onClick = {
-                        // TODO: Implementar lógica de cierre de sesión
-                        // Navegar al LoginScreen y limpiar el back stack
+                        // Llamar al callback que maneja el logout desde el NavGraph
+                        onLogout()
                     }
                 )
 
@@ -262,7 +272,8 @@ fun ProfileScreenPreview() {
     EL_CLU8_DEL_SIE7ETheme {
         ProfileScreen(
             navController = rememberNavController(),
-            balanceViewModel = BalanceViewModel()
+            balanceViewModel = BalanceViewModel(),
+            onLogout = {}
         )
     }
 }

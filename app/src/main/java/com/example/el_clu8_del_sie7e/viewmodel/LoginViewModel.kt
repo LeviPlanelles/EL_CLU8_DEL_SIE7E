@@ -4,101 +4,50 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.el_clu8_del_sie7e.data.repository.AuthRepository
+import kotlinx.coroutines.launch
 
 /**
  * =====================================================================================
- * LOGINVIEWMODEL.KT - VIEWMODEL DE LA PANTALLA DE LOGIN
+ * LOGINVIEWMODEL.KT - VIEWMODEL DE LA PANTALLA DE LOGIN CON FIREBASE
  * =====================================================================================
  *
- * Este ViewModel maneja la logica y el estado de la pantalla de Login.
+ * Este ViewModel maneja la logica y el estado de la pantalla de Login usando Firebase Auth.
  *
- * QUE ES UN VIEWMODEL?
- * --------------------
- * Un ViewModel es una clase que:
- * 1. Guarda y gestiona el estado de la UI
- * 2. Sobrevive a cambios de configuracion (rotacion de pantalla, etc.)
- * 3. Separa la logica de negocio de la UI
- *
- * POR QUE USAR VIEWMODEL?
- * -----------------------
- * Imagina que el usuario esta escribiendo su contrasena y rota el telefono.
- * Sin ViewModel, la pantalla se reconstruye y pierde todo el texto.
- * Con ViewModel, el estado se mantiene y el usuario no pierde nada.
- *
- * ARQUITECTURA MVVM (Model-View-ViewModel):
- * -----------------------------------------
- *
- * ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
- * │      MODEL      │ <--> │   VIEWMODEL     │ <--> │      VIEW       │
- * │  (Datos, API,   │      │  (Estado,       │      │  (Composables,  │
- * │   Repository)   │      │   Logica)       │      │   UI)           │
- * └─────────────────┘      └─────────────────┘      └─────────────────┘
- *
- * - VIEW (LoginScreen): Solo muestra la UI y captura eventos del usuario
- * - VIEWMODEL (LoginViewModel): Procesa eventos y expone el estado
- * - MODEL (Repository, API): Accede a datos (futuro)
- *
- * ESTADO EN COMPOSE:
- * ------------------
- * Usamos mutableStateOf para crear estado observable.
- * Cuando el estado cambia, Compose redibuja automaticamente los composables afectados.
+ * FUNCIONALIDADES:
+ * - Login con email y contraseña
+ * - Validación de campos
+ * - Manejo de errores de Firebase
+ * - Estado de carga
+ * - Navegación a recuperar contraseña
  *
  * =====================================================================================
- */
-
-/**
- * ViewModel para la pantalla de Login.
- *
- * COMO USAR ESTE VIEWMODEL EN LA PANTALLA:
- * ----------------------------------------
- * ```kotlin
- * @Composable
- * fun LoginScreen(
- *     viewModel: LoginViewModel = viewModel()  // Compose crea o recupera el ViewModel
- * ) {
- *     // Acceder al estado
- *     val username = viewModel.username
- *     val isLoading = viewModel.isLoading
- *
- *     // Llamar a funciones del ViewModel
- *     StyledTextField(
- *         value = username,
- *         onValueChange = { viewModel.onUsernameChange(it) }
- *     )
- *
- *     PrimaryButton(
- *         text = "INICIAR SESION",
- *         onClick = { viewModel.onLoginClick() }
- *     )
- * }
- * ```
  */
 class LoginViewModel : ViewModel() {
+
+    // Repositorio de autenticación
+    private val authRepository = AuthRepository.getInstance()
 
     // ==================================================================================
     // ESTADO DE LA PANTALLA
     // ==================================================================================
+    
     /**
-     * Estado del campo de usuario.
-     *
-     * "by" es un delegado que permite acceder directamente al valor:
-     * - Sin "by": _username.value = "algo"
-     * - Con "by": username = "algo"
-     *
-     * "private set" significa que solo el ViewModel puede modificar el valor,
-     * pero cualquiera puede leerlo.
+     * Estado del campo de email (antes era username).
+     * Firebase usa email para autenticación.
      */
-    var username by mutableStateOf("")
+    var email by mutableStateOf("")
         private set
 
     /**
-     * Estado del campo de contrasena.
+     * Estado del campo de contraseña.
      */
     var password by mutableStateOf("")
         private set
 
     /**
-     * Estado de visibilidad de la contrasena.
+     * Estado de visibilidad de la contraseña.
      * true = se ve el texto, false = se ven puntos
      */
     var isPasswordVisible by mutableStateOf(false)
@@ -106,7 +55,7 @@ class LoginViewModel : ViewModel() {
 
     /**
      * Estado de carga.
-     * true = estamos procesando el login, false = no estamos cargando
+     * true = estamos procesando el login
      */
     var isLoading by mutableStateOf(false)
         private set
@@ -118,33 +67,27 @@ class LoginViewModel : ViewModel() {
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
+    /**
+     * Indica si el login fue exitoso.
+     * La pantalla debe navegar al lobby cuando sea true.
+     */
+    var loginSuccess by mutableStateOf(false)
+        private set
+
     // ==================================================================================
-    // FUNCIONES DE EVENTOS (Las llama la UI cuando algo pasa)
+    // FUNCIONES DE EVENTOS
     // ==================================================================================
 
     /**
-     * Se llama cuando el usuario escribe en el campo de usuario.
-     *
-     * @param newUsername El nuevo valor del campo
-     *
-     * EJEMPLO DE USO:
-     * ```kotlin
-     * StyledTextField(
-     *     value = viewModel.username,
-     *     onValueChange = { viewModel.onUsernameChange(it) }
-     * )
-     * ```
+     * Se llama cuando el usuario escribe en el campo de email.
      */
-    fun onUsernameChange(newUsername: String) {
-        username = newUsername
-        // Limpiamos el error cuando el usuario empieza a corregir
+    fun onEmailChange(newEmail: String) {
+        email = newEmail
         errorMessage = null
     }
 
     /**
-     * Se llama cuando el usuario escribe en el campo de contrasena.
-     *
-     * @param newPassword El nuevo valor del campo
+     * Se llama cuando el usuario escribe en el campo de contraseña.
      */
     fun onPasswordChange(newPassword: String) {
         password = newPassword
@@ -152,87 +95,78 @@ class LoginViewModel : ViewModel() {
     }
 
     /**
-     * Se llama cuando el usuario presiona el icono de mostrar/ocultar contrasena.
+     * Se llama cuando el usuario presiona el icono de mostrar/ocultar contraseña.
      */
     fun onTogglePasswordVisibility() {
         isPasswordVisible = !isPasswordVisible
     }
 
     /**
-     * Se llama cuando el usuario presiona el boton de iniciar sesion.
-     *
-     * Aqui va la logica de autenticacion:
-     * 1. Validar que los campos no esten vacios
-     * 2. Mostrar indicador de carga
-     * 3. Llamar a la API de autenticacion
-     * 4. Manejar el resultado (exito o error)
-     *
-     * TODO: Implementar la logica real de autenticacion
+     * Se llama cuando el usuario presiona el botón de iniciar sesión.
+     * Realiza el login con Firebase Auth.
      */
     fun onLoginClick() {
-        // Validacion basica
-        if (username.isBlank()) {
-            errorMessage = "Por favor ingresa tu usuario"
+        // Validación básica
+        if (email.isBlank()) {
+            errorMessage = "Por favor ingresa tu email"
             return
         }
 
         if (password.isBlank()) {
-            errorMessage = "Por favor ingresa tu contrasena"
+            errorMessage = "Por favor ingresa tu contraseña"
             return
         }
 
-        // TODO: Implementar llamada a API de autenticacion
-        // Ejemplo de como seria:
-        //
-        // viewModelScope.launch {
-        //     isLoading = true
-        //     try {
-        //         val result = authRepository.login(username, password)
-        //         if (result.isSuccess) {
-        //             // Navegar al lobby
-        //         } else {
-        //             errorMessage = "Usuario o contrasena incorrectos"
-        //         }
-        //     } catch (e: Exception) {
-        //         errorMessage = "Error de conexion. Intenta de nuevo."
-        //     } finally {
-        //         isLoading = false
-        //     }
-        // }
+        if (password.length < 6) {
+            errorMessage = "La contraseña debe tener al menos 6 caracteres"
+            return
+        }
+
+        // Realizar login con Firebase
+        viewModelScope.launch {
+            isLoading = true
+            errorMessage = null
+            
+            val success = authRepository.login(email, password)
+            
+            isLoading = false
+            
+            if (success) {
+                loginSuccess = true
+            } else {
+                errorMessage = authRepository.errorMessage.value
+            }
+        }
     }
 
     /**
-     * Se llama cuando el usuario presiona "Olvide mi contrasena".
-     *
-     * TODO: Implementar navegacion a pantalla de recuperar contrasena
+     * Se llama cuando el usuario presiona "Olvidé mi contraseña".
+     * Navega a la pantalla de recuperar contraseña.
      */
     fun onForgotPasswordClick() {
-        // TODO: Navegar a pantalla de recuperar contrasena
+        // La navegación se maneja en la pantalla
     }
 
     /**
-     * Se llama cuando el usuario presiona el boton de registrarse.
-     *
-     * TODO: Implementar navegacion a pantalla de registro
+     * Se llama cuando el usuario presiona el botón de registrarse.
+     * Navega a la pantalla de registro.
      */
     fun onRegisterClick() {
-        // TODO: Navegar a pantalla de registro
-    }
-
-    /**
-     * Se llama cuando el usuario presiona el icono de huella dactilar.
-     *
-     * TODO: Implementar autenticacion biometrica
-     */
-    fun onFingerprintClick() {
-        // TODO: Implementar login con BiometricPrompt
+        // La navegación se maneja en la pantalla
     }
 
     /**
      * Limpia el mensaje de error.
-     * Util si queremos cerrar un Snackbar de error manualmente.
      */
     fun clearError() {
         errorMessage = null
+        authRepository.clearError()
+    }
+
+    /**
+     * Resetea el estado de éxito después de navegar.
+     */
+    fun resetLoginSuccess() {
+        loginSuccess = false
     }
 }
