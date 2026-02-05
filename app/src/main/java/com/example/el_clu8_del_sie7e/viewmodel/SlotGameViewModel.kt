@@ -1,7 +1,9 @@
 package com.example.el_clu8_del_sie7e.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.el_clu8_del_sie7e.util.SoundManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -148,8 +150,14 @@ data class SpinResult(
 // ===================================================================================
 
 class SlotGameViewModel(
+    application: Application,
     private val balanceViewModel: BalanceViewModel
-) : ViewModel() {
+) : AndroidViewModel(application) {
+    
+    // Inicializar SoundManager
+    init {
+        SoundManager.initialize(application)
+    }
 
     // ===============================================================================
     // CONSTANTES
@@ -312,6 +320,9 @@ class SlotGameViewModel(
             _message.value = ""
             _lastWinAmount.value = 0.0
             _revealedColumns.value = 0
+            
+            // SONIDO: Inicio del giro
+            SoundManager.playSpin()
 
             // Animación de giro - mostrar símbolos aleatorios rápidamente
             repeat(10) {
@@ -327,6 +338,8 @@ class SlotGameViewModel(
             _gameState.value = GameState.REVEALING
             for (col in 1..COLS) {
                 _revealedColumns.value = col
+                // SONIDO: Cada vez que se revela una columna
+                SoundManager.playReelStop()
                 delay(SPIN_DELAY)
             }
 
@@ -349,15 +362,30 @@ class SlotGameViewModel(
                 _lastWinAmount.value = totalWin
                 _message.value = "!GANASTE ${String.format("%.2f", totalWin)}!"
                 
+                // SONIDO: Victoria según el monto
+                val isBigWin = totalWin >= 50
+                val isJackpot = totalWin >= 100
+                SoundManager.playWin(totalWin)
+                
+                // SONIDO: Efecto de monedas cayendo
+                if (isBigWin || isJackpot) {
+                    repeat(5) {
+                        delay(200)
+                        SoundManager.playCoinDrop()
+                    }
+                }
+                
                 // Depositar ganancias
                 balanceViewModel.deposit(totalWin, "Premio Zeus Slot")
             } else {
                 _gameState.value = GameState.LOSE
                 _message.value = "Sin premio"
+                // SONIDO: Derrota
+                SoundManager.playLose()
             }
 
-            // Esperar un momento para mostrar resultado
-            delay(1500)
+            // Esperar un momento para mostrar resultado (las animaciones visuales duran 3 segundos)
+            delay(3000)
 
             // Volver a estado idle o continuar auto-roll
             _gameState.value = GameState.IDLE

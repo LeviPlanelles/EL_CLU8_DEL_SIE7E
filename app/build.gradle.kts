@@ -66,4 +66,11 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
+    
+    // Coil para cargar imágenes (recomendado para Compose)
+    implementation("io.coil-kt:coil-compose:2.5.0")
+    
+    // Lottie para animaciones espectaculares tipo casino
+    implementation("com.airbnb.android:lottie-compose:6.3.0")
 }

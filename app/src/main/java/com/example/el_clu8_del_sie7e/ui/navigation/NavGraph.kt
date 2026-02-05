@@ -1,8 +1,10 @@
 package com.example.el_clu8_del_sie7e.ui.navigation
 
+import android.app.Application
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -21,7 +23,10 @@ import com.example.el_clu8_del_sie7e.ui.screens.TransactionHistoryScreen
 import com.example.el_clu8_del_sie7e.ui.screens.WalletScreen
 import com.example.el_clu8_del_sie7e.ui.screens.WithdrawScreen
 import com.example.el_clu8_del_sie7e.ui.screens.PromocionesScreen
+import com.example.el_clu8_del_sie7e.ui.screens.SlotGamePlayScreenWithEffects
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
+import com.example.el_clu8_del_sie7e.viewmodel.SlotGameViewModel
+import com.example.el_clu8_del_sie7e.viewmodel.SlotGameViewModelFactory
 
 /**
  * =====================================================================================
@@ -179,6 +184,34 @@ fun NavGraph() {
             RouletteGameScreen(
                 navController = navController,
                 balanceViewModel = balanceViewModel
+            )
+        }
+
+        /**
+         * Pantalla de Juego de Slot Individual
+         * - Muestra el juego Zeus Slot con animaciones espectaculares
+         * - Recibe el nombre del slot como parámetro
+         */
+        composable(
+            route = Routes.SLOT_GAME_PLAY_SCREEN
+        ) { backStackEntry ->
+            // Obtener el nombre del slot de los argumentos
+            val slotName = backStackEntry.arguments?.getString("slotName") ?: "Slot Game"
+            
+            // Obtener Application desde el contexto local
+            val application = LocalContext.current.applicationContext as Application
+            
+            // Crear ViewModel para este juego específico pasando Application y BalanceViewModel
+            val slotGameViewModel: SlotGameViewModel = viewModel(
+                factory = SlotGameViewModelFactory(application, balanceViewModel)
+            )
+            
+            // Usar versión con animaciones locas de casino
+            SlotGamePlayScreenWithEffects(
+                navController = navController,
+                slotName = slotName,
+                balanceViewModel = balanceViewModel,
+                slotGameViewModel = slotGameViewModel
             )
         }
 
