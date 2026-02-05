@@ -369,7 +369,8 @@ class SlotGameViewModel(
 
     /**
      * Detecta las líneas ganadoras en los rodillos
-     * Una línea gana si tiene 3, 4 o 5 símbolos iguales consecutivos desde la izquierda
+     * Una línea gana si tiene 3, 4 o 5 símbolos iguales consecutivos en CUALQUIER posición
+     * (no solo desde la izquierda, también en el medio o derecha)
      */
     private fun detectWins(reels: List<List<SlotSymbol>>, bet: Double): List<WinLine> {
         val winLines = mutableListOf<WinLine>()
@@ -377,28 +378,47 @@ class SlotGameViewModel(
         // Revisar cada fila (3 filas = 3 líneas de pago)
         for (rowIndex in 0 until ROWS) {
             val row = reels[rowIndex]
-            val firstSymbol = row[0]
-            var matchCount = 1
-
-            // Contar símbolos iguales consecutivos desde la izquierda
+            
+            // Buscar la mejor secuencia de símbolos consecutivos en cualquier posición
+            var bestMatchCount = 0
+            var bestSymbol: SlotSymbol? = null
+            
+            var currentSymbol = row[0]
+            var currentCount = 1
+            
+            // Recorrer la fila buscando secuencias consecutivas
             for (colIndex in 1 until COLS) {
-                if (row[colIndex] == firstSymbol) {
-                    matchCount++
+                if (row[colIndex] == currentSymbol) {
+                    // Mismo símbolo, incrementar contador
+                    currentCount++
                 } else {
-                    break // Se rompe la cadena
+                    // Símbolo diferente, verificar si la secuencia anterior es la mejor
+                    if (currentCount > bestMatchCount) {
+                        bestMatchCount = currentCount
+                        bestSymbol = currentSymbol
+                    }
+                    // Reiniciar con el nuevo símbolo
+                    currentSymbol = row[colIndex]
+                    currentCount = 1
                 }
             }
+            
+            // Verificar la última secuencia (puede terminar al final de la fila)
+            if (currentCount > bestMatchCount) {
+                bestMatchCount = currentCount
+                bestSymbol = currentSymbol
+            }
 
-            // Si hay al menos 3 iguales, es victoria
-            if (matchCount >= 3) {
-                val multiplier = PayTable.getMultiplier(firstSymbol, matchCount)
+            // Si hay al menos 3 símbolos iguales consecutivos, es victoria
+            if (bestMatchCount >= 3 && bestSymbol != null) {
+                val multiplier = PayTable.getMultiplier(bestSymbol, bestMatchCount)
                 val winAmount = bet * multiplier
 
                 winLines.add(
                     WinLine(
                         rowIndex = rowIndex,
-                        symbol = firstSymbol,
-                        matchCount = matchCount,
+                        symbol = bestSymbol,
+                        matchCount = bestMatchCount,
                         multiplier = multiplier,
                         winAmount = winAmount
                     )
