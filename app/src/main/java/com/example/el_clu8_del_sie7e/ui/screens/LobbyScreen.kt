@@ -275,7 +275,7 @@ fun LobbyScreen(
                                 gameCount = featuredGames[1].count,
                                 backgroundImage = featuredGames[1].backgroundImage,
                                 onPlayClick = {
-                                    // TODO: Navegar a juego de roulette
+                                    navController.navigate(Routes.ROULETTE_GAME_SCREEN)
                                 },
                                 modifier = Modifier.weight(1f)
                             )

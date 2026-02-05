@@ -10,6 +10,7 @@ import com.example.el_clu8_del_sie7e.ui.screens.GameSearchScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LobbyScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LoginScreen
 import com.example.el_clu8_del_sie7e.ui.screens.ProfileScreen
+import com.example.el_clu8_del_sie7e.ui.screens.RouletteGameScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SlotsScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SplashScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SupportScreen
@@ -190,6 +191,22 @@ fun NavGraph() {
          */
         composable(route = Routes.SLOTS_GAME_SCREEN) {
             SlotsScreen(
+                navController = navController,
+                balanceViewModel = balanceViewModel
+            )
+        }
+
+        /**
+         * Pantalla de Ruleta de Casino
+         * - Mesa de ruleta con números rojos, negros y verde (0)
+         * - Fichas de apuesta seleccionables ($1, $10, $100, $200)
+         * - Botones de acción: Deshacer, Apostar, Repetir
+         * - Temporizador de ronda y últimos números ganadores
+         * - Imagen de mesera en el header
+         * - Balance sincronizado con BalanceViewModel
+         */
+        composable(route = Routes.ROULETTE_GAME_SCREEN) {
+            RouletteGameScreen(
                 navController = navController,
                 balanceViewModel = balanceViewModel
             )

@@ -47,6 +47,7 @@ import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
 import com.example.el_clu8_del_sie7e.ui.components.UnifiedFilterChip
 import com.example.el_clu8_del_sie7e.ui.components.SearchGameCard
+import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
@@ -336,7 +337,13 @@ fun GameSearchScreen(
                         rating = game.rating,
                         category = game.category,
                         onPlayClick = {
-                            // TODO: Navegar al juego seleccionado
+                            when (game.name) {
+                                "ROULETTE GOLD" -> navController.navigate(Routes.ROULETTE_GAME_SCREEN)
+                                // TODO: Agregar navegación para otros juegos
+                                else -> {
+                                    // Por defecto no hace nada o podría mostrar un mensaje
+                                }
+                            }
                         }
                     )
                     Spacer(modifier = Modifier.height(12.dp))
