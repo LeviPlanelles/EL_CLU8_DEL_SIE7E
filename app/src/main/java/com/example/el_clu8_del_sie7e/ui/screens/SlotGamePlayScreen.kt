@@ -25,6 +25,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.CornerRadius
@@ -278,7 +279,8 @@ fun SlotGamePlayScreen(
 // =====================================================================================
 
 /**
- * Mensaje de resultado que muestra victoria o derrota con animación
+ * Mensaje de resultado que muestra victoria o derrota con animación espectacular
+ * Diseño más grande y visible con efectos visuales llamativos
  */
 @Composable
 private fun ResultMessage(
@@ -286,37 +288,122 @@ private fun ResultMessage(
     isWin: Boolean,
     winAmount: Double
 ) {
-    AnimatedVisibility(
-        visible = message.isNotEmpty(),
-        enter = fadeIn() + scaleIn(),
-        exit = fadeOut() + scaleOut()
-    ) {
-        val backgroundColor = if (isWin) WinGreen else LoseRed.copy(alpha = 0.8f)
-        val textColor = Color.White
+    // Animación de opacidad para fade in/out
+    val alpha by animateFloatAsState(
+        targetValue = if (message.isNotEmpty()) 1f else 0f,
+        animationSpec = tween(400),
+        label = "result_alpha"
+    )
+    
+    // Animación de escala para efecto de "pop" más pronunciado
+    val scale by animateFloatAsState(
+        targetValue = if (message.isNotEmpty()) 1f else 0.5f,
+        animationSpec = tween(400),
+        label = "result_scale"
+    )
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(backgroundColor)
-                .padding(vertical = 12.dp, horizontal = 16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = if (isWin) "!GANASTE!" else "SIN PREMIO",
-                    color = textColor,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                if (isWin && winAmount > 0) {
+    // Contenedor con altura fija para reservar espacio siempre
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp), // Altura aumentada para mejor visibilidad
+        contentAlignment = Alignment.Center
+    ) {
+        // Solo mostrar el contenido si hay mensaje
+        if (message.isNotEmpty()) {
+            if (isWin) {
+                // =====================================================
+                // DISEÑO DE VICTORIA - Espectacular y dorado
+                // =====================================================
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .scale(scale)
+                        .alpha(alpha)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color(0xFF2E7D32), // Verde oscuro arriba
+                                    Color(0xFF4CAF50), // Verde medio
+                                    Color(0xFF2E7D32)  // Verde oscuro abajo
+                                )
+                            )
+                        )
+                        .border(
+                            width = 3.dp,
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    AccentGold,
+                                    Color(0xFFFFE082), // Dorado claro
+                                    AccentGold
+                                )
+                            ),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .padding(vertical = 16.dp, horizontal = 20.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        // Título "¡GANASTE!" con estilo dorado
+                        Text(
+                            text = "🎉 ¡GANASTE! 🎉",
+                            color = AccentGold,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            textAlign = TextAlign.Center
+                        )
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        // Cantidad ganada grande y prominente
+                        if (winAmount > 0) {
+                            Text(
+                                text = "+${String.format("%.2f", winAmount)} €",
+                                color = Color.White,
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            } else {
+                // =====================================================
+                // DISEÑO DE DERROTA - Discreto pero visible
+                // =====================================================
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f) // Más pequeño que victoria
+                        .scale(scale)
+                        .alpha(alpha)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color(0xFF424242), // Gris oscuro
+                                    Color(0xFF616161), // Gris medio
+                                    Color(0xFF424242)  // Gris oscuro
+                                )
+                            )
+                        )
+                        .border(
+                            width = 2.dp,
+                            color = Color(0xFF757575),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(vertical = 14.dp, horizontal = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
-                        text = "+${String.format("%.2f", winAmount)} €",
-                        color = textColor,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "Sin premio",
+                        color = Color(0xFFBDBDBD),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -419,7 +506,7 @@ private fun SlotMachineWithLever(
 
 /**
  * Máquina de slots con 5 carriles y 3 filas
- * Muestra los símbolos del ViewModel con animación de revelación
+ * Diseño premium con separadores verticales y líneas doradas horizontales
  */
 @Composable
 private fun SlotMachine(
@@ -429,191 +516,359 @@ private fun SlotMachine(
     winLines: List<Int>,
     showWinHighlight: Boolean
 ) {
+    // Contenedor principal de la máquina con borde redondeado
     Box(
         modifier = Modifier
-            .width(280.dp)
-            .height(340.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(SlotMachineBg)
-            .border(2.dp, SlotBorderGold.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
-            .padding(12.dp)
+            .width(290.dp)
+            .height(360.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF1A1A1A),
+                        Color(0xFF0D0D0D),
+                        Color(0xFF1A1A1A)
+                    )
+                )
+            )
+            .border(
+                width = 2.dp,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF3A3A3A),
+                        Color(0xFF2A2A2A),
+                        Color(0xFF3A3A3A)
+                    )
+                ),
+                shape = RoundedCornerShape(24.dp)
+            )
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceEvenly
+        // Efecto de brillo interior sutil
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(3.dp)
+                .clip(RoundedCornerShape(21.dp))
+                .background(Color(0xFF0A0A0A))
         ) {
-            reels.forEachIndexed { rowIndex, row ->
-                val isWinningRow = showWinHighlight && winLines.contains(rowIndex)
+            // Grid de símbolos con separadores
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(8.dp)
+            ) {
+                // Fila superior decorativa con "7"s semitransparentes
+                DecorationRow()
                 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .then(
-                            if (isWinningRow) {
-                                Modifier
-                                    .background(
-                                        WinGreen.copy(alpha = 0.2f),
-                                        RoundedCornerShape(8.dp)
-                                    )
-                                    .border(2.dp, WinGreen, RoundedCornerShape(8.dp))
-                            } else Modifier
-                        ),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    row.forEachIndexed { colIndex, symbol ->
-                        val isRevealed = colIndex < revealedColumns
-                        SlotSymbolView(
-                            symbol = symbol,
-                            isRevealed = isRevealed,
-                            isSpinning = isSpinning && !isRevealed,
-                            isWinning = isWinningRow
-                        )
-                    }
-                }
+                // Separador dorado superior
+                GoldenSeparator()
                 
-                // Línea dorada separadora entre filas
-                if (rowIndex < reels.size - 1) {
+                // Fila principal de símbolos (la del medio es la importante)
+                reels.forEachIndexed { rowIndex, row ->
+                    val isWinningRow = showWinHighlight && winLines.contains(rowIndex)
+                    val isMainRow = rowIndex == 1 // Fila central destacada
+                    
+                    // Fila de símbolos con separadores verticales
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(2.dp)
-                            .background(AccentGold.copy(alpha = 0.5f))
-                    )
+                            .weight(1f)
+                            .then(
+                                if (isWinningRow) {
+                                    Modifier
+                                        .background(
+                                            WinGreen.copy(alpha = 0.15f),
+                                            RoundedCornerShape(4.dp)
+                                        )
+                                        .border(
+                                            width = 2.dp,
+                                            color = WinGreen,
+                                            shape = RoundedCornerShape(4.dp)
+                                        )
+                                } else Modifier
+                            )
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            row.forEachIndexed { colIndex, symbol ->
+                                // Separador vertical izquierdo (excepto primera columna)
+                                if (colIndex > 0) {
+                                    VerticalDivider(
+                                        modifier = Modifier
+                                            .height(if (isMainRow) 70.dp else 50.dp)
+                                            .width(1.dp),
+                                        color = Color(0xFF2A2A2A)
+                                    )
+                                }
+                                
+                                // Símbolo
+                                Box(
+                                    modifier = Modifier.weight(1f),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    val isRevealed = colIndex < revealedColumns
+                                    SlotSymbolView(
+                                        symbol = symbol,
+                                        isRevealed = isRevealed,
+                                        isSpinning = isSpinning && !isRevealed,
+                                        isWinning = isWinningRow,
+                                        isMainRow = isMainRow
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Línea dorada separadora entre filas (no después de la última)
+                    if (rowIndex < reels.size - 1) {
+                        GoldenSeparator()
+                    }
                 }
+                
+                // Separador dorado inferior
+                GoldenSeparator()
+                
+                // Fila inferior decorativa con "7"s semitransparentes
+                DecorationRow()
             }
         }
     }
 }
 
 /**
+ * Fila decorativa con "7"s semitransparentes
+ */
+@Composable
+private fun DecorationRow() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(45.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        repeat(5) {
+            Text(
+                text = "7",
+                color = Color(0xFF2A2A2A),
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+/**
+ * Separador dorado horizontal con gradiente
+ */
+@Composable
+private fun GoldenSeparator() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(2.dp)
+            .background(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        AccentGold.copy(alpha = 0.6f),
+                        AccentGold.copy(alpha = 0.8f),
+                        AccentGold.copy(alpha = 0.6f),
+                        Color.Transparent
+                    )
+                )
+            )
+    )
+}
+
+/**
  * Vista de un símbolo individual con animación
+ * Diseño premium con círculos de fondo para los símbolos
  */
 @Composable
 private fun SlotSymbolView(
     symbol: SlotSymbol,
     isRevealed: Boolean,
     isSpinning: Boolean,
-    isWinning: Boolean
+    isWinning: Boolean,
+    isMainRow: Boolean = false
 ) {
     // Animación de escala para símbolos ganadores
     val scale by animateFloatAsState(
-        targetValue = if (isWinning) 1.1f else 1f,
+        targetValue = if (isWinning) 1.15f else 1f,
         animationSpec = tween(300),
         label = "symbol_scale"
     )
 
+    // Tamaño adaptativo según si es fila principal o decorativa
+    val symbolSize = if (isMainRow) 52.dp else 44.dp
+    val iconSize = if (isMainRow) 40.dp else 34.dp
+    val fontSize = if (isMainRow) 24.sp else 20.sp
+
     Box(
         modifier = Modifier
-            .size(48.dp)
+            .size(symbolSize)
             .scale(scale)
-            .clip(RoundedCornerShape(8.dp))
-            .background(SlotReelBg)
             .then(
                 if (isWinning) {
-                    Modifier.border(2.dp, AccentGold, RoundedCornerShape(8.dp))
+                    Modifier.border(2.dp, AccentGold, CircleShape)
                 } else Modifier
             ),
         contentAlignment = Alignment.Center
     ) {
         if (isSpinning) {
-            // Mostrar símbolo aleatorio durante el giro (efecto blur)
-            Text(
-                text = "?",
-                color = Color.Gray,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
+            // Efecto de giro - mostrar "?" con animación
+            Box(
+                modifier = Modifier
+                    .size(iconSize)
+                    .clip(CircleShape)
+                    .background(Color(0xFF1A1A1A)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "?",
+                    color = Color(0xFF3A3A3A),
+                    fontSize = fontSize,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         } else {
-            // Mostrar símbolo real
+            // Mostrar símbolo real con diseño circular
             when (symbol) {
                 SlotSymbol.STAR -> {
+                    // Estrella con fondo circular amarillo/dorado
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(iconSize)
                             .clip(CircleShape)
-                            .background(SymbolYellow),
+                            .background(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xFFFFE082),
+                                        Color(0xFFFFD54F),
+                                        Color(0xFFFFC107)
+                                    )
+                                )
+                            )
+                            .border(2.dp, Color(0xFFFF8F00), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "★",
-                            color = Color.Black.copy(alpha = 0.8f),
-                            fontSize = 20.sp
+                            color = Color(0xFF5D4037),
+                            fontSize = fontSize,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
                 SlotSymbol.HEART -> {
+                    // Corazón con fondo circular rojo
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(iconSize)
                             .clip(CircleShape)
-                            .background(SymbolRed),
+                            .background(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xFFEF5350),
+                                        Color(0xFFE53935),
+                                        Color(0xFFC62828)
+                                    )
+                                )
+                            )
+                            .border(2.dp, Color(0xFFB71C1C), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "♥",
                             color = Color.White,
-                            fontSize = 18.sp
+                            fontSize = fontSize
                         )
                     }
                 }
                 SlotSymbol.BOLT -> {
+                    // Rayo azul eléctrico (sin fondo circular, más impactante)
                     Text(
                         text = "⚡",
-                        color = SymbolBlue,
-                        fontSize = 28.sp
+                        color = Color(0xFF42A5F5),
+                        fontSize = (fontSize.value + 6).sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
                 SlotSymbol.TEMPLE -> {
-                    Canvas(modifier = Modifier.size(36.dp)) {
-                        val templeColor = SymbolWhite
+                    // Templo/columnas griegas
+                    Canvas(modifier = Modifier.size(iconSize)) {
+                        val templeColor = Color(0xFFECEFF1)
+                        val shadowColor = Color(0xFFB0BEC5)
+                        
                         // Base
                         drawRoundRect(
                             color = templeColor,
-                            topLeft = Offset(size.width * 0.15f, size.height * 0.75f),
-                            size = Size(size.width * 0.7f, size.height * 0.1f),
+                            topLeft = Offset(size.width * 0.1f, size.height * 0.8f),
+                            size = Size(size.width * 0.8f, size.height * 0.12f),
                             cornerRadius = CornerRadius(2f)
                         )
-                        // Columnas
-                        drawRoundRect(
-                            color = templeColor,
-                            topLeft = Offset(size.width * 0.2f, size.height * 0.35f),
-                            size = Size(size.width * 0.12f, size.height * 0.4f),
-                            cornerRadius = CornerRadius(2f)
-                        )
-                        drawRoundRect(
-                            color = templeColor,
-                            topLeft = Offset(size.width * 0.44f, size.height * 0.35f),
-                            size = Size(size.width * 0.12f, size.height * 0.4f),
-                            cornerRadius = CornerRadius(2f)
-                        )
-                        drawRoundRect(
-                            color = templeColor,
-                            topLeft = Offset(size.width * 0.68f, size.height * 0.35f),
-                            size = Size(size.width * 0.12f, size.height * 0.4f),
-                            cornerRadius = CornerRadius(2f)
-                        )
+                        
+                        // Columnas (3)
+                        listOf(0.18f, 0.44f, 0.70f).forEach { xPos ->
+                            drawRoundRect(
+                                color = shadowColor,
+                                topLeft = Offset(size.width * (xPos + 0.02f), size.height * 0.38f),
+                                size = Size(size.width * 0.12f, size.height * 0.44f),
+                                cornerRadius = CornerRadius(2f)
+                            )
+                            drawRoundRect(
+                                color = templeColor,
+                                topLeft = Offset(size.width * xPos, size.height * 0.35f),
+                                size = Size(size.width * 0.12f, size.height * 0.45f),
+                                cornerRadius = CornerRadius(2f)
+                            )
+                        }
+                        
                         // Techo triangular
                         val roofPath = Path().apply {
-                            moveTo(size.width * 0.5f, size.height * 0.1f)
-                            lineTo(size.width * 0.1f, size.height * 0.35f)
-                            lineTo(size.width * 0.9f, size.height * 0.35f)
+                            moveTo(size.width * 0.5f, size.height * 0.08f)
+                            lineTo(size.width * 0.05f, size.height * 0.35f)
+                            lineTo(size.width * 0.95f, size.height * 0.35f)
                             close()
                         }
                         drawPath(roofPath, templeColor)
                     }
                 }
                 SlotSymbol.DIAMOND -> {
-                    Canvas(modifier = Modifier.size(36.dp)) {
+                    // Diamante cyan brillante
+                    Canvas(modifier = Modifier.size(iconSize)) {
                         val diamondPath = Path().apply {
                             moveTo(size.width * 0.5f, size.height * 0.05f)
-                            lineTo(size.width * 0.9f, size.height * 0.4f)
+                            lineTo(size.width * 0.92f, size.height * 0.4f)
                             lineTo(size.width * 0.5f, size.height * 0.95f)
-                            lineTo(size.width * 0.1f, size.height * 0.4f)
+                            lineTo(size.width * 0.08f, size.height * 0.4f)
                             close()
                         }
-                        drawPath(diamondPath, SymbolCyan)
+                        // Sombra
+                        drawPath(
+                            path = Path().apply {
+                                moveTo(size.width * 0.52f, size.height * 0.08f)
+                                lineTo(size.width * 0.94f, size.height * 0.42f)
+                                lineTo(size.width * 0.52f, size.height * 0.97f)
+                                lineTo(size.width * 0.1f, size.height * 0.42f)
+                                close()
+                            },
+                            color = Color(0xFF006064)
+                        )
+                        // Diamante principal
+                        drawPath(diamondPath, Color(0xFF4DD0E1))
+                        // Brillo
+                        val shinePath = Path().apply {
+                            moveTo(size.width * 0.5f, size.height * 0.1f)
+                            lineTo(size.width * 0.35f, size.height * 0.4f)
+                            lineTo(size.width * 0.5f, size.height * 0.35f)
+                            close()
+                        }
+                        drawPath(shinePath, Color(0xFF80DEEA))
                     }
                 }
             }
@@ -622,7 +877,8 @@ private fun SlotSymbolView(
 }
 
 /**
- * Palanca de la máquina de slots con animación
+ * Palanca de la máquina de slots con animación profesional
+ * Diseño tipo casino clásico con bola brillante y estructura metálica
  */
 @Composable
 private fun SlotLever(
@@ -630,66 +886,147 @@ private fun SlotLever(
     enabled: Boolean,
     isSpinning: Boolean
 ) {
-    // Animación de la palanca cuando está girando
-    val leverOffset by animateFloatAsState(
-        targetValue = if (isSpinning) 20f else 0f,
-        animationSpec = tween(200),
+    // Animación de la palanca cuando está girando (baja y sube)
+    val leverRotation by animateFloatAsState(
+        targetValue = if (isSpinning) 25f else 0f,
+        animationSpec = tween(300),
         label = "lever_animation"
     )
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .clickable(enabled = enabled) { onClick() }
-            .padding(4.dp)
-    ) {
-        // Bola roja de la palanca
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .offset(y = leverOffset.dp)
-                .clip(CircleShape)
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = if (enabled) {
-                            listOf(LeverRed, LeverRedDark)
-                        } else {
-                            listOf(Color.Gray, Color.DarkGray)
-                        }
-                    )
-                )
+    // Colores de la palanca
+    val ballGradient = if (enabled) {
+        listOf(
+            Color(0xFFFF4444),  // Rojo brillante
+            Color(0xFFCC0000),  // Rojo medio
+            Color(0xFF880000)   // Rojo oscuro
         )
+    } else {
+        listOf(Color(0xFF666666), Color(0xFF444444), Color(0xFF333333))
+    }
+    
+    val metalGradient = listOf(
+        Color(0xFF8A8A8A),  // Metal claro
+        Color(0xFF5A5A5A),  // Metal medio
+        Color(0xFF3A3A3A),  // Metal oscuro
+        Color(0xFF5A5A5A)   // Metal medio
+    )
 
-        // Palo de la palanca
+    Box(
+        modifier = Modifier
+            .width(50.dp)
+            .height(160.dp)
+            .clickable(enabled = enabled) { onClick() },
+        contentAlignment = Alignment.TopCenter
+    ) {
+        // Soporte/marco de la palanca (parte fija)
         Box(
             modifier = Modifier
-                .width(8.dp)
-                .height((80 + leverOffset).dp)
-                .clip(RoundedCornerShape(4.dp))
+                .align(Alignment.BottomCenter)
+                .width(30.dp)
+                .height(50.dp)
+                .clip(RoundedCornerShape(8.dp))
                 .background(
-                    brush = Brush.horizontalGradient(
+                    brush = Brush.verticalGradient(
                         colors = listOf(
-                            Color(0xFF3A3A3A),
-                            Color(0xFF5A5A5A),
-                            Color(0xFF3A3A3A)
+                            Color(0xFF4A4A4A),
+                            Color(0xFF2A2A2A),
+                            Color(0xFF1A1A1A)
                         )
                     )
                 )
+                .border(1.dp, Color(0xFF5A5A5A), RoundedCornerShape(8.dp))
         )
 
-        // Base de la palanca
-        Box(
+        // Columna principal de la palanca (parte móvil)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .width(16.dp)
-                .height(12.dp)
-                .clip(RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp))
-                .background(Color(0xFF4A4A4A))
-        )
+                .offset(y = leverRotation.dp)
+        ) {
+            // Bola de la palanca (con efecto 3D brillante)
+            Box(
+                modifier = Modifier.size(40.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                // Sombra de la bola
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .offset(x = 2.dp, y = 2.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.3f))
+                )
+                
+                // Bola principal con gradiente
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = ballGradient,
+                                center = Offset(0.3f, 0.3f)
+                            )
+                        )
+                )
+                
+                // Brillo de la bola (efecto cristal)
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .offset(x = (-6).dp, y = (-6).dp)
+                        .clip(CircleShape)
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.7f),
+                                    Color.White.copy(alpha = 0f)
+                                )
+                            )
+                        )
+                )
+            }
+
+            // Barra de la palanca (cromada)
+            Box(
+                modifier = Modifier
+                    .width(12.dp)
+                    .height(80.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = metalGradient
+                        )
+                    )
+                    .border(
+                        width = 0.5.dp,
+                        color = Color(0xFFAAAAAA),
+                        shape = RoundedCornerShape(6.dp)
+                    )
+            )
+
+            // Conector inferior (donde se une al soporte)
+            Box(
+                modifier = Modifier
+                    .width(20.dp)
+                    .height(16.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF6A6A6A),
+                                Color(0xFF4A4A4A)
+                            )
+                        )
+                    )
+            )
+        }
     }
 }
 
 /**
  * Sección de apuesta con chips, control de cantidad y auto-roll
+ * Diseño premium con fondo diferenciado y bordes estilizados
  */
 @Composable
 private fun BetSection(
@@ -710,28 +1047,52 @@ private fun BetSection(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Título "TU APUESTA"
+        // Título "TU APUESTA" - estilo etiqueta dorada
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                .background(AccentGold)
-                .padding(horizontal = 24.dp, vertical = 8.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color(0xFFB8860B),
+                            AccentGold,
+                            Color(0xFFB8860B)
+                        )
+                    )
+                )
+                .padding(horizontal = 28.dp, vertical = 10.dp)
         ) {
             Text(
                 text = "TU APUESTA",
                 color = Color.Black,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 1.sp
             )
         }
+        
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // Contenedor principal de apuesta
+        // Contenedor principal de apuesta con fondo oscuro y bordes redondeados
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(BetControlBg)
-                .padding(16.dp),
+                .clip(RoundedCornerShape(20.dp))
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF252525),
+                            Color(0xFF1A1A1A),
+                            Color(0xFF252525)
+                        )
+                    )
+                )
+                .border(
+                    width = 1.dp,
+                    color = Color(0xFF3A3A3A),
+                    shape = RoundedCornerShape(20.dp)
+                )
+                .padding(horizontal = 16.dp, vertical = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Fila de chips de apuesta rápida
@@ -771,6 +1132,7 @@ private fun BetSection(
 
 /**
  * Fila de chips de apuesta rápida (+1, +5, +10, etc)
+ * Diseño con chips más estilizados y espaciado uniforme
  */
 @Composable
 private fun BetChipsRow(
@@ -781,40 +1143,62 @@ private fun BetChipsRow(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         chips.forEach { chip ->
             BetChip(
                 value = chip,
                 isSelected = chip == selectedChip,
                 onClick = { onChipSelected(chip) },
-                enabled = enabled
+                enabled = enabled,
+                modifier = Modifier.weight(1f)
             )
         }
     }
 }
 
 /**
- * Chip individual de apuesta
+ * Chip individual de apuesta - diseño premium
  */
 @Composable
 private fun BetChip(
     value: Int,
     isSelected: Boolean,
     onClick: () -> Unit,
-    enabled: Boolean
+    enabled: Boolean,
+    modifier: Modifier = Modifier
 ) {
-    val backgroundColor = if (isSelected) ChipSelectedBg else ChipUnselectedBg
+    val backgroundColor = if (isSelected) {
+        Brush.horizontalGradient(
+            colors = listOf(
+                Color(0xFFB8860B),
+                AccentGold,
+                Color(0xFFB8860B)
+            )
+        )
+    } else {
+        Brush.horizontalGradient(
+            colors = listOf(
+                Color(0xFF1A1A1A),
+                Color(0xFF1A1A1A)
+            )
+        )
+    }
+    
     val textColor = if (isSelected) Color.Black else if (enabled) Color.White else Color.Gray
-    val borderColor = if (isSelected) ChipSelectedBg else ChipBorder
+    val borderColor = if (isSelected) AccentGold else Color(0xFF4A4A4A)
 
     Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
+        modifier = modifier
+            .height(44.dp)
+            .clip(RoundedCornerShape(12.dp))
             .background(backgroundColor)
-            .border(1.dp, borderColor, RoundedCornerShape(8.dp))
-            .clickable(enabled = enabled) { onClick() }
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+            .border(
+                width = if (isSelected) 0.dp else 1.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .clickable(enabled = enabled) { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -828,7 +1212,7 @@ private fun BetChip(
 
 /**
  * Control de cantidad de apuesta con botones - y +
- * El campo central es editable para que el usuario pueda escribir el importe manualmente
+ * Diseño con botones cuadrados y campo central destacado
  */
 @Composable
 private fun BetAmountControl(
@@ -841,47 +1225,51 @@ private fun BetAmountControl(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Botón decrementar
+        // Botón decrementar - cuadrado con borde dorado
         Box(
             modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .border(1.dp, if (enabled) AccentGold else Color.Gray, RoundedCornerShape(8.dp))
+                .size(50.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFF1A1A1A))
+                .border(
+                    width = 2.dp,
+                    color = if (enabled) AccentGold else Color(0xFF4A4A4A),
+                    shape = RoundedCornerShape(12.dp)
+                )
                 .clickable(enabled = enabled) { onDecrease() },
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Remove,
-                contentDescription = "Disminuir apuesta",
-                tint = if (enabled) AccentGold else Color.Gray,
-                modifier = Modifier.size(24.dp)
+            Text(
+                text = "−",
+                color = if (enabled) AccentGold else Color.Gray,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
             )
         }
 
-        // Campo editable para la cantidad
+        // Campo editable para la cantidad - más prominente
         Box(
             modifier = Modifier
                 .weight(1f)
-                .height(48.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFF1A1A1A))
-                .border(1.dp, Color(0xFF3A3A3A), RoundedCornerShape(8.dp)),
+                .height(50.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFF0D0D0D))
+                .border(1.dp, Color(0xFF3A3A3A), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
             BasicTextField(
                 value = betText,
                 onValueChange = { newValue ->
-                    // Solo permitir números
                     val filtered = newValue.filter { it.isDigit() }
                     onBetTextChange(filtered)
                 },
                 textStyle = TextStyle(
                     color = if (enabled) Color.White else Color.Gray,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
                 ),
                 keyboardOptions = KeyboardOptions(
@@ -901,29 +1289,34 @@ private fun BetAmountControl(
                         innerTextField()
                         Text(
                             text = " €",
-                            color = if (enabled) Color.White else Color.Gray,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
+                            color = if (enabled) AccentGold else Color.Gray,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
             )
         }
 
-        // Botón incrementar
+        // Botón incrementar - cuadrado con borde dorado
         Box(
             modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .border(1.dp, if (enabled) AccentGold else Color.Gray, RoundedCornerShape(8.dp))
+                .size(50.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFF1A1A1A))
+                .border(
+                    width = 2.dp,
+                    color = if (enabled) AccentGold else Color(0xFF4A4A4A),
+                    shape = RoundedCornerShape(12.dp)
+                )
                 .clickable(enabled = enabled) { onIncrease() },
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Aumentar apuesta",
-                tint = if (enabled) AccentGold else Color.Gray,
-                modifier = Modifier.size(24.dp)
+            Text(
+                text = "+",
+                color = if (enabled) AccentGold else Color.Gray,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
             )
         }
     }
@@ -931,6 +1324,7 @@ private fun BetAmountControl(
 
 /**
  * Fila de Auto-Roll con botón y multiplicadores
+ * Diseño premium con botones estilizados
  */
 @Composable
 private fun AutoRollRow(
@@ -949,11 +1343,26 @@ private fun AutoRollRow(
         // Botón AUTO-ROLL
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
-                .background(if (isAutoRollActive) LoseRed else Color(0xFF1A1A1A))
-                .border(1.dp, if (isAutoRollActive) LoseRed else Color(0xFF3A3A3A), RoundedCornerShape(8.dp))
+                .height(44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(
+                    if (isAutoRollActive) {
+                        Brush.horizontalGradient(
+                            colors = listOf(Color(0xFFB71C1C), Color(0xFFE53935), Color(0xFFB71C1C))
+                        )
+                    } else {
+                        Brush.horizontalGradient(
+                            colors = listOf(Color(0xFF1A1A1A), Color(0xFF1A1A1A))
+                        )
+                    }
+                )
+                .border(
+                    width = 1.dp,
+                    color = if (isAutoRollActive) Color(0xFFE53935) else Color(0xFF4A4A4A),
+                    shape = RoundedCornerShape(12.dp)
+                )
                 .clickable(enabled = enabled || isAutoRollActive) { onAutoRollClick() }
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -970,33 +1379,52 @@ private fun AutoRollRow(
                 multiplier = mult,
                 isSelected = mult == selectedMultiplier,
                 onClick = { onMultiplierSelected(mult) },
-                enabled = enabled && !isAutoRollActive
+                enabled = enabled && !isAutoRollActive,
+                modifier = Modifier.weight(1f)
             )
         }
     }
 }
 
 /**
- * Chip de multiplicador para auto-roll
+ * Chip de multiplicador para auto-roll - diseño premium
  */
 @Composable
 private fun MultiplierChip(
     multiplier: Int,
     isSelected: Boolean,
     onClick: () -> Unit,
-    enabled: Boolean
+    enabled: Boolean,
+    modifier: Modifier = Modifier
 ) {
-    val backgroundColor = if (isSelected) AccentGold else Color(0xFF1A1A1A)
+    val backgroundColor = if (isSelected) {
+        Brush.horizontalGradient(
+            colors = listOf(
+                Color(0xFFB8860B),
+                AccentGold,
+                Color(0xFFB8860B)
+            )
+        )
+    } else {
+        Brush.horizontalGradient(
+            colors = listOf(Color(0xFF1A1A1A), Color(0xFF1A1A1A))
+        )
+    }
+    
     val textColor = if (isSelected) Color.Black else if (enabled) Color.White else Color.Gray
-    val borderColor = if (isSelected) AccentGold else Color(0xFF3A3A3A)
+    val borderColor = if (isSelected) AccentGold else Color(0xFF4A4A4A)
 
     Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
+        modifier = modifier
+            .height(44.dp)
+            .clip(RoundedCornerShape(12.dp))
             .background(backgroundColor)
-            .border(1.dp, borderColor, RoundedCornerShape(8.dp))
-            .clickable(enabled = enabled) { onClick() }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .border(
+                width = if (isSelected) 0.dp else 1.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .clickable(enabled = enabled) { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Text(
