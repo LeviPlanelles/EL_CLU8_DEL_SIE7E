@@ -1,5 +1,14 @@
 package com.example.el_clu8_del_sie7e.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,9 +21,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,16 +35,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,13 +48,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
@@ -57,35 +62,36 @@ import com.example.el_clu8_del_sie7e.ui.theme.ButtonRedCenter
 import com.example.el_clu8_del_sie7e.ui.theme.ButtonRedEnd
 import com.example.el_clu8_del_sie7e.ui.theme.ButtonRedStart
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
-import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.ui.theme.PrimaryRed
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
+import com.example.el_clu8_del_sie7e.viewmodel.RouletteBetType
+import com.example.el_clu8_del_sie7e.viewmodel.RouletteState
+import com.example.el_clu8_del_sie7e.viewmodel.RouletteViewModel
+import com.example.el_clu8_del_sie7e.viewmodel.RouletteViewModelFactory
 
 /**
  * =====================================================================================
- * ROULETTEGAMESCREEN.KT - PANTALLA DE RULETA DE CASINO
+ * ROULETTEGAMESCREEN.KT - PANTALLA DE RULETA DE CASINO (FUNCIONAL)
  * =====================================================================================
  *
- * Esta pantalla implementa una mesa de ruleta de casino completa con:
- * - Header con imagen de mesera (fondo de casino)
- * - Tabla de ruleta con números del 0 al 36
- * - Fichas de apuesta seleccionables ($1, $10, $100, $200) - STICKY
- * - Botones de acción: Deshacer, Apostar, Repetir - STICKY
- * - Temporizador de ronda y últimos números ganadores
- * - Integración con BalanceViewModel para el saldo
+ * Pantalla completa de Ruleta Europea conectada al RouletteViewModel.
  *
- * COLORES DE LA RULETA:
- * - Verde: Número 0
- * - Rojo: Números impares (1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36)
- * - Negro: Números pares restantes
+ * FUNCIONALIDADES:
+ * - Tablero interactivo: tap en cualquier número/opción coloca una ficha
+ * - Fichas visibles sobre las casillas donde se apostó
+ * - Selector de fichas: $1, $10, $100, $200
+ * - Historial dinámico de últimos números ganadores
+ * - Botones: DESHACER (undo), GIRAR (spin), REPETIR
+ * - Estado SPINNING: muestra "¡NO VA MÁS!" con animación
+ * - Estado RESULT: muestra número ganador, ganancias y botón NUEVA RONDA
+ * - Apuestas externas: Rojo/Negro, Par/Impar, 1-18/19-36, Docenas, Columnas
  *
- * ESTRUCTURA:
- * - Fondo: Gris oscuro (DarkBackground) como otras pantallas
- * - Controles sticky: Fichas y botones siempre visibles en la parte inferior
  * =====================================================================================
  */
 
-// Colores específicos para la mesa de ruleta
+// ===================================================================================
+// COLORES DE LA MESA DE RULETA
+// ===================================================================================
 private val RouletteGreen = Color(0xFF1B5E20)
 private val RouletteRed = Color(0xFFB71C1C)
 private val RouletteBlack = Color(0xFF212121)
@@ -93,26 +99,42 @@ private val ChipSilver = Color(0xFFB0BEC5)
 private val ChipBlue = Color(0xFF1565C0)
 private val ChipGreen = Color(0xFF2E7D32)
 private val ChipRedDark = Color(0xFFC62828)
+private val ChipGold = Color(0xFFD4AF36)
+
+// ===================================================================================
+// PANTALLA PRINCIPAL
+// ===================================================================================
 
 @Composable
 fun RouletteGameScreen(
     navController: NavController,
-    balanceViewModel: BalanceViewModel = viewModel()
+    balanceViewModel: BalanceViewModel = viewModel(),
+    rouletteViewModel: RouletteViewModel = viewModel(
+        factory = RouletteViewModelFactory(balanceViewModel)
+    )
 ) {
-    // =================================================================================
-    // ESTADO
-    // =================================================================================
+    // ===============================================================================
+    // OBSERVAR ESTADOS DEL VIEWMODEL
+    // ===============================================================================
     val balance by balanceViewModel.formattedBalance.collectAsStateWithLifecycle()
-    var selectedChip by remember { mutableIntStateOf(10) } // Ficha seleccionada por defecto ($10)
+    val gameState by rouletteViewModel.gameState.collectAsStateWithLifecycle()
+    val selectedChip by rouletteViewModel.selectedChip.collectAsStateWithLifecycle()
+    val totalBet by rouletteViewModel.totalBet.collectAsStateWithLifecycle()
+    val winningNumber by rouletteViewModel.winningNumber.collectAsStateWithLifecycle()
+    val numberHistory by rouletteViewModel.numberHistory.collectAsStateWithLifecycle()
+    val message by rouletteViewModel.message.collectAsStateWithLifecycle()
+    val lastWin by rouletteViewModel.lastWin.collectAsStateWithLifecycle()
+    val chipPositions by rouletteViewModel.chipPositions.collectAsStateWithLifecycle()
+
     val scrollState = rememberScrollState()
 
-    // =================================================================================
+    // ===============================================================================
     // ESTRUCTURA PRINCIPAL
-    // =================================================================================
+    // ===============================================================================
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground) // Fondo gris oscuro como otras pantallas
+            .background(DarkBackground)
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -126,44 +148,94 @@ fun RouletteGameScreen(
             )
 
             // -------------------------------------------------------------------------
-            // CONTENIDO SCROLLEABLE (HEADER + TABLA)
+            // CONTENIDO SCROLLEABLE
             // -------------------------------------------------------------------------
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(scrollState)
             ) {
-                // ---------------------------------------------------------------------
-                // SECCIÓN DE IMAGEN DE MESERA (HEADER DE LA RULETA)
-                // ---------------------------------------------------------------------
-                RouletteHeaderSection()
+                // SECCIÓN DE IMAGEN DE MESERA
+                RouletteHeaderSection(
+                    message = message,
+                    numberHistory = numberHistory,
+                    gameState = gameState,
+                    winningNumber = winningNumber,
+                    onBackClick = { navController.popBackStack() }
+                )
 
-                // ---------------------------------------------------------------------
-                // TABLA DE RULETA
-                // ---------------------------------------------------------------------
-                RouletteTableSection()
+                // RESULTADO GRANDE (cuando hay ganador)
+                AnimatedVisibility(
+                    visible = gameState == RouletteState.RESULT && winningNumber != null,
+                    enter = fadeIn(tween(300)),
+                    exit = fadeOut(tween(300))
+                ) {
+                    ResultBanner(
+                        winningNumber = winningNumber ?: 0,
+                        lastWin = lastWin,
+                        isRed = rouletteViewModel.isRed(winningNumber ?: 0),
+                        isBlack = rouletteViewModel.isBlack(winningNumber ?: 0)
+                    )
+                }
 
-                // Espaciado para que no quede pegado a los controles sticky
+                // TABLA DE RULETA INTERACTIVA
+                RouletteTableSection(
+                    chipPositions = chipPositions,
+                    gameState = gameState,
+                    onNumberClick = { number -> rouletteViewModel.betOnNumber(number) },
+                    onColumnClick = { column ->
+                        val betType = when (column) {
+                            1 -> RouletteBetType.COLUMN_1
+                            2 -> RouletteBetType.COLUMN_2
+                            else -> RouletteBetType.COLUMN_3
+                        }
+                        rouletteViewModel.betOnOption(betType)
+                    }
+                )
+
+                // APUESTAS EXTERNAS (Docenas, Rojo/Negro, Par/Impar, etc.)
+                ExternalBetsSection(
+                    chipPositions = chipPositions,
+                    gameState = gameState,
+                    onBetOption = { betType -> rouletteViewModel.betOnOption(betType) }
+                )
+
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
             // -------------------------------------------------------------------------
-            // CONTROLES STICKY (FICHAS + BOTONES) - SIEMPRE VISIBLES
+            // CONTROLES STICKY (FICHAS + BOTONES)
             // -------------------------------------------------------------------------
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(DarkBackground)
-                    .padding(vertical = 8.dp)
+                    .padding(vertical = 4.dp)
             ) {
+                // INFO DE APUESTA ACTUAL
+                if (totalBet > 0 || gameState == RouletteState.RESULT) {
+                    BetInfoBar(
+                        totalBet = totalBet,
+                        lastWin = lastWin,
+                        gameState = gameState
+                    )
+                }
+
                 // FICHAS DE APUESTA
                 BettingChipsSection(
                     selectedChip = selectedChip,
-                    onChipSelected = { selectedChip = it }
+                    onChipSelected = { rouletteViewModel.selectChip(it) },
+                    enabled = gameState == RouletteState.BETTING
                 )
 
                 // BOTONES DE ACCIÓN
-                ActionButtonsSection()
+                ActionButtonsSection(
+                    gameState = gameState,
+                    onUndo = { rouletteViewModel.undoLastBet() },
+                    onSpin = { rouletteViewModel.spin() },
+                    onRepeat = { rouletteViewModel.repeatLastBets() },
+                    onNewRound = { rouletteViewModel.newRound() }
+                )
             }
 
             // -------------------------------------------------------------------------
@@ -178,17 +250,21 @@ fun RouletteGameScreen(
     }
 }
 
+// ===================================================================================
+// HEADER CON MESERA
+// ===================================================================================
+
 /**
- * =====================================================================================
- * ROULETTE HEADER SECTION
- * =====================================================================================
- *
- * Muestra la imagen de la mesera con overlay de información del juego.
- * Incluye: botón de regreso, título "LIVE ROULETTE", temporizador,
- * indicador "EN VIVO", y los últimos números ganadores.
+ * Header con imagen de mesera, mensaje dinámico del juego e historial de números.
  */
 @Composable
-private fun RouletteHeaderSection() {
+private fun RouletteHeaderSection(
+    message: String,
+    numberHistory: List<Int>,
+    gameState: RouletteState,
+    winningNumber: Int?,
+    onBackClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -202,7 +278,7 @@ private fun RouletteHeaderSection() {
             contentScale = ContentScale.Crop
         )
 
-        // Overlay oscuro para mejor legibilidad
+        // Overlay oscuro
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -214,29 +290,24 @@ private fun RouletteHeaderSection() {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Fila superior: Botón de regreso (izquierda) y Temporizador (derecha)
+            // Fila superior: Botón de regreso
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Botón de regreso con flecha dorada
+                // Botón de regreso
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Regresar",
                     tint = AccentGold,
                     modifier = Modifier
                         .size(28.dp)
-                        .clickable { /* Navegar atrás */ }
+                        .clickable { onBackClick() }
                 )
 
-                // Temporizador - Esquina superior derecha
-                Text(
-                    text = "00:15",
-                    color = AccentGold,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                // Indicador EN VIVO
+                LiveIndicator()
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -251,41 +322,72 @@ private fun RouletteHeaderSection() {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Subtítulo
-            Text(
-                text = "Hagan sus apuestas",
-                color = Color.White,
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Mensaje dinámico del ViewModel (reemplaza "Hagan sus apuestas" estático)
+            if (gameState == RouletteState.SPINNING) {
+                // Texto pulsante durante el giro
+                val infiniteTransition = rememberInfiniteTransition(label = "spin")
+                val alpha by infiniteTransition.animateFloat(
+                    initialValue = 1f,
+                    targetValue = 0.3f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(500, easing = LinearEasing),
+                        repeatMode = RepeatMode.Reverse
+                    ),
+                    label = "alpha"
+                )
+                Text(
+                    text = message,
+                    color = Color.White.copy(alpha = alpha),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                Text(
+                    text = message,
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Fila inferior: EN VIVO (izquierda) y Últimos números (derecha)
+            // Fila inferior: Historial de números dinámico
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // EN VIVO - Esquina inferior izquierda
-                LiveIndicator()
-
-                // Últimos números - Esquina inferior derecha
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                if (numberHistory.isNotEmpty()) {
                     Text(
                         text = "ÚLTIMOS",
                         color = Color.Gray,
                         fontSize = 10.sp,
                         modifier = Modifier.padding(end = 8.dp)
                     )
-                    LastNumberSquare(number = 32, color = RouletteRed)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    LastNumberSquare(number = 5, color = RouletteRed)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    LastNumberSquare(number = 11, color = RouletteBlack)
+                    // Mostrar hasta los últimos 6 números
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        reverseLayout = false
+                    ) {
+                        items(numberHistory.take(6)) { number ->
+                            val color = when {
+                                number == 0 -> RouletteGreen
+                                number in RouletteViewModel.RED_NUMBERS -> RouletteRed
+                                else -> RouletteBlack
+                            }
+                            LastNumberSquare(number = number, color = color)
+                        }
+                    }
+                } else {
+                    Text(
+                        text = "Sin historial aún",
+                        color = Color.Gray,
+                        fontSize = 10.sp
+                    )
                 }
             }
         }
@@ -293,8 +395,7 @@ private fun RouletteHeaderSection() {
 }
 
 /**
- * Indicador de "EN VIVO" con punto rojo.
- * Posicionado en la esquina inferior izquierda como en el diseño.
+ * Indicador de "EN VIVO" con punto rojo pulsante.
  */
 @Composable
 private fun LiveIndicator() {
@@ -320,7 +421,7 @@ private fun LiveIndicator() {
 }
 
 /**
- * Cuadrado pequeño que muestra un número ganador reciente.
+ * Cuadrado que muestra un número ganador reciente con su color correcto.
  */
 @Composable
 private fun LastNumberSquare(number: Int, color: Color) {
@@ -340,28 +441,134 @@ private fun LastNumberSquare(number: Int, color: Color) {
     }
 }
 
+// ===================================================================================
+// BANNER DE RESULTADO
+// ===================================================================================
+
 /**
- * =====================================================================================
- * ROULETTE TABLE SECTION
- * =====================================================================================
- *
- * Implementa la mesa de ruleta con el número 0 (verde) arriba y
- * los números 1-36 organizados en una cuadrícula de 3 columnas.
+ * Banner grande que muestra el número ganador y las ganancias.
  */
 @Composable
-private fun RouletteTableSection() {
+private fun ResultBanner(
+    winningNumber: Int,
+    lastWin: Double,
+    isRed: Boolean,
+    isBlack: Boolean
+) {
+    val bgColor = when {
+        winningNumber == 0 -> RouletteGreen
+        isRed -> RouletteRed
+        else -> RouletteBlack
+    }
+    val colorName = when {
+        winningNumber == 0 -> "VERDE"
+        isRed -> "ROJO"
+        else -> "NEGRO"
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .background(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        bgColor.copy(alpha = 0.3f),
+                        bgColor.copy(alpha = 0.5f),
+                        bgColor.copy(alpha = 0.3f),
+                        Color.Transparent
+                    )
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .border(1.dp, AccentGold.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Número 0 (Verde) - Ocupa todo el ancho
+        // Número grande
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .background(bgColor, CircleShape)
+                .border(2.dp, AccentGold, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = winningNumber.toString(),
+                color = Color.White,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = colorName,
+            color = AccentGold,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        if (lastWin > 0) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "¡GANASTE \$${lastWin.toInt()}!",
+                color = AccentGold,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+        } else {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "MEJOR SUERTE LA PRÓXIMA",
+                color = Color.Gray,
+                fontSize = 14.sp
+            )
+        }
+    }
+}
+
+// ===================================================================================
+// TABLA DE RULETA INTERACTIVA
+// ===================================================================================
+
+/**
+ * Mesa de ruleta con números clicables. Al tocar un número se coloca la ficha
+ * seleccionada. Muestra un indicador de ficha si ya hay apuesta en esa casilla.
+ */
+@Composable
+private fun RouletteTableSection(
+    chipPositions: Map<String, List<Int>>,
+    gameState: RouletteState,
+    onNumberClick: (Int) -> Unit,
+    onColumnClick: (Int) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(top = 12.dp)
+    ) {
+        // Número 0 (Verde) - Ancho completo
+        val zeroKey = "straight_0"
+        val zeroChips = chipPositions[zeroKey]
+        val zeroTotal = zeroChips?.sum() ?: 0
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
                 .background(RouletteGreen, RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                .border(1.dp, AccentGold.copy(alpha = 0.7f)),
+                .border(
+                    width = if (zeroTotal > 0) 2.dp else 1.dp,
+                    color = if (zeroTotal > 0) AccentGold else AccentGold.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+                )
+                .clickable(enabled = gameState == RouletteState.BETTING) {
+                    onNumberClick(0)
+                },
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -370,30 +577,37 @@ private fun RouletteTableSection() {
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
+            // Mostrar ficha si hay apuesta
+            if (zeroTotal > 0) {
+                ChipOnCell(amount = zeroTotal)
+            }
         }
 
-        // Grid de números 1-36
-        // Los números rojos son: 1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36
-        val redNumbers = setOf(1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36)
-
-        // Dividimos los números en filas de 3
+        // Grid de números 1-36 (filas de 3)
         val rows = (1..36).chunked(3)
-
-        rows.forEachIndexed { rowIndex, rowNumbers ->
+        rows.forEach { rowNumbers ->
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                rowNumbers.forEachIndexed { index, number ->
-                    val isRed = number in redNumbers
+                rowNumbers.forEach { number ->
+                    val isRed = number in RouletteViewModel.RED_NUMBERS
                     val backgroundColor = if (isRed) RouletteRed else RouletteBlack
+                    val key = "straight_$number"
+                    val chips = chipPositions[key]
+                    val total = chips?.sum() ?: 0
 
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .height(45.dp)
                             .background(backgroundColor)
-                            .border(1.dp, AccentGold.copy(alpha = 0.7f))
-                            .clickable { /* Seleccionar número */ },
+                            .border(
+                                width = if (total > 0) 2.dp else 1.dp,
+                                color = if (total > 0) AccentGold else AccentGold.copy(alpha = 0.5f)
+                            )
+                            .clickable(enabled = gameState == RouletteState.BETTING) {
+                                onNumberClick(number)
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -402,23 +616,40 @@ private fun RouletteTableSection() {
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
+                        // Ficha sobre la casilla
+                        if (total > 0) {
+                            ChipOnCell(amount = total)
+                        }
                     }
                 }
             }
         }
 
-        // Fila inferior con apuestas especiales (2to1)
+        // Fila de Columnas (2to1)
         Row(
             modifier = Modifier.fillMaxWidth()
         ) {
-            repeat(3) { index ->
+            for (col in 1..3) {
+                val key = when (col) {
+                    1 -> "column_1"
+                    2 -> "column_2"
+                    else -> "column_3"
+                }
+                val chips = chipPositions[key]
+                val total = chips?.sum() ?: 0
+
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .height(40.dp)
                         .background(DarkBackground)
-                        .border(1.dp, AccentGold.copy(alpha = 0.7f))
-                        .clickable { /* Apuesta 2to1 */ },
+                        .border(
+                            width = if (total > 0) 2.dp else 1.dp,
+                            color = if (total > 0) AccentGold else AccentGold.copy(alpha = 0.5f)
+                        )
+                        .clickable(enabled = gameState == RouletteState.BETTING) {
+                            onColumnClick(col)
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -427,210 +658,474 @@ private fun RouletteTableSection() {
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
+                    if (total > 0) {
+                        ChipOnCell(amount = total)
+                    }
                 }
             }
         }
     }
 }
 
+// ===================================================================================
+// APUESTAS EXTERNAS
+// ===================================================================================
+
 /**
- * =====================================================================================
- * BETTING CHIPS SECTION
- * =====================================================================================
- *
- * Muestra las fichas de apuesta disponibles: $1, $10, $100, $200.
- * La ficha seleccionada se destaca con un borde dorado.
+ * Sección de apuestas externas: Docenas, Rojo/Negro, Par/Impar, 1-18/19-36.
  */
 @Composable
-private fun BettingChipsSection(
-    selectedChip: Int,
-    onChipSelected: (Int) -> Unit
+private fun ExternalBetsSection(
+    chipPositions: Map<String, List<Int>>,
+    gameState: RouletteState,
+    onBetOption: (RouletteBetType) -> Unit
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp)
     ) {
-        // Ficha de $1 (Plateada)
-        BettingChip(
-            value = 1,
-            color = ChipSilver,
-            isSelected = selectedChip == 1,
-            onClick = { onChipSelected(1) }
-        )
+        // Fila 1: Docenas
+        Row(modifier = Modifier.fillMaxWidth()) {
+            ExternalBetCell(
+                label = "1ª DOC",
+                subLabel = "1-12",
+                key = "dozen_1",
+                chipPositions = chipPositions,
+                enabled = gameState == RouletteState.BETTING,
+                modifier = Modifier.weight(1f),
+                onClick = { onBetOption(RouletteBetType.DOZEN_1) }
+            )
+            ExternalBetCell(
+                label = "2ª DOC",
+                subLabel = "13-24",
+                key = "dozen_2",
+                chipPositions = chipPositions,
+                enabled = gameState == RouletteState.BETTING,
+                modifier = Modifier.weight(1f),
+                onClick = { onBetOption(RouletteBetType.DOZEN_2) }
+            )
+            ExternalBetCell(
+                label = "3ª DOC",
+                subLabel = "25-36",
+                key = "dozen_3",
+                chipPositions = chipPositions,
+                enabled = gameState == RouletteState.BETTING,
+                modifier = Modifier.weight(1f),
+                onClick = { onBetOption(RouletteBetType.DOZEN_3) }
+            )
+        }
 
-        // Ficha de $10 (Azul)
-        BettingChip(
-            value = 10,
-            color = ChipBlue,
-            isSelected = selectedChip == 10,
-            onClick = { onChipSelected(10) }
-        )
-
-        // Ficha de $100 (Verde)
-        BettingChip(
-            value = 100,
-            color = ChipGreen,
-            isSelected = selectedChip == 100,
-            onClick = { onChipSelected(100) }
-        )
-
-        // Ficha de $200 (Roja)
-        BettingChip(
-            value = 200,
-            color = ChipRedDark,
-            isSelected = selectedChip == 200,
-            onClick = { onChipSelected(200) }
-        )
+        // Fila 2: 1-18, PAR, ROJO, NEGRO, IMPAR, 19-36
+        Row(modifier = Modifier.fillMaxWidth()) {
+            ExternalBetCell(
+                label = "1-18",
+                key = "low",
+                chipPositions = chipPositions,
+                enabled = gameState == RouletteState.BETTING,
+                modifier = Modifier.weight(1f),
+                onClick = { onBetOption(RouletteBetType.LOW) }
+            )
+            ExternalBetCell(
+                label = "PAR",
+                key = "even",
+                chipPositions = chipPositions,
+                enabled = gameState == RouletteState.BETTING,
+                modifier = Modifier.weight(1f),
+                onClick = { onBetOption(RouletteBetType.EVEN) }
+            )
+            // ROJO - con color de fondo especial
+            ExternalBetCell(
+                label = "ROJO",
+                key = "red",
+                chipPositions = chipPositions,
+                enabled = gameState == RouletteState.BETTING,
+                modifier = Modifier.weight(1f),
+                bgColor = RouletteRed.copy(alpha = 0.6f),
+                onClick = { onBetOption(RouletteBetType.RED) }
+            )
+            // NEGRO - con color de fondo especial
+            ExternalBetCell(
+                label = "NEGRO",
+                key = "black",
+                chipPositions = chipPositions,
+                enabled = gameState == RouletteState.BETTING,
+                modifier = Modifier.weight(1f),
+                bgColor = RouletteBlack,
+                onClick = { onBetOption(RouletteBetType.BLACK) }
+            )
+            ExternalBetCell(
+                label = "IMPAR",
+                key = "odd",
+                chipPositions = chipPositions,
+                enabled = gameState == RouletteState.BETTING,
+                modifier = Modifier.weight(1f),
+                onClick = { onBetOption(RouletteBetType.ODD) }
+            )
+            ExternalBetCell(
+                label = "19-36",
+                key = "high",
+                chipPositions = chipPositions,
+                enabled = gameState == RouletteState.BETTING,
+                modifier = Modifier.weight(1f),
+                onClick = { onBetOption(RouletteBetType.HIGH) }
+            )
+        }
     }
 }
 
 /**
- * Ficha individual de apuesta.
+ * Celda individual de apuesta externa.
+ */
+@Composable
+private fun ExternalBetCell(
+    label: String,
+    key: String,
+    chipPositions: Map<String, List<Int>>,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    subLabel: String? = null,
+    bgColor: Color = DarkBackground,
+    onClick: () -> Unit
+) {
+    val chips = chipPositions[key]
+    val total = chips?.sum() ?: 0
+
+    Box(
+        modifier = modifier
+            .height(40.dp)
+            .background(bgColor)
+            .border(
+                width = if (total > 0) 2.dp else 1.dp,
+                color = if (total > 0) AccentGold else AccentGold.copy(alpha = 0.5f)
+            )
+            .clickable(enabled = enabled) { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = label,
+                color = if (total > 0) AccentGold else Color.White,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (subLabel != null) {
+                Text(
+                    text = subLabel,
+                    color = Color.Gray,
+                    fontSize = 8.sp
+                )
+            }
+        }
+        if (total > 0) {
+            ChipOnCell(amount = total)
+        }
+    }
+}
+
+// ===================================================================================
+// INDICADOR DE FICHA SOBRE CASILLA
+// ===================================================================================
+
+/**
+ * Mini ficha visual que aparece sobre una casilla cuando tiene apuesta.
+ * Se posiciona en la esquina superior derecha de la celda.
+ */
+@Composable
+private fun ChipOnCell(amount: Int) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopEnd
+    ) {
+        Box(
+            modifier = Modifier
+                .offset(x = (-2).dp, y = 2.dp)
+                .size(20.dp)
+                .background(ChipGold, CircleShape)
+                .border(1.dp, Color.White, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = if (amount >= 1000) "${amount / 1000}K" else amount.toString(),
+                color = Color.Black,
+                fontSize = 7.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1
+            )
+        }
+    }
+}
+
+// ===================================================================================
+// BARRA DE INFO DE APUESTA
+// ===================================================================================
+
+/**
+ * Barra que muestra la apuesta total y/o ganancias.
+ */
+@Composable
+private fun BetInfoBar(
+    totalBet: Double,
+    lastWin: Double,
+    gameState: RouletteState
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .background(
+                Color.White.copy(alpha = 0.05f),
+                RoundedCornerShape(8.dp)
+            )
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "APUESTA: \$${totalBet.toInt()}",
+            color = AccentGold,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold
+        )
+        if (gameState == RouletteState.RESULT && lastWin > 0) {
+            Text(
+                text = "GANANCIA: \$${lastWin.toInt()}",
+                color = Color(0xFF4CAF50),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+// ===================================================================================
+// FICHAS DE APUESTA
+// ===================================================================================
+
+/**
+ * Selector de fichas: $1 (plata), $10 (azul), $100 (verde), $200 (rojo).
+ * La ficha seleccionada tiene borde dorado destacado.
+ */
+@Composable
+private fun BettingChipsSection(
+    selectedChip: Int,
+    onChipSelected: (Int) -> Unit,
+    enabled: Boolean
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        BettingChip(value = 1, color = ChipSilver, isSelected = selectedChip == 1, enabled = enabled) {
+            onChipSelected(1)
+        }
+        BettingChip(value = 10, color = ChipBlue, isSelected = selectedChip == 10, enabled = enabled) {
+            onChipSelected(10)
+        }
+        BettingChip(value = 100, color = ChipGreen, isSelected = selectedChip == 100, enabled = enabled) {
+            onChipSelected(100)
+        }
+        BettingChip(value = 200, color = ChipRedDark, isSelected = selectedChip == 200, enabled = enabled) {
+            onChipSelected(200)
+        }
+    }
+}
+
+/**
+ * Ficha individual de apuesta con diseño de casino.
+ * Borde dorado si está seleccionada, opacidad reducida si está deshabilitada.
  */
 @Composable
 private fun BettingChip(
     value: Int,
     color: Color,
     isSelected: Boolean,
+    enabled: Boolean,
     onClick: () -> Unit
 ) {
+    val chipAlpha = if (enabled) 1f else 0.4f
+
     Box(
         modifier = Modifier
-            .size(64.dp)
+            .size(if (isSelected) 58.dp else 52.dp)
             .then(
                 if (isSelected) {
                     Modifier.border(3.dp, AccentGold, CircleShape)
                 } else Modifier
             )
             .clip(CircleShape)
-            .background(color)
-            .border(2.dp, Color.White.copy(alpha = 0.3f), CircleShape)
-            .clickable(onClick = onClick),
+            .background(color.copy(alpha = chipAlpha))
+            .border(2.dp, Color.White.copy(alpha = 0.3f * chipAlpha), CircleShape)
+            .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        // Círculos decorativos para simular el borde de una ficha real
+        // Borde decorativo interno
         Box(
             modifier = Modifier
-                .size(52.dp)
-                .border(1.dp, Color.White.copy(alpha = 0.5f), CircleShape)
+                .size(if (isSelected) 46.dp else 40.dp)
+                .border(1.dp, Color.White.copy(alpha = 0.5f * chipAlpha), CircleShape)
         )
 
-        // Valor de la ficha
+        // Valor de la ficha (sin símbolo $ para que quepa)
         Text(
-            text = "$$value",
-            color = Color.White,
-            fontSize = if (value >= 100) 14.sp else 16.sp,
+            text = value.toString(),
+            color = Color.White.copy(alpha = chipAlpha),
+            fontSize = if (value >= 100) 13.sp else 15.sp,
             fontWeight = FontWeight.Bold
         )
     }
 }
 
+// ===================================================================================
+// BOTONES DE ACCIÓN
+// ===================================================================================
+
 /**
- * =====================================================================================
- * ACTION BUTTONS SECTION
- * =====================================================================================
- *
- * Botones de acción: Deshacer, Apostar (principal), Repetir.
- * Los botones están correctamente centrados con texto e iconos alineados.
+ * Botones de acción que cambian según el estado del juego:
+ * - BETTING: DESHACER | GIRAR | REPETIR
+ * - SPINNING: Deshabilitados
+ * - RESULT: NUEVA RONDA (botón único central)
  */
 @Composable
-private fun ActionButtonsSection() {
+private fun ActionButtonsSection(
+    gameState: RouletteState,
+    onUndo: () -> Unit,
+    onSpin: () -> Unit,
+    onRepeat: () -> Unit,
+    onNewRound: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Botón DESHACER
-        ActionButton(
-            text = "DESHACER",
-            icon = Icons.AutoMirrored.Filled.Undo,
-            isPrimary = false,
-            onClick = { /* Deshacer última apuesta */ }
-        )
+        when (gameState) {
+            RouletteState.BETTING -> {
+                // DESHACER
+                ActionButton(
+                    text = "DESHACER",
+                    icon = Icons.AutoMirrored.Filled.Undo,
+                    isPrimary = false,
+                    onClick = onUndo
+                )
+                // GIRAR (botón principal)
+                ActionButton(
+                    text = "GIRAR",
+                    icon = null,
+                    isPrimary = true,
+                    onClick = onSpin
+                )
+                // REPETIR
+                ActionButton(
+                    text = "REPETIR",
+                    icon = Icons.AutoMirrored.Filled.Redo,
+                    isPrimary = false,
+                    onClick = onRepeat
+                )
+            }
 
-        // Botón APOSTAR (Principal)
-        ActionButton(
-            text = "APOSTAR",
-            icon = null,
-            isPrimary = true,
-            onClick = { /* Realizar apuesta */ }
-        )
+            RouletteState.SPINNING -> {
+                // Todo deshabilitado durante el giro
+                ActionButton(
+                    text = "DESHACER",
+                    icon = Icons.AutoMirrored.Filled.Undo,
+                    isPrimary = false,
+                    enabled = false,
+                    onClick = {}
+                )
+                ActionButton(
+                    text = "¡NO VA MÁS!",
+                    icon = null,
+                    isPrimary = true,
+                    enabled = false,
+                    onClick = {}
+                )
+                ActionButton(
+                    text = "REPETIR",
+                    icon = Icons.AutoMirrored.Filled.Redo,
+                    isPrimary = false,
+                    enabled = false,
+                    onClick = {}
+                )
+            }
 
-        // Botón REPETIR
-        ActionButton(
-            text = "REPETIR",
-            icon = Icons.AutoMirrored.Filled.Redo,
-            isPrimary = false,
-            onClick = { /* Repetir última apuesta */ }
-        )
+            RouletteState.RESULT -> {
+                // Un solo botón grande: NUEVA RONDA
+                Spacer(modifier = Modifier.width(8.dp))
+                ActionButton(
+                    text = "NUEVA RONDA",
+                    icon = null,
+                    isPrimary = true,
+                    isWide = true,
+                    onClick = onNewRound
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+        }
     }
 }
 
 /**
- * Botón de acción individual.
- * - Botón primario (APOSTAR): Fondo rojo con gradiente, borde dorado, texto blanco
- * - Botones secundarios (DESHACER, REPETIR): Fondo oscuro, borde dorado, texto blanco
+ * Botón de acción individual con estilo casino.
+ * - Primario: gradiente rojo con borde dorado
+ * - Secundario: fondo oscuro con borde dorado
  */
 @Composable
 private fun ActionButton(
     text: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector?,
     isPrimary: Boolean,
+    enabled: Boolean = true,
+    isWide: Boolean = false,
     onClick: () -> Unit
 ) {
     val buttonShape = RoundedCornerShape(22.dp)
-    val borderColor = AccentGold.copy(alpha = 0.8f)
+    val borderColor = if (enabled) AccentGold.copy(alpha = 0.8f) else Color.Gray.copy(alpha = 0.3f)
+    val buttonWidth = if (isWide) 200.dp else 110.dp
+    val contentAlpha = if (enabled) 1f else 0.4f
 
     if (isPrimary) {
-        // Botón APOSTAR - Rojo con gradiente, borde dorado
         Box(
             modifier = Modifier
-                .width(120.dp)
-                .height(48.dp)
-                .border(
-                    width = 1.5.dp,
-                    color = borderColor,
-                    shape = buttonShape
-                )
+                .width(buttonWidth)
+                .height(44.dp)
+                .border(width = 1.5.dp, color = borderColor, shape = buttonShape)
                 .clip(buttonShape)
                 .background(
                     brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            ButtonRedStart,
-                            ButtonRedCenter,
-                            ButtonRedEnd
-                        )
+                        colors = if (enabled) {
+                            listOf(ButtonRedStart, ButtonRedCenter, ButtonRedEnd)
+                        } else {
+                            listOf(Color.Gray.copy(alpha = 0.3f), Color.Gray.copy(alpha = 0.4f), Color.Gray.copy(alpha = 0.3f))
+                        }
                     )
                 )
-                .clickable(onClick = onClick),
+                .clickable(enabled = enabled, onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = text,
-                color = Color.White,
-                fontSize = 14.sp,
+                color = Color.White.copy(alpha = contentAlpha),
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold
             )
         }
     } else {
-        // Botones DESHACER y REPETIR - Fondo oscuro, borde dorado, texto blanco
         Box(
             modifier = Modifier
-                .width(120.dp)
-                .height(48.dp)
-                .border(
-                    width = 1.5.dp,
-                    color = borderColor,
-                    shape = buttonShape
-                )
+                .width(buttonWidth)
+                .height(44.dp)
+                .border(width = 1.5.dp, color = borderColor, shape = buttonShape)
                 .clip(buttonShape)
-                .background(Color(0xFF2E2E2E)) // Gris oscuro como otras pantallas
-                .clickable(onClick = onClick),
+                .background(Color(0xFF2E2E2E).copy(alpha = if (enabled) 1f else 0.5f))
+                .clickable(enabled = enabled, onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
             Row(
@@ -641,33 +1136,18 @@ private fun ActionButton(
                     Icon(
                         imageVector = it,
                         contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp)
+                        tint = Color.White.copy(alpha = contentAlpha),
+                        modifier = Modifier.size(16.dp)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                 }
                 Text(
                     text = text,
-                    color = Color.White,
-                    fontSize = 14.sp,
+                    color = Color.White.copy(alpha = contentAlpha),
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
         }
-    }
-}
-
-// =====================================================================================
-// PREVIEW
-// =====================================================================================
-@Preview(showBackground = true, device = "id:pixel_5")
-@Composable
-fun RouletteGameScreenPreview() {
-    EL_CLU8_DEL_SIE7ETheme {
-        val mockNavController = rememberNavController()
-
-        RouletteGameScreen(
-            navController = mockNavController
-        )
     }
 }

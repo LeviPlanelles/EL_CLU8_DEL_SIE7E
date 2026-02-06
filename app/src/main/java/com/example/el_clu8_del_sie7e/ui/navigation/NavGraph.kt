@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.data.repository.AuthRepository
+import com.example.el_clu8_del_sie7e.ui.screens.BlackjackScreen
 import com.example.el_clu8_del_sie7e.ui.screens.DepositScreen
 import com.example.el_clu8_del_sie7e.ui.screens.GameSearchScreen
 import com.example.el_clu8_del_sie7e.ui.screens.LobbyScreen
@@ -25,6 +26,8 @@ import com.example.el_clu8_del_sie7e.ui.screens.WithdrawScreen
 import com.example.el_clu8_del_sie7e.ui.screens.PromocionesScreen
 import com.example.el_clu8_del_sie7e.ui.screens.SlotGamePlayScreenWithEffects
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
+import com.example.el_clu8_del_sie7e.viewmodel.RouletteViewModel
+import com.example.el_clu8_del_sie7e.viewmodel.RouletteViewModelFactory
 import com.example.el_clu8_del_sie7e.viewmodel.SlotGameViewModel
 import com.example.el_clu8_del_sie7e.viewmodel.SlotGameViewModelFactory
 
@@ -179,9 +182,29 @@ fun NavGraph() {
 
         /**
          * Pantalla de Ruleta de Casino
+         * - Juego de Ruleta Europea completo con apuestas reales
+         * - Integrado con el sistema de balance
          */
         composable(route = Routes.ROULETTE_GAME_SCREEN) {
+            // Crear ViewModel con Factory para inyectar BalanceViewModel
+            val rouletteViewModel: RouletteViewModel = viewModel(
+                factory = RouletteViewModelFactory(balanceViewModel)
+            )
+
             RouletteGameScreen(
+                navController = navController,
+                balanceViewModel = balanceViewModel,
+                rouletteViewModel = rouletteViewModel
+            )
+        }
+
+        /**
+         * Pantalla de Blackjack
+         * - Juego de Blackjack completo con apuestas reales
+         * - Integrado con el sistema de balance
+         */
+        composable(route = Routes.BLACKJACK_GAME_SCREEN) {
+            BlackjackScreen(
                 navController = navController,
                 balanceViewModel = balanceViewModel
             )

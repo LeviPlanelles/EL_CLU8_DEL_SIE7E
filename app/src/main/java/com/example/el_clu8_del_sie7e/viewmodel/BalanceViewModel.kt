@@ -52,9 +52,10 @@ class BalanceViewModel : ViewModel() {
     
     /**
      * Balance actual del usuario
-     * Valor inicial: $0.00 (el usuario empieza sin fondos)
+     * Valor inicial: $5,000.00 (saldo de prueba para testing)
+     * TODO: En producción, cargar desde Firebase/base de datos
      */
-    private val _balance = MutableStateFlow(0.00)
+    private val _balance = MutableStateFlow(5000.00)
     val balance: StateFlow<Double> = _balance.asStateFlow()
 
     /**
