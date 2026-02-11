@@ -122,7 +122,8 @@ fun RegisterScreen(
                     text = "REGÍSTRATE",
                     color = AccentGold,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
+                    fontSize = 22.sp,
+                    fontFamily = Poppins
                 )
             }
 
@@ -255,7 +256,7 @@ fun RegisterScreen(
                             .background(brush = Brush.verticalGradient(colors = listOf(ButtonRedStart, ButtonRedCenter, ButtonRedEnd))),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "CREAR CUENTA", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                        Text(text = "CREAR CUENTA", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp, fontFamily = Poppins)
                     }
                 }
             }
@@ -268,7 +269,8 @@ fun RegisterScreen(
                     color = Color(0xFFFF5252),
                     fontSize = 12.sp,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    fontFamily = Poppins
                 )
             }
             
@@ -279,7 +281,8 @@ fun RegisterScreen(
                     color = Color(0xFF00C853),
                     fontSize = 12.sp,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    fontFamily = Poppins
                 )
             }
 
@@ -288,12 +291,13 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 24.dp),
                 horizontalArrangement = Arrangement.Center
             ) {
-                Text(text = "¿Ya eres miembro? ", color = TextSecondary, fontSize = 13.sp)
+                Text(text = "¿Ya eres miembro? ", color = TextSecondary, fontSize = 13.sp, fontFamily = Poppins)
                 Text(
                     text = "Inicia sesión",
                     color = AccentGold,
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp,
+                    fontFamily = Poppins,
                     modifier = Modifier.clickable { navController.navigate(Routes.LOGIN_SCREEN) }
                 )
             }
@@ -320,7 +324,8 @@ fun RegisterInputField(
             color = Color.White,
             modifier = Modifier.padding(bottom = 6.dp),
             fontSize = 13.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            fontFamily = Poppins
         )
         OutlinedTextField(
             value = value,

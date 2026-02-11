@@ -57,6 +57,7 @@ import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.ui.theme.GradientCenter
 import com.example.el_clu8_del_sie7e.ui.theme.GradientEdge
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
 /**
@@ -137,7 +138,7 @@ fun ProfileScreen(
                 }
 
                 // Título "MI PERFIL"
-                Text(text = "MI PERFIL", color = AccentGold, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(text = "MI PERFIL", color = AccentGold, fontSize = 18.sp, fontWeight = FontWeight.Bold, fontFamily = Poppins)
                 Spacer(modifier = Modifier.weight(1f))
 
                 // Icono de ayuda - Navega a SupportScreen

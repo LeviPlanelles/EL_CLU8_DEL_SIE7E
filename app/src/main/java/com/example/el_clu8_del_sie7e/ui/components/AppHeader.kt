@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.ui.theme.Gideon
+import com.example.el_clu8_del_sie7e.ui.theme.Tomorrow
+import androidx.compose.ui.text.font.FontWeight
 import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
@@ -145,10 +147,13 @@ fun AppHeader(
 
                     Spacer(modifier = Modifier.width(6.dp))
 
+                    // Balance con fuente Tomorrow para números
                     Text(
                         text = balance,
                         color = Color.White,
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
+                        fontFamily = Tomorrow,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }

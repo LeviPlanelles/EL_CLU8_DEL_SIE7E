@@ -57,7 +57,9 @@ import com.example.el_clu8_del_sie7e.ui.theme.ButtonRedEnd
 import com.example.el_clu8_del_sie7e.ui.theme.ButtonRedStart
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 import com.example.el_clu8_del_sie7e.ui.theme.SurfaceDark
+import com.example.el_clu8_del_sie7e.ui.theme.Tomorrow
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 import java.util.Locale
 
@@ -163,7 +165,7 @@ fun DepositScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.CreditCard, null, tint = AccentGold, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Método de Pago", color = AccentGold, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                            Text("Método de Pago", color = AccentGold, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = Poppins)
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -209,7 +211,7 @@ fun DepositScreen(
                         Spacer(modifier = Modifier.height(28.dp))
 
                         // SECCIÓN MONTO A DEPOSITAR
-                        Text("MONTO A DEPOSITAR", color = AccentGold, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text("MONTO A DEPOSITAR", color = AccentGold, fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFamily = Poppins)
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Box(
@@ -227,18 +229,30 @@ fun DepositScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("$", color = AccentGold, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                                    // Símbolo $ con fuente Tomorrow para números
+                                    Text(
+                                        text = "$",
+                                        color = AccentGold,
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = Tomorrow
+                                    )
                                     Spacer(modifier = Modifier.width(8.dp))
+                                    // Campo de entrada de monto con fuente Tomorrow
                                     BasicTextField(
                                         value = depositAmount,
                                         onValueChange = { depositAmount = it },
-                                        textStyle = TextStyle(color = Color.White, fontSize = 18.sp),
+                                        textStyle = TextStyle(
+                                            color = Color.White,
+                                            fontSize = 18.sp,
+                                            fontFamily = Tomorrow
+                                        ),
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                         cursorBrush = SolidColor(AccentGold),
                                         modifier = Modifier.width(150.dp)
                                     )
                                 }
-                                Text("MÁXIMO", color = AccentGold, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { 
+                                Text("MÁXIMO", color = AccentGold, fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = Poppins, modifier = Modifier.clickable { 
                                     depositAmount = "10000.00"
                                     errorMessage = null
                                     showSuccess = false
@@ -273,9 +287,9 @@ fun DepositScreen(
 
                         // SECCIÓN DETALLES DE TARJETA
                         if (selectedPaymentMethod == PaymentMethod.CARD) {
-                            Text("DETALLES DE LA TARJETA", color = AccentGold, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text("DETALLES DE LA TARJETA", color = AccentGold, fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFamily = Poppins)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("NÚMERO DE TARJETA", color = Color.Gray, fontSize = 11.sp)
+                            Text("NÚMERO DE TARJETA", color = Color.Gray, fontSize = 11.sp, fontFamily = Poppins)
                             Spacer(modifier = Modifier.height(6.dp))
 
                             Box(
@@ -308,7 +322,7 @@ fun DepositScreen(
 
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text("EXPIRACIÓN", color = Color.Gray, fontSize = 11.sp)
+                                    Text("EXPIRACIÓN", color = Color.Gray, fontSize = 11.sp, fontFamily = Poppins)
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Box(modifier = Modifier.fillMaxWidth().height(50.dp).background(color = SurfaceDark, shape = RoundedCornerShape(8.dp)).border(width = 1.dp, color = Color(0xFF4A4A4A), shape = RoundedCornerShape(8.dp)).padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart) {
                                         BasicTextField(
@@ -322,7 +336,7 @@ fun DepositScreen(
                                     }
                                 }
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text("CVV", color = Color.Gray, fontSize = 11.sp)
+                                    Text("CVV", color = Color.Gray, fontSize = 11.sp, fontFamily = Poppins)
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Box(modifier = Modifier.fillMaxWidth().height(50.dp).background(color = SurfaceDark, shape = RoundedCornerShape(8.dp)).border(width = 1.dp, color = Color(0xFF4A4A4A), shape = RoundedCornerShape(8.dp)).padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart) {
                                         BasicTextField(
@@ -365,7 +379,8 @@ fun DepositScreen(
                                     text = "GENERAR TARJETA ALEATORIA",
                                     color = AccentGold,
                                     fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = Poppins
                                 )
                             }
 
@@ -377,20 +392,30 @@ fun DepositScreen(
                                     text = errorMessage!!,
                                     color = Color(0xFFFF5252),
                                     fontSize = 13.sp,
+                                    fontFamily = Poppins,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
 
-                            // Mostrar mensaje de éxito
+                            // Mostrar mensaje de éxito con balance en fuente Tomorrow
                             if (showSuccess) {
-                                Text(
-                                    text = "Depósito exitoso. Nuevo balance: ${formattedBalance}",
-                                    color = Color(0xFF00C853),
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                                Row {
+                                    Text(
+                                        text = "Depósito exitoso. Nuevo balance: ",
+                                        color = Color(0xFF00C853),
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = Poppins
+                                    )
+                                    Text(
+                                        text = formattedBalance,
+                                        color = Color(0xFF00C853),
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = Tomorrow
+                                    )
+                                }
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
 
@@ -487,12 +512,13 @@ private fun DepositStickyHeader(
                     .clickable { onBackClick() }
             )
             Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = "DEPÓSITO",
-                color = AccentGold,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
+        Text(
+            text = "DEPÓSITO",
+            color = AccentGold,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = Poppins
+        )
         }
     }
 }
@@ -522,7 +548,7 @@ private fun PaymentMethodBox(
         Column(modifier = Modifier.align(Alignment.BottomStart)) {
             Icon(icon, label, tint = if (selected) AccentGold else Color.Gray, modifier = Modifier.size(28.dp))
             Spacer(modifier = Modifier.height(8.dp))
-            Text(label, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+            Text(label, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Medium, fontFamily = Poppins)
         }
         if (selected) {
             Box(

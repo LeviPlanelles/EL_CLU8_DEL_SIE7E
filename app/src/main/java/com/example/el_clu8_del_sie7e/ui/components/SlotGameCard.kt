@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 
 /**
  * =====================================================================================
@@ -151,7 +152,8 @@ fun SlotGameCard(
                             text = badgeText,
                             color = if (badgeType == SlotBadgeType.JACKPOT) Color.Black else Color.White,
                             fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = Poppins
                         )
                     }
                 }
@@ -162,6 +164,7 @@ fun SlotGameCard(
                     color = Color.White,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
+                    fontFamily = Poppins,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -203,7 +206,8 @@ fun SlotGameCard(
                         text = "JUGAR",
                         color = Color.White,
                         fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = Poppins
                     )
                 }
             }

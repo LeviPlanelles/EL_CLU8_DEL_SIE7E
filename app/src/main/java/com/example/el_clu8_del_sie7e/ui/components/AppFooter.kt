@@ -27,6 +27,7 @@ import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 
 /**
  * =====================================================================================
@@ -151,7 +152,8 @@ fun FooterItem(
         Text(
             text = label,
             color = if (selected) Color.White else Color.Gray,
-            fontSize = 11.sp
+            fontSize = 11.sp,
+            fontFamily = Poppins
         )
     }
 }

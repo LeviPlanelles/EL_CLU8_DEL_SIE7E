@@ -54,7 +54,9 @@ import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
 import com.example.el_clu8_del_sie7e.ui.theme.GradientCenter
 import com.example.el_clu8_del_sie7e.ui.theme.GradientEdge
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 import com.example.el_clu8_del_sie7e.ui.theme.PrimaryRed
+import com.example.el_clu8_del_sie7e.ui.theme.Tomorrow
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
 /**
@@ -197,12 +199,14 @@ fun WithdrawScreen(
 
                     Spacer(modifier = Modifier.height(4.dp))
 
+                    // Saldo retirable grande con fuente Tomorrow para números
                     Text(
                         text = formattedBalance,
                         style = MaterialTheme.typography.displaySmall,
                         color = AccentGold,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 36.sp
+                        fontSize = 36.sp,
+                        fontFamily = Tomorrow
                     )
                 }
 
@@ -264,18 +268,19 @@ fun WithdrawScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        // Símbolo de dólar
+                        // Símbolo de dólar con fuente Tomorrow
                         Text(
                             text = "$",
                             style = MaterialTheme.typography.titleLarge,
                             color = AccentGold,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 24.sp
+                            fontSize = 24.sp,
+                            fontFamily = Tomorrow
                         )
 
                         Spacer(modifier = Modifier.padding(horizontal = 8.dp))
 
-                        // Campo de texto
+                        // Campo de texto con fuente Tomorrow para números
                         BasicTextField(
                             value = withdrawAmount,
                             onValueChange = { newValue ->
@@ -288,7 +293,8 @@ fun WithdrawScreen(
                             textStyle = TextStyle(
                                 color = Color.White,
                                 fontSize = 24.sp,
-                                fontWeight = FontWeight.Normal
+                                fontWeight = FontWeight.Normal,
+                                fontFamily = Tomorrow
                             ),
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Decimal
@@ -322,23 +328,34 @@ fun WithdrawScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Límites y comisiones
+                // Límites y comisiones con fuente Tomorrow para números
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "Mínimo: $${"%.2f".format(minWithdrawal)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray,
-                        fontSize = 12.sp
-                    )
+                    Row {
+                        Text(
+                            text = "Mínimo: ",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray,
+                            fontSize = 12.sp,
+                            fontFamily = Poppins
+                        )
+                        Text(
+                            text = "$${"%.2f".format(minWithdrawal)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray,
+                            fontSize = 12.sp,
+                            fontFamily = Tomorrow
+                        )
+                    }
 
                     Text(
                         text = "Sin comisiones",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray,
-                        fontSize = 12.sp
+                        fontSize = 12.sp,
+                        fontFamily = Poppins
                     )
                 }
 

@@ -34,6 +34,7 @@ import com.example.el_clu8_del_sie7e.ui.components.UnifiedFilterChip
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 import com.example.el_clu8_del_sie7e.ui.theme.PrimaryRed
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 import com.example.el_clu8_del_sie7e.viewmodel.PromotionModel
@@ -225,6 +226,7 @@ fun PromotionsHeader(onBackClick: () -> Unit) {
                 color = AccentGold,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
+                fontFamily = Poppins,
                 modifier = Modifier.align(Alignment.Center)
             )
         }
@@ -282,7 +284,8 @@ fun SectionDivider(title: String) {
             text = title,
             color = Color.White,
             fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            fontFamily = Poppins
         )
     }
 }
@@ -348,6 +351,7 @@ fun MainPromotionCard(promotion: PromotionModel) {
                         color = Color.White,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.ExtraBold,
+                        fontFamily = Poppins,
                         lineHeight = 28.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -355,6 +359,7 @@ fun MainPromotionCard(promotion: PromotionModel) {
                         text = promotion.description,
                         color = Color.White.copy(alpha = 0.9f),
                         fontSize = 12.sp,
+                        fontFamily = Poppins,
                         lineHeight = 18.sp
                     )
                 }
@@ -381,7 +386,8 @@ fun MainPromotionCard(promotion: PromotionModel) {
                             text = "RECLAMAR AHORA",
                             color = AccentGold,
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = Poppins
                         )
                     }
                 }
@@ -448,7 +454,8 @@ fun SecondaryPromotionCard(promotion: PromotionModel) {
                     text = promotion.title,
                     color = AccentGold,
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = Poppins
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -457,6 +464,7 @@ fun SecondaryPromotionCard(promotion: PromotionModel) {
                     text = promotion.description,
                     color = Color.White.copy(alpha = 0.9f),
                     fontSize = 12.sp,
+                    fontFamily = Poppins,
                     lineHeight = 16.sp,
                     modifier = Modifier.fillMaxWidth(0.7f)
                 )
@@ -477,7 +485,8 @@ fun BadgeChip(text: String, color: Color) {
             text = text,
             color = color,
             fontSize = 10.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            fontFamily = Poppins
         )
     }
 }

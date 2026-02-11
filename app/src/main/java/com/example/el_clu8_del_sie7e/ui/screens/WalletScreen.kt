@@ -48,6 +48,7 @@ import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 import com.example.el_clu8_del_sie7e.ui.theme.RegisterBackground
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
@@ -151,7 +152,8 @@ fun WalletScreen(
                         text = "CARTERA",
                         color = AccentGold,
                         fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = Poppins
                     )
                 }
 
@@ -159,7 +161,8 @@ fun WalletScreen(
                 Text(
                     text = "Gestiona tus fondos con seguridad y exclusividad.",
                     color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 13.sp
+                    fontSize = 13.sp,
+                    fontFamily = Poppins
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -230,26 +233,30 @@ fun WalletScreen(
                             Text(
                                 text = "Transacciones protegidas por encriptación de ",
                                 color = Color.White.copy(alpha = 0.8f),
-                                fontSize = 10.sp
+                                fontSize = 10.sp,
+                                fontFamily = Poppins
                             )
                             Row {
                                 Text(
                                     text = "grado militar",
                                     color = AccentGold,
                                     fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = Poppins
                                 )
                                 Text(
                                     text = ". Mantente distinguido de la red ",
                                     color = Color.White.copy(alpha = 0.8f),
-                                    fontSize = 10.sp
+                                    fontSize = 10.sp,
+                                    fontFamily = Poppins
                                 )
                             }
                             Text(
                                 text = "premium.",
                                 color = AccentGold,
                                 fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = Poppins
                             )
                         }
                     }

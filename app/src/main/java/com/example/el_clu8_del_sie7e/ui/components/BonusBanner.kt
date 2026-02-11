@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 
 /**
  * =====================================================================================
@@ -119,7 +120,8 @@ fun BonusBanner(
                     text = badgeText,
                     color = Color.Black,
                     fontSize = 9.sp, // Reducido de 10sp a 9sp
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = Poppins
                 )
             }
 
@@ -154,14 +156,16 @@ fun BonusBanner(
                     text = title,
                     color = AccentGold,
                     fontSize = 18.sp, // Reducido de 20sp a 18sp
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = Poppins
                 )
 
                 // Subtitulo
                 Text(
                     text = subtitle,
                     color = Color.White,
-                    fontSize = 12.sp // Reducido de 13sp a 12sp
+                    fontSize = 12.sp, // Reducido de 13sp a 12sp
+                    fontFamily = Poppins
                 )
 
                 Spacer(modifier = Modifier.height(2.dp)) // Reducido de 4dp a 2dp

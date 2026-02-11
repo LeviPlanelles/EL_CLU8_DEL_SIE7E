@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
+import com.example.el_clu8_del_sie7e.ui.theme.Tomorrow
 import com.example.el_clu8_del_sie7e.viewmodel.Transaction
 import com.example.el_clu8_del_sie7e.viewmodel.TransactionStatus
 import com.example.el_clu8_del_sie7e.viewmodel.TransactionType
@@ -181,12 +182,13 @@ fun TransactionItem(
             // MONTO Y ESTADO
             // ============================================================
             Column(horizontalAlignment = Alignment.End) {
-                // Monto de la transacción
+                // Monto de la transacción con fuente Tomorrow para números
                 Text(
                     text = formatAmount(transaction.amount),
                     color = getAmountColor(transaction.amount),
                     fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = Tomorrow
                 )
                 
                 // Estado de la transacción con icono

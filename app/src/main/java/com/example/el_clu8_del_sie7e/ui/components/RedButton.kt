@@ -32,6 +32,7 @@ import com.example.el_clu8_del_sie7e.ui.theme.ButtonRedCenter
 import com.example.el_clu8_del_sie7e.ui.theme.ButtonRedEnd
 import com.example.el_clu8_del_sie7e.ui.theme.ButtonRedStart
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 
 /**
  * =====================================================================================
@@ -103,7 +104,8 @@ fun RedButton(
                 text = text,
                 color = Color.White,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                fontFamily = Poppins
             )
 
             if (showArrow && icon != null) {

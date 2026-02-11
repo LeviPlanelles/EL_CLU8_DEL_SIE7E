@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Tomorrow
 
 /**
  * =====================================================================================
@@ -54,11 +55,13 @@ fun AmountChip(
             .padding(horizontal = 20.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
+        // Monto con fuente Tomorrow para números
         Text(
             text = amount,
             color = if (selected) selectedTextColor else AccentGold,
             fontSize = 14.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            fontFamily = Tomorrow
         )
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Tomorrow
 
 /**
  * =====================================================================================
@@ -65,13 +66,14 @@ fun ProfileStatsCard(
             fontSize = 14.sp
         )
 
-        // Valor (ej: "$5,000.00")
+        // Valor (ej: "$5,000.00") con fuente Tomorrow para números
         Text(
             text = value,
             style = MaterialTheme.typography.titleLarge,
             color = AccentGold,
             fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            fontFamily = Tomorrow
         )
     }
 }

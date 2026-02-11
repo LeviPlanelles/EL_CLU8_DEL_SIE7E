@@ -39,6 +39,7 @@ import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
 /**
@@ -182,7 +183,8 @@ fun LobbyScreen(
                     Text(
                         text = "Hola de nuevo,",
                         color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 13.sp
+                        fontSize = 13.sp,
+                        fontFamily = Poppins
                     )
                     
                     // "¡BIENVENIDO, USUARIO!"
@@ -190,7 +192,8 @@ fun LobbyScreen(
                         text = "¡BIENVENIDO, USUARIO!",
                         color = AccentGold,
                         fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = Poppins
                     )
                 }
 
@@ -228,7 +231,8 @@ fun LobbyScreen(
                             text = "Juegos Destacados",
                             color = AccentGold,
                             fontSize = 18.sp,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            fontFamily = Poppins
                         )
                         
                         TextButton(
@@ -239,12 +243,14 @@ fun LobbyScreen(
                             Text(
                                 text = "Ver todos",
                                 color = Color.White.copy(alpha = 0.7f),
-                                fontSize = 13.sp
+                                fontSize = 13.sp,
+                                fontFamily = Poppins
                             )
                             Text(
                                 text = " >",
                                 color = Color.White.copy(alpha = 0.7f),
-                                fontSize = 13.sp
+                                fontSize = 13.sp,
+                                fontFamily = Poppins
                             )
                         }
                     }

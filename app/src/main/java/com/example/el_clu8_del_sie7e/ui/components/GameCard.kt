@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 
 /**
  * =====================================================================================
@@ -124,14 +125,16 @@ fun GameCard(
                     text = gameName,
                     color = Color.White,
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = Poppins
                 )
 
                 // Cantidad de juegos
                 Text(
                     text = gameCount,
                     color = Color.Gray,
-                    fontSize = 11.sp
+                    fontSize = 11.sp,
+                    fontFamily = Poppins
                 )
 
                 Spacer(modifier = Modifier.height(2.dp))

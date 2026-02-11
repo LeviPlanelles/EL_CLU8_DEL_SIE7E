@@ -47,6 +47,7 @@ import com.example.el_clu8_del_sie7e.ui.components.TransactionItem
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 import com.example.el_clu8_del_sie7e.ui.theme.RegisterBackground
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 import com.example.el_clu8_del_sie7e.viewmodel.TransactionHistoryViewModel
@@ -159,7 +160,8 @@ fun TransactionHistoryScreen(
                         text = "HISTORIAL TRANSACCIONES",
                         color = AccentGold,
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = Poppins
                     )
                 }
 

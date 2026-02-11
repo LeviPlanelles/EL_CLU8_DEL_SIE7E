@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 import com.example.el_clu8_del_sie7e.ui.theme.PrimaryRed
 
 /**
@@ -124,7 +125,8 @@ fun SearchGameCard(
                     text = gameName,
                     color = Color.White,
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = Poppins
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -144,13 +146,15 @@ fun SearchGameCard(
                         text = rating.toString(),
                         color = Color.White,
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = Poppins
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "• $category",
                         color = Color.Gray,
-                        fontSize = 11.sp
+                        fontSize = 11.sp,
+                        fontFamily = Poppins
                     )
                 }
             }

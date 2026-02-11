@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 import com.example.el_clu8_del_sie7e.ui.theme.PrimaryRed
 
 /**
@@ -205,6 +206,7 @@ fun UnifiedFilterChip(
                 color = contentColor,
                 fontSize = 12.sp,
                 fontWeight = fontWeight,
+                fontFamily = Poppins,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

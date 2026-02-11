@@ -51,6 +51,7 @@ import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
 /**
@@ -205,7 +206,8 @@ fun GameSearchScreen(
                             text = "BUSCADOR DE JUEGOS",
                             color = AccentGold,
                             fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = Poppins
                         )
                     }
 
@@ -226,7 +228,8 @@ fun GameSearchScreen(
                             Text(
                                 text = "Busca tu juego favorito...",
                                 color = Color.Gray,
-                                fontSize = 14.sp
+                                fontSize = 14.sp,
+                                fontFamily = Poppins
                             )
                         },
                         leadingIcon = {
@@ -311,13 +314,15 @@ fun GameSearchScreen(
                             text = "Populares",
                             color = Color.White,
                             fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = Poppins
                         )
 
                         Text(
                             text = "Ver todos",
                             color = AccentGold,
                             fontSize = 13.sp,
+                            fontFamily = Poppins,
                             modifier = Modifier.clickable {
                                 // TODO: Navegar a ver todos los juegos
                             }

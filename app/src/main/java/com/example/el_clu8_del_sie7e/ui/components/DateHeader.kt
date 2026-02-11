@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 
 /**
  * =====================================================================================
@@ -68,6 +69,7 @@ fun DateHeader(
             color = Color.White.copy(alpha = 0.4f),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
+            fontFamily = Poppins,
             letterSpacing = 1.sp
         )
     }

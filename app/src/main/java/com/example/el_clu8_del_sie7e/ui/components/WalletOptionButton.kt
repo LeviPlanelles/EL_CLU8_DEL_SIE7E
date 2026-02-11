@@ -34,6 +34,7 @@ import com.example.el_clu8_del_sie7e.ui.theme.ButtonRedCenter
 import com.example.el_clu8_del_sie7e.ui.theme.ButtonRedEnd
 import com.example.el_clu8_del_sie7e.ui.theme.ButtonRedStart
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 
 /**
  * =====================================================================================
@@ -152,12 +153,14 @@ fun WalletOptionButton(
                         text = title,
                         color = Color.White,
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = Poppins
                     )
                     Text(
                         text = description,
                         color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 12.sp
+                        fontSize = 12.sp,
+                        fontFamily = Poppins
                     )
                 }
             }

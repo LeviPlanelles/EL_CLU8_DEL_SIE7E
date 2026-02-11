@@ -15,6 +15,7 @@ import com.example.el_clu8_del_sie7e.R
  *
  * Gideon: Fuente especial para el logo de la app
  * Poppins: Fuente principal para todo el contenido de la app
+ * Tomorrow: Fuente para números (balance, cantidades, etc.) fuera de los juegos
  */
 
 /**
@@ -45,6 +46,24 @@ val Poppins = FontFamily(
     Font(R.font.poppins_bold, FontWeight.Bold),
     Font(R.font.poppins_extrabold, FontWeight.ExtraBold),
     Font(R.font.poppins_black, FontWeight.Black)
+)
+
+/**
+ * Fuente Tomorrow - Para números fuera de juegos
+ * 
+ * Se usa específicamente para:
+ * - Balance del usuario (en el header)
+ * - Cantidades monetarias (depósitos, retiros, historial)
+ * - Cualquier número que NO esté dentro de un juego
+ * 
+ * NOTA: Los números DENTRO de los juegos (slots, blackjack, ruleta)
+ * usan Poppins para mantener consistencia visual del juego.
+ */
+val Tomorrow = FontFamily(
+    Font(R.font.tomorrow_regular, FontWeight.Normal),
+    Font(R.font.tomorrow_medium, FontWeight.Medium),
+    Font(R.font.tomorrow_semibold, FontWeight.SemiBold),
+    Font(R.font.tomorrow_bold, FontWeight.Bold)
 )
 /**
  * =====================================================================================

@@ -34,6 +34,7 @@ import com.example.el_clu8_del_sie7e.ui.components.AppHeader
 import com.example.el_clu8_del_sie7e.ui.components.UnifiedFilterChip
 import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
+import com.example.el_clu8_del_sie7e.ui.theme.Poppins
 import com.example.el_clu8_del_sie7e.viewmodel.BalanceViewModel
 
 /**
@@ -191,6 +192,7 @@ fun SlotScreenTitle(onBackClick: () -> Unit) {
                 color = CasinoGold,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
+                fontFamily = Poppins,
                 modifier = Modifier.align(Alignment.Center)
             )
         }
@@ -218,7 +220,7 @@ fun SlotSearchBar(value: String, onValueChange: (String) -> Unit) {
             .height(54.dp),
         shape = RoundedCornerShape(12.dp),
         placeholder = {
-            Text("Busca tu slot favorito...", color = Color.Gray, fontSize = 14.sp)
+            Text("Busca tu slot favorito...", color = Color.Gray, fontSize = 14.sp, fontFamily = Poppins)
         },
         leadingIcon = {
             Icon(Icons.Default.Search, contentDescription = null, tint = CasinoGold)
@@ -338,6 +340,7 @@ fun SlotCard(
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
+                    fontFamily = Poppins,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -355,6 +358,7 @@ fun SlotCard(
                         color = CasinoGold,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
+                        fontFamily = Poppins,
                         letterSpacing = 1.sp
                     )
                 }
@@ -392,7 +396,8 @@ fun SlotBadgeComponent(type: SlotBadgeType, modifier: Modifier = Modifier) {
             text = text,
             color = Color.White,
             fontSize = 10.sp,
-            fontWeight = FontWeight.ExtraBold
+            fontWeight = FontWeight.ExtraBold,
+            fontFamily = Poppins
         )
     }
 }
