@@ -18,6 +18,10 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -39,6 +43,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.*
 import com.example.el_clu8_del_sie7e.viewmodel.RegisterViewModel
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 /**
  * REGISTERSCREEN.KT - PANTALLA DE REGISTRO CON FIREBASE
@@ -154,16 +161,13 @@ fun RegisterScreen(
                 enabled = !isLoading
             )
 
-            RegisterInputField(
+            // Campo de Fecha de Nacimiento con DatePicker
+            DatePickerField(
                 label = "Fecha de Nacimiento",
-                placeholder = "mm/dd/yyyy",
+                placeholder = "dd/mm/yyyy",
                 value = viewModel.birthDate,
-                onValueChange = { viewModel.onBirthDateChange(it) },
-                leadingIcon = Icons.Filled.CalendarToday,
-                enabled = !isLoading,
-                trailingIcon = {
-                    Icon(Icons.Filled.CalendarToday, null, tint = AccentGold, modifier = Modifier.size(18.dp))
-                }
+                onDateSelected = { viewModel.onBirthDateChange(it) },
+                enabled = !isLoading
             )
 
             RegisterInputField(
@@ -301,6 +305,141 @@ fun RegisterScreen(
                     modifier = Modifier.clickable { navController.navigate(Routes.LOGIN_SCREEN) }
                 )
             }
+        }
+    }
+}
+
+/**
+ * DATEPICKERFIELD - Campo de fecha con DatePicker de Material 3
+ * 
+ * Muestra un campo de texto con un icono de calendario a la derecha.
+ * Al hacer clic, abre un DatePickerDialog para seleccionar la fecha.
+ * 
+ * @param label Etiqueta del campo
+ * @param placeholder Texto de placeholder
+ * @param value Valor actual de la fecha
+ * @param onDateSelected Callback cuando se selecciona una fecha
+ * @param enabled Si el campo está habilitado
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DatePickerField(
+    label: String,
+    placeholder: String,
+    value: String,
+    onDateSelected: (String) -> Unit,
+    enabled: Boolean = true
+) {
+    // Estado para mostrar/ocultar el DatePicker
+    var showDatePicker by remember { mutableStateOf(false) }
+    
+    // Estado del DatePicker
+    val datePickerState = rememberDatePickerState()
+    
+    // Formateador de fecha
+    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+    
+    Column(modifier = Modifier.padding(bottom = 19.dp)) {
+        // Label del campo
+        Text(
+            text = label,
+            color = Color.White,
+            modifier = Modifier.padding(bottom = 6.dp),
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = Poppins
+        )
+        
+        // Campo de texto clickable (solo lectura)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+                .background(SurfaceDark, RoundedCornerShape(12.dp))
+                .border(
+                    width = 1.dp,
+                    color = if (showDatePicker) AccentGold else Color.Gray.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .clickable(enabled = enabled) { showDatePicker = true },
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Texto de la fecha o placeholder
+                Text(
+                    text = if (value.isNotEmpty()) value else placeholder,
+                    color = if (value.isNotEmpty()) Color.White else TextPlaceholder,
+                    fontSize = 15.sp,
+                    fontFamily = Poppins
+                )
+                
+                // Icono de calendario a la derecha
+                Icon(
+                    imageVector = Icons.Filled.CalendarToday,
+                    contentDescription = "Seleccionar fecha",
+                    tint = AccentGold,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+    }
+    
+    // DatePickerDialog de Material 3
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        // Obtener la fecha seleccionada y formatearla
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val calendar = Calendar.getInstance()
+                            calendar.timeInMillis = millis
+                            val formattedDate = dateFormatter.format(calendar.time)
+                            onDateSelected(formattedDate)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("Aceptar", color = AccentGold, fontFamily = Poppins)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancelar", color = Color.Gray, fontFamily = Poppins)
+                }
+            },
+            colors = DatePickerDefaults.colors(
+                containerColor = SurfaceDark
+            )
+        ) {
+            DatePicker(
+                state = datePickerState,
+                colors = DatePickerDefaults.colors(
+                    containerColor = SurfaceDark,
+                    titleContentColor = AccentGold,
+                    headlineContentColor = Color.White,
+                    weekdayContentColor = AccentGold,
+                    subheadContentColor = Color.White,
+                    yearContentColor = Color.White,
+                    currentYearContentColor = AccentGold,
+                    selectedYearContentColor = Color.Black,
+                    selectedYearContainerColor = AccentGold,
+                    dayContentColor = Color.White,
+                    selectedDayContentColor = Color.Black,
+                    selectedDayContainerColor = AccentGold,
+                    todayContentColor = AccentGold,
+                    todayDateBorderColor = AccentGold,
+                    dayInSelectionRangeContentColor = Color.White,
+                    navigationContentColor = AccentGold
+                )
+            )
         }
     }
 }
