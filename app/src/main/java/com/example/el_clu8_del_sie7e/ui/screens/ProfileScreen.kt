@@ -18,9 +18,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +53,8 @@ import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.data.repository.AuthRepository
 import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
+import com.example.el_clu8_del_sie7e.ui.components.HelpDialog
+import com.example.el_clu8_del_sie7e.ui.components.HelpSection
 import com.example.el_clu8_del_sie7e.ui.components.ProfileHeader
 import com.example.el_clu8_del_sie7e.ui.components.ProfileMenuItem
 import com.example.el_clu8_del_sie7e.ui.components.ProfileStatsCard
@@ -110,6 +118,12 @@ fun ProfileScreen(
     val userName = authRepository.getCurrentUserName()
     val userEmail = authRepository.getCurrentUserEmail()
 
+    // Estado para mostrar/ocultar el dialogo de ayuda
+    var showHelpDialog by remember { mutableStateOf(false) }
+
+    // Verificar si el usuario actual es administrador
+    val isAdmin = userEmail == "admin@elclu8.com" || userEmail == "admin@admin.com"
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -141,9 +155,9 @@ fun ProfileScreen(
                 Text(text = "MI PERFIL", color = AccentGold, fontSize = 18.sp, fontWeight = FontWeight.Bold, fontFamily = Poppins)
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Icono de ayuda - Navega a SupportScreen
+                // Icono de ayuda - Muestra dialogo de ayuda del perfil
                 IconButton(onClick = { 
-                    navController.navigate(Routes.SUPPORT_SCREEN)
+                    showHelpDialog = true
                 }) {
                     Icon(
                         painter = painterResource(id = R.drawable.question),
@@ -235,6 +249,24 @@ fun ProfileScreen(
                     }
                 )
 
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // ------------------------------------------------------------------
+                // OPCIÓN DE ADMINISTRADOR (Solo visible para admins)
+                // ------------------------------------------------------------------
+                if (isAdmin) {
+                    ProfileMenuItem(
+                        icon = Icons.Default.AdminPanelSettings,
+                        title = "Panel de Admin",
+                        subtitle = "Estadísticas de la app",
+                        onClick = {
+                            navController.navigate(Routes.ADMIN_STATS_SCREEN)
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // ------------------------------------------------------------------
@@ -262,6 +294,47 @@ fun ProfileScreen(
             )
         }
     }
+
+    // ==========================================
+    // DIALOGO DE AYUDA DEL PERFIL
+    // ==========================================
+    HelpDialog(
+        showDialog = showHelpDialog,
+        onDismiss = { showHelpDialog = false },
+        title = "Ayuda del Perfil",
+        helpSections = listOf(
+            HelpSection(
+                icon = Icons.Default.Person,
+                title = "Datos Personales",
+                description = "Aqui puedes ver y modificar tu informacion personal como nombre, email y datos de contacto."
+            ),
+            HelpSection(
+                icon = Icons.Default.Security,
+                title = "Seguridad",
+                description = "Gestiona tu contrasena y activa la autenticacion de dos factores (2FA) para proteger tu cuenta."
+            ),
+            HelpSection(
+                icon = Icons.Default.Star,
+                title = "Limites de Juego",
+                description = "Configura limites de deposito, apuesta y tiempo de juego para mantener un juego responsable."
+            ),
+            HelpSection(
+                icon = Icons.Default.Verified,
+                title = "Nivel VIP",
+                description = "Tu nivel VIP se calcula segun tu actividad. A mayor nivel, mejores bonos y beneficios exclusivos."
+            ),
+            HelpSection(
+                icon = Icons.Default.BarChart,
+                title = "Estadisticas",
+                description = "Revisa tu saldo actual y puntos VIP acumulados en las tarjetas de estadisticas de tu perfil."
+            ),
+            HelpSection(
+                icon = Icons.Default.Settings,
+                title = "Cerrar Sesion",
+                description = "Pulsa el boton rojo al final de la pagina para cerrar tu sesion de forma segura."
+            )
+        )
+    )
 }
 
 // ======================================================================================

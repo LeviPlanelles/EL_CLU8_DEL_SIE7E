@@ -133,4 +133,11 @@ object Routes {
 
     /** Ajustes de la aplicacion */
     const val SETTINGS_SCREEN = "settings_screen"
+
+    // ==================================================================================
+    // PANTALLAS DE ADMINISTRACION
+    // ==================================================================================
+
+    /** Panel de estadisticas de administracion (solo admins) */
+    const val ADMIN_STATS_SCREEN = "admin_stats_screen"
 }

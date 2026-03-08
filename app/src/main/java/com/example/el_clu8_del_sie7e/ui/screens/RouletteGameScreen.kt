@@ -35,10 +35,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.GridOn
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MonetizationOn
+import androidx.compose.material.icons.filled.Paid
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +68,8 @@ import androidx.navigation.NavController
 import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
+import com.example.el_clu8_del_sie7e.ui.components.HelpDialog
+import com.example.el_clu8_del_sie7e.ui.components.HelpSection
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.ButtonRedCenter
 import com.example.el_clu8_del_sie7e.ui.theme.ButtonRedEnd
@@ -128,6 +141,9 @@ fun RouletteGameScreen(
 
     val scrollState = rememberScrollState()
 
+    // Estado para mostrar/ocultar el dialogo de ayuda
+    var showHelpDialog by remember { mutableStateOf(false) }
+
     // ===============================================================================
     // ESTRUCTURA PRINCIPAL
     // ===============================================================================
@@ -161,7 +177,8 @@ fun RouletteGameScreen(
                     numberHistory = numberHistory,
                     gameState = gameState,
                     winningNumber = winningNumber,
-                    onBackClick = { navController.popBackStack() }
+                    onBackClick = { navController.popBackStack() },
+                    onHelpClick = { showHelpDialog = true }
                 )
 
                 // RESULTADO GRANDE (cuando hay ganador)
@@ -248,6 +265,47 @@ fun RouletteGameScreen(
             )
         }
     }
+
+    // ============================================
+    // DIALOGO DE AYUDA DE LA RULETA
+    // ============================================
+    HelpDialog(
+        showDialog = showHelpDialog,
+        onDismiss = { showHelpDialog = false },
+        title = "Como Jugar Ruleta",
+        helpSections = listOf(
+            HelpSection(
+                icon = Icons.Default.Info,
+                title = "Objetivo del Juego",
+                description = "Predice en que numero o grupo de numeros caera la bola al girar la ruleta. Si aciertas, ganas segun el tipo de apuesta realizada."
+            ),
+            HelpSection(
+                icon = Icons.Default.TouchApp,
+                title = "Como Apostar",
+                description = "1. Selecciona una ficha ($1, $10, $100 o $200) en la barra inferior. 2. Toca cualquier numero o zona del tablero para colocar tu apuesta. 3. Puedes apostar en multiples posiciones a la vez."
+            ),
+            HelpSection(
+                icon = Icons.Default.GridOn,
+                title = "Tipos de Apuestas",
+                description = "DIRECTA (1 numero): Paga 35:1. DOCENAS (12 numeros): Paga 2:1. COLUMNAS (12 numeros): Paga 2:1. ROJO/NEGRO: Paga 1:1. PAR/IMPAR: Paga 1:1. ALTO/BAJO (1-18/19-36): Paga 1:1."
+            ),
+            HelpSection(
+                icon = Icons.Default.Casino,
+                title = "Girar la Ruleta",
+                description = "Cuando tengas tus apuestas listas, pulsa GIRAR. La ruleta girara y la bola caera en un numero aleatorio. Veras 'NO VA MAS!' mientras gira."
+            ),
+            HelpSection(
+                icon = Icons.Default.Paid,
+                title = "Ganancias",
+                description = "Las ganancias se calculan automaticamente y se suman a tu balance. Cuanto mas especifica sea tu apuesta, mayor sera el pago. Apuesta directa a un numero paga 35 veces tu apuesta."
+            ),
+            HelpSection(
+                icon = Icons.Default.EmojiEvents,
+                title = "Controles Utiles",
+                description = "DESHACER: Retira la ultima apuesta colocada. REPETIR: Repite las apuestas de la ronda anterior. NUEVA RONDA: Tras ver el resultado, comienza una nueva ronda."
+            )
+        )
+    )
 }
 
 // ===================================================================================
@@ -263,7 +321,8 @@ private fun RouletteHeaderSection(
     numberHistory: List<Int>,
     gameState: RouletteState,
     winningNumber: Int?,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onHelpClick: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -306,8 +365,30 @@ private fun RouletteHeaderSection(
                         .clickable { onBackClick() }
                 )
 
-                // Indicador EN VIVO
-                LiveIndicator()
+                // Indicador EN VIVO + Boton de ayuda
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Boton de ayuda (?)
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(Color.Black.copy(alpha = 0.4f))
+                            .clickable { onHelpClick() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Help,
+                            contentDescription = "Ayuda de Ruleta",
+                            tint = AccentGold,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+
+                    LiveIndicator()
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))

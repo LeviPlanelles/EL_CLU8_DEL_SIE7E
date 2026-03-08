@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.data.repository.AuthRepository
+import com.example.el_clu8_del_sie7e.ui.screens.AdminStatsScreen
 import com.example.el_clu8_del_sie7e.ui.screens.BlackjackScreen
 import com.example.el_clu8_del_sie7e.ui.screens.DepositScreen
 import com.example.el_clu8_del_sie7e.ui.screens.GameSearchScreen
@@ -323,6 +324,21 @@ fun NavGraph() {
             PromocionesScreen(
                 navController = navController,
                 balanceViewModel = balanceViewModel
+            )
+        }
+
+        // ==================================================================================
+        // PANTALLAS DE ADMINISTRACION
+        // ==================================================================================
+
+        /**
+         * Panel de Estadisticas de Administracion
+         * - Solo accesible por usuarios admin desde ProfileScreen
+         * - Muestra 15 estadisticas sobre el uso de la app
+         */
+        composable(route = Routes.ADMIN_STATS_SCREEN) {
+            AdminStatsScreen(
+                navController = navController
             )
         }
     }

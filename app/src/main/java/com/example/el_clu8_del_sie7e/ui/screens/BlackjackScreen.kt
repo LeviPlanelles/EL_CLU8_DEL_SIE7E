@@ -8,6 +8,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Gavel
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MonetizationOn
+import androidx.compose.material.icons.filled.Style
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +32,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
+import com.example.el_clu8_del_sie7e.ui.components.HelpDialog
+import com.example.el_clu8_del_sie7e.ui.components.HelpSection
 import com.example.el_clu8_del_sie7e.ui.components.blackjack.*
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
 import com.example.el_clu8_del_sie7e.ui.theme.DarkBackground
@@ -90,6 +99,9 @@ fun BlackjackScreen(
     // Estado de navegación del footer
     var selectedFooterItem by remember { mutableStateOf("Mesas") }
     
+    // Estado para mostrar/ocultar el dialogo de ayuda
+    var showHelpDialog by remember { mutableStateOf(false) }
+    
     // Variable para guardar la última apuesta (para repetir)
     var lastBet by remember { mutableStateOf(0.0) }
     
@@ -124,7 +136,8 @@ fun BlackjackScreen(
             // TITULO BLACKJACK
             // ============================================
             BlackjackTitleBar(
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onHelpClick = { showHelpDialog = true }
             )
             
             // ============================================
@@ -244,13 +257,59 @@ fun BlackjackScreen(
             )
         }
     }
+
+    // ============================================
+    // DIALOGO DE AYUDA DEL BLACKJACK
+    // ============================================
+    HelpDialog(
+        showDialog = showHelpDialog,
+        onDismiss = { showHelpDialog = false },
+        title = "Como Jugar Blackjack",
+        helpSections = listOf(
+            HelpSection(
+                icon = Icons.Default.Info,
+                title = "Objetivo del Juego",
+                description = "Consigue una mano con valor lo mas cercano a 21 sin pasarte. Si te pasas de 21, pierdes automaticamente (bust)."
+            ),
+            HelpSection(
+                icon = Icons.Default.Style,
+                title = "Valor de las Cartas",
+                description = "Numeros (2-10): su valor nominal. Figuras (J, Q, K): valen 10. As (A): vale 1 u 11, segun te convenga."
+            ),
+            HelpSection(
+                icon = Icons.Default.MonetizationOn,
+                title = "Apostar",
+                description = "Selecciona una ficha y pulsa sobre ella para anadir su valor a tu apuesta. Puedes pulsar LIMPIAR para reiniciar o REPETIR para usar la apuesta anterior."
+            ),
+            HelpSection(
+                icon = Icons.Default.TouchApp,
+                title = "Acciones de Juego",
+                description = "PEDIR (Hit): Recibe una carta mas. PLANTARSE (Stand): Mantener tu mano actual. DOBLAR: Duplica tu apuesta y recibe solo una carta mas. DIVIDIR: Si tienes dos cartas iguales, separarlas en dos manos."
+            ),
+            HelpSection(
+                icon = Icons.Default.Casino,
+                title = "Blackjack Natural",
+                description = "Si tus dos primeras cartas suman 21 (un As + una carta de valor 10), tienes Blackjack y ganas 1.5x tu apuesta, a menos que el dealer tambien tenga Blackjack."
+            ),
+            HelpSection(
+                icon = Icons.Default.EmojiEvents,
+                title = "Ganar y Perder",
+                description = "Ganas si tu mano supera la del dealer sin pasarte de 21. Si el dealer se pasa de 21, tambien ganas. Empate (Push): recuperas tu apuesta."
+            ),
+            HelpSection(
+                icon = Icons.Default.Gavel,
+                title = "Reglas del Dealer",
+                description = "El dealer debe pedir carta si tiene 16 o menos. El dealer debe plantarse con 17 o mas. El dealer revela su segunda carta despues de tu turno."
+            )
+        )
+    )
 }
 
 /**
  * Barra de título BLACKJACK - Sin fondo, solo texto dorado con línea divisora
  */
 @Composable
-private fun BlackjackTitleBar(onBackClick: () -> Unit) {
+private fun BlackjackTitleBar(onBackClick: () -> Unit, onHelpClick: () -> Unit = {}) {
     Column {
         Box(
             modifier = Modifier
@@ -286,7 +345,7 @@ private fun BlackjackTitleBar(onBackClick: () -> Unit) {
                     .padding(end = 16.dp)
                     .size(32.dp)
                     .clip(CircleShape)
-                    .clickable { /* TODO: Mostrar ayuda */ },
+                    .clickable { onHelpClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(

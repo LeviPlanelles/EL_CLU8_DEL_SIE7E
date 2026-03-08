@@ -6,12 +6,20 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,6 +39,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
+import com.example.el_clu8_del_sie7e.ui.components.HelpDialog
+import com.example.el_clu8_del_sie7e.ui.components.HelpSection
 import com.example.el_clu8_del_sie7e.ui.components.UnifiedFilterChip
 import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.EL_CLU8_DEL_SIE7ETheme
@@ -99,6 +109,9 @@ fun SlotsScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("Todos") }
 
+    // Estado para mostrar/ocultar el dialogo de ayuda
+    var showHelpDialog by remember { mutableStateOf(false) }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -121,7 +134,10 @@ fun SlotsScreen(
                     .padding(horizontal = 16.dp)
             ) {
                 // Título y Flecha atrás
-                SlotScreenTitle(onBackClick = { navController.popBackStack() })
+                SlotScreenTitle(
+                    onBackClick = { navController.popBackStack() },
+                    onHelpClick = { showHelpDialog = true }
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -163,6 +179,47 @@ fun SlotsScreen(
             )
         }
     }
+
+    // ============================================
+    // DIALOGO DE AYUDA DE SLOTS
+    // ============================================
+    HelpDialog(
+        showDialog = showHelpDialog,
+        onDismiss = { showHelpDialog = false },
+        title = "Como Jugar Slots",
+        helpSections = listOf(
+            HelpSection(
+                icon = Icons.Default.Info,
+                title = "Que son las Slots?",
+                description = "Las tragaperras (slots) son juegos de azar donde giras los rodillos y ganas si los simbolos se alinean en combinaciones ganadoras."
+            ),
+            HelpSection(
+                icon = Icons.Default.TouchApp,
+                title = "Como Jugar",
+                description = "1. Elige un juego de slot de la galeria. 2. Ajusta tu apuesta con los botones +/-. 3. Pulsa GIRAR para hacer girar los rodillos. 4. Espera a que se detengan y comprueba si ganaste."
+            ),
+            HelpSection(
+                icon = Icons.Default.MonetizationOn,
+                title = "Apuestas y Lineas",
+                description = "Cada slot tiene diferentes lineas de pago. A mayor apuesta, mayor potencial de ganancia. Puedes ajustar la apuesta antes de cada giro."
+            ),
+            HelpSection(
+                icon = Icons.Default.AutoAwesome,
+                title = "Simbolos Especiales",
+                description = "WILD: Sustituye a cualquier otro simbolo. SCATTER: Activa giros gratis o bonos especiales. BONUS: Desbloquea minijuegos con premios extra."
+            ),
+            HelpSection(
+                icon = Icons.Default.EmojiEvents,
+                title = "Jackpots",
+                description = "Algunos slots tienen Jackpot progresivo que crece con cada apuesta. Busca la etiqueta 'JACKPOT' para encontrar estos juegos especiales."
+            ),
+            HelpSection(
+                icon = Icons.Default.Casino,
+                title = "Filtros de Busqueda",
+                description = "Usa los filtros para encontrar rapidamente tu slot favorito: Todos (ver todos), Nuevos (recien agregados), Jackpot (con premios grandes), Clasico (estilo retro)."
+            )
+        )
+    )
 }
 
 // ----------------------------------------------------------------
@@ -170,7 +227,7 @@ fun SlotsScreen(
 // ----------------------------------------------------------------
 
 @Composable
-fun SlotScreenTitle(onBackClick: () -> Unit) {
+fun SlotScreenTitle(onBackClick: () -> Unit, onHelpClick: () -> Unit = {}) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -182,7 +239,7 @@ fun SlotScreenTitle(onBackClick: () -> Unit) {
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                    contentDescription = "Atrás",
+                    contentDescription = "Atras",
                     tint = CasinoGold,
                     modifier = Modifier.size(32.dp)
                 )
@@ -195,6 +252,26 @@ fun SlotScreenTitle(onBackClick: () -> Unit) {
                 fontFamily = Poppins,
                 modifier = Modifier.align(Alignment.Center)
             )
+            // Boton de ayuda (?)
+            IconButton(
+                onClick = onHelpClick,
+                modifier = Modifier.align(Alignment.CenterEnd)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Help,
+                        contentDescription = "Ayuda de Slots",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         }
         // Efecto de brillo/línea debajo del título
         Box(

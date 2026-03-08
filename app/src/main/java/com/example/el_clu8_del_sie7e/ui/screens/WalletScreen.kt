@@ -19,7 +19,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.MonetizationOn
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -43,6 +49,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.el_clu8_del_sie7e.R
 import com.example.el_clu8_del_sie7e.ui.components.AppFooter
 import com.example.el_clu8_del_sie7e.ui.components.AppHeader
+import com.example.el_clu8_del_sie7e.ui.components.HelpDialog
+import com.example.el_clu8_del_sie7e.ui.components.HelpSection
 import com.example.el_clu8_del_sie7e.ui.components.WalletOptionButton
 import com.example.el_clu8_del_sie7e.ui.navigation.Routes
 import com.example.el_clu8_del_sie7e.ui.theme.AccentGold
@@ -92,6 +100,9 @@ fun WalletScreen(
     // ESTADO DE LA PANTALLA
     // ===================================================================
     var selectedFooterItem by remember { mutableStateOf("Cartera") }
+    
+    // Estado para mostrar/ocultar el dialogo de ayuda
+    var showHelpDialog by remember { mutableStateOf(false) }
     
     // Obtener balance actual del ViewModel
     val formattedBalance = balanceViewModel.formatBalance(balanceViewModel.balance.value)
@@ -154,6 +165,18 @@ fun WalletScreen(
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = Poppins
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    // Boton de ayuda (?)
+                    Icon(
+                        imageVector = Icons.Default.Help,
+                        contentDescription = "Ayuda de Cartera",
+                        tint = Color.Gray,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { showHelpDialog = true }
                     )
                 }
 
@@ -278,6 +301,47 @@ fun WalletScreen(
             )
         }
     }
+
+    // ============================================
+    // DIALOGO DE AYUDA DE LA CARTERA
+    // ============================================
+    HelpDialog(
+        showDialog = showHelpDialog,
+        onDismiss = { showHelpDialog = false },
+        title = "Ayuda de Cartera",
+        helpSections = listOf(
+            HelpSection(
+                icon = Icons.Default.CreditCard,
+                title = "Depositar Fondos",
+                description = "Pulsa DEPOSITAR para anadir credito a tu cuenta. Puedes usar tarjeta de credito, debito o billetera electronica. Los fondos se reflejan al instante."
+            ),
+            HelpSection(
+                icon = Icons.Default.AccountBalance,
+                title = "Retirar Fondos",
+                description = "Pulsa RETIRAR para transferir tus ganancias. Selecciona el metodo de retiro y el monto deseado. El retiro se procesara de forma segura."
+            ),
+            HelpSection(
+                icon = Icons.Default.History,
+                title = "Historial de Transacciones",
+                description = "Consulta todos tus movimientos: depositos, retiros, ganancias y perdidas. Filtra por fecha o tipo de transaccion para encontrar lo que buscas."
+            ),
+            HelpSection(
+                icon = Icons.Default.MonetizationOn,
+                title = "Tu Saldo",
+                description = "Tu saldo actual se muestra en la parte superior de la pantalla. Se actualiza automaticamente con cada operacion que realices (depositos, retiros y resultados de juegos)."
+            ),
+            HelpSection(
+                icon = Icons.Default.Security,
+                title = "Seguridad",
+                description = "Todas tus transacciones estan protegidas con encriptacion de grado militar. Tus datos financieros nunca se comparten con terceros."
+            ),
+            HelpSection(
+                icon = Icons.Default.Schedule,
+                title = "Tiempos de Procesamiento",
+                description = "Depositos: instantaneos. Retiros: 1-3 dias habiles segun el metodo. Las transferencias bancarias pueden tardar hasta 5 dias habiles."
+            )
+        )
+    )
 }
 
 // ======================================================================================
